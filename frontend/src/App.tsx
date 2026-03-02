@@ -11,6 +11,7 @@ import TeamRosterPage from './pages/TeamRosterPage';
 import TeamSettingsPage from './pages/TeamSettingsPage';
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
+import EventSquadPage from './pages/EventSquadPage';
 import StatsPage from './pages/StatsPage';
 import InvitePage from './pages/InvitePage';
 import AdminPage from './pages/AdminPage';
@@ -120,6 +121,7 @@ function App() {
             <Route path="/teams/:id/events" element={<EventsPage />} />
             <Route path="/teams/:id/events/new" element={<EventCreatePage />} />
             <Route path="/events/:id" element={<EventDetailPage />} />
+            <Route path="/events/:id/squad" element={<EventSquadPage />} />
             <Route path="/events/:id/edit" element={<EventEditPage />} />
             <Route path="/teams/:id/stats" element={<StatsPage />} />
           </Route>

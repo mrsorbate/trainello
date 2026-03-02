@@ -726,6 +726,15 @@ export default function EventDetailPage() {
 
           {isMatchEvent && (
             <div className="card">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Menü</h2>
+              <Link to={`/events/${eventId}/squad`} className="btn btn-secondary inline-flex items-center justify-center">
+                Kader & Aufstellung öffnen
+              </Link>
+            </div>
+          )}
+
+          {isMatchEvent && false && (
+            <div className="card">
               <div className="flex items-center justify-between gap-3 mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Kader & Aufstellung</h2>
                 <span
