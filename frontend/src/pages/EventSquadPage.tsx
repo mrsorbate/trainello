@@ -580,24 +580,24 @@ export default function EventSquadPage() {
                 <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-3">Kader festlegen (nur Zusagen)</p>
                 {acceptedPlayers.length > 0 ? (
                   <div className="space-y-3 lg:max-h-[62vh] lg:overflow-y-auto lg:pr-1">
-                    <div className="rounded-lg border border-green-200 dark:border-green-700 bg-green-50/40 dark:bg-green-900/20 p-2 sm:p-3">
-                      <h3 className="font-semibold text-sm mb-2 flex items-center justify-between text-green-700 dark:text-green-300">
+                    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800/60 p-3 sm:p-4">
+                      <h3 className="font-semibold text-sm mb-3 flex items-center justify-between text-gray-800 dark:text-gray-100">
                         <span className="flex items-center">
-                          <span className="mr-2">✓</span>
+                          <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">✓</span>
                           Zugesagt
                         </span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-white/80 text-green-700 dark:bg-gray-800 dark:text-green-300">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
                           {acceptedPlayers.length}
                         </span>
                       </h3>
 
-                      <div className="grid grid-cols-1 gap-2">
+                      <div className="grid grid-cols-1 gap-2.5">
                         {acceptedPlayers.map((player) => {
                           const isEnabled = editableSquadUserIds.includes(player.id);
                           return (
-                            <div key={player.id} className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-2">
+                            <div key={player.id} className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors ${isEnabled ? 'border-primary-300 bg-primary-50/50 dark:border-primary-700 dark:bg-primary-900/20' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'}`}>
                               <span className="inline-flex items-center gap-2 min-w-0 flex-1">
-                                {renderAvatar(player.name, player.profile_picture, 'w-7 h-7')}
+                                {renderAvatar(player.name, player.profile_picture, 'w-8 h-8')}
                                 <span className="text-sm text-gray-800 dark:text-gray-200 truncate">{player.name}</span>
                               </span>
                               <button
@@ -606,15 +606,26 @@ export default function EventSquadPage() {
                                 aria-checked={isEnabled}
                                 aria-label={`${player.name} im Kader umschalten`}
                                 onClick={() => toggleSquadPlayer(player.id, !isEnabled)}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isEnabled ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'}`}
+                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${isEnabled ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'}`}
                               >
                                 <span
-                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isEnabled ? 'translate-x-6' : 'translate-x-1'}`}
+                                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${isEnabled ? 'translate-x-6' : 'translate-x-1'}`}
                                 />
                               </button>
                             </div>
                           );
                         })}
+                      </div>
+
+                      <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <button
+                          type="button"
+                          onClick={() => saveMatchSquad()}
+                          disabled={saveMatchSquadMutation.isPending || releaseMatchSquadMutation.isPending || !squadChanged}
+                          className="btn btn-secondary w-full"
+                        >
+                          {saveMatchSquadMutation.isPending ? 'Speichert...' : 'Kader speichern'}
+                        </button>
                       </div>
                     </div>
                   </div>
