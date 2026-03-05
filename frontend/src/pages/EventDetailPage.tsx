@@ -546,9 +546,12 @@ export default function EventDetailPage() {
 
           {isMatchEvent && (
             <div className="card">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Menü</h2>
-              <Link to={`/events/${eventId}/squad`} className="btn btn-secondary inline-flex items-center justify-center">
-                Kader & Aufstellung öffnen
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Kader & Aufstellung</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 mb-3">
+                {isTrainer ? 'Kader festlegen, Aufstellung bauen und Team freigeben.' : 'Freigegebenen Kader und Aufstellung ansehen.'}
+              </p>
+              <Link to={`/events/${eventId}/squad`} className="w-full btn btn-primary inline-flex items-center justify-center">
+                Zur Kaderseite
               </Link>
             </div>
           )}

@@ -216,7 +216,12 @@ export default function EventSquadPage() {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(`/events/${eventId}`)} className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+          <button
+            onClick={() => navigate(`/events/${eventId}`)}
+            aria-label="Zurück zum Termin"
+            title="Zurück zum Termin"
+            className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+          >
             <ArrowLeft className="w-6 h-6" />
           </button>
           <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white">Kader & Aufstellung</h1>
