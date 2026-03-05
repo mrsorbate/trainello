@@ -507,7 +507,7 @@ export default function EventSquadPage() {
               >
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute inset-2 sm:inset-3 border-2 border-white/80 rounded-[14px] sm:rounded-[18px]" />
-                  <div className="absolute left-1/2 top-2 sm:top-3 bottom-2 sm:bottom-3 w-[2px] -translate-x-1/2 bg-white/90" />
+                  <div className="absolute left-2 sm:left-3 right-2 sm:right-3 top-1/2 h-[2px] -translate-y-1/2 bg-white/90" />
                   <div className="absolute left-1/2 top-1/2 h-16 w-16 sm:h-24 sm:w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/80" />
                   <div className="absolute left-1/2 top-1/2 h-2 w-2 sm:h-2.5 sm:w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/85" />
 
@@ -515,11 +515,18 @@ export default function EventSquadPage() {
                   <div className="absolute left-1/2 top-2 sm:top-3 h-7 sm:h-9 w-16 sm:w-20 -translate-x-1/2 border-2 border-t-0 border-white/80" />
                   <div className="absolute left-1/2 top-[13%] h-2 w-2 sm:h-2.5 sm:w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/85" />
                   <div className="absolute left-1/2 top-0.5 sm:top-1 h-1.5 sm:h-2 w-8 sm:w-12 -translate-x-1/2 rounded-b bg-white/80" />
+                  <div className="absolute left-1/2 top-[17%] h-6 w-12 sm:h-8 sm:w-16 -translate-x-1/2 rounded-b-full border-2 border-t-0 border-white/75" />
 
                   <div className="absolute left-1/2 bottom-2 sm:bottom-3 h-14 sm:h-20 w-32 sm:w-44 -translate-x-1/2 border-2 border-b-0 border-white/80" />
                   <div className="absolute left-1/2 bottom-2 sm:bottom-3 h-7 sm:h-9 w-16 sm:w-20 -translate-x-1/2 border-2 border-b-0 border-white/80" />
                   <div className="absolute left-1/2 top-[87%] h-2 w-2 sm:h-2.5 sm:w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/85" />
                   <div className="absolute left-1/2 bottom-0.5 sm:bottom-1 h-1.5 sm:h-2 w-8 sm:w-12 -translate-x-1/2 rounded-t bg-white/80" />
+                  <div className="absolute left-1/2 top-[77%] h-6 w-12 sm:h-8 sm:w-16 -translate-x-1/2 rounded-t-full border-2 border-b-0 border-white/75" />
+
+                  <div className="absolute left-2 sm:left-3 top-2 sm:top-3 h-3 w-3 sm:h-4 sm:w-4 rounded-br-full border-2 border-t-0 border-l-0 border-white/75" />
+                  <div className="absolute right-2 sm:right-3 top-2 sm:top-3 h-3 w-3 sm:h-4 sm:w-4 rounded-bl-full border-2 border-t-0 border-r-0 border-white/75" />
+                  <div className="absolute left-2 sm:left-3 bottom-2 sm:bottom-3 h-3 w-3 sm:h-4 sm:w-4 rounded-tr-full border-2 border-b-0 border-l-0 border-white/75" />
+                  <div className="absolute right-2 sm:right-3 bottom-2 sm:bottom-3 h-3 w-3 sm:h-4 sm:w-4 rounded-tl-full border-2 border-b-0 border-r-0 border-white/75" />
                 </div>
 
                 {boardPlayers.map((entry) => {
@@ -573,10 +580,11 @@ export default function EventSquadPage() {
                           key={player.id}
                           type="button"
                           onPointerDown={(event) => startDrag(player.id, 'bench', event)}
-                          className="inline-flex items-center gap-2 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-1.5 text-xs text-gray-700 dark:text-gray-200 cursor-grab active:cursor-grabbing touch-none whitespace-nowrap"
+                          className="inline-flex items-center justify-center rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-1 cursor-grab active:cursor-grabbing touch-none"
+                          title={player.name}
+                          aria-label={player.name}
                         >
-                          {renderAvatar(player.name, player.profile_picture, 'w-5 h-5')}
-                          <span>{player.name}</span>
+                          {renderAvatar(player.name, player.profile_picture, 'w-8 h-8 sm:w-9 sm:h-9')}
                         </button>
                       ))}
                     </div>
