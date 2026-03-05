@@ -1,0 +1,9 @@
+{
+  "hints": {
+    "compat-api/css": "warning"
+  },
+  "ignoredUrls": [
+    "**/frontend/dist/**",
+    "**/dist/**"
+  ]
+}
