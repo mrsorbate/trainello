@@ -495,7 +495,7 @@ export default function EventSquadPage() {
               >
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute inset-2 sm:inset-3 border-2 border-white/80 rounded-[14px] sm:rounded-[18px]" />
-                  <div className="absolute left-1/2 top-2 sm:top-3 bottom-2 sm:bottom-3 w-0.5 -translate-x-1/2 bg-white/75" />
+                  <div className="absolute left-1/2 top-2 sm:top-3 bottom-2 sm:bottom-3 w-[2px] -translate-x-1/2 bg-white/90" />
                   <div className="absolute left-1/2 top-1/2 h-16 w-16 sm:h-24 sm:w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/80" />
                   <div className="absolute left-1/2 top-1/2 h-2 w-2 sm:h-2.5 sm:w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/85" />
 
