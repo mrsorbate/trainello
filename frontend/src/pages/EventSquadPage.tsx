@@ -172,19 +172,29 @@ export default function EventSquadPage() {
     setSquadChanged(false);
   }, [matchSquad?.event_id, matchSquad?.updated_at, playerMemberIds.size]);
 
-  const getResponseStatusBadgeClass = (status: SquadPlayer['response_status']) => {
-    if (status === 'accepted') return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
-    if (status === 'declined') return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
-    if (status === 'tentative') return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300';
-    return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
-  };
-
   const getResponseStatusLabel = (status: SquadPlayer['response_status']) => {
     if (status === 'accepted') return 'Zugesagt';
     if (status === 'declined') return 'Abgesagt';
     if (status === 'tentative') return 'Vielleicht';
     return 'Keine Antwort';
   };
+
+  const responseStatusModules: Array<{
+    status: NonNullable<SquadPlayer['response_status']>;
+    title: string;
+    icon: string;
+    titleClass: string;
+  }> = [
+    { status: 'accepted', title: 'Zugesagt', icon: '✓', titleClass: 'text-green-700 dark:text-green-300' },
+    { status: 'declined', title: 'Abgesagt', icon: '✗', titleClass: 'text-red-700 dark:text-red-300' },
+    { status: 'tentative', title: 'Vielleicht', icon: '?', titleClass: 'text-yellow-700 dark:text-yellow-300' },
+    { status: 'pending', title: 'Keine Antwort', icon: '⏳', titleClass: 'text-gray-700 dark:text-gray-300' },
+  ];
+
+  const playersByResponseStatus = responseStatusModules.reduce((accumulator, module) => {
+    accumulator[module.status] = squadCandidatePlayers.filter((player) => (player.response_status || 'pending') === module.status);
+    return accumulator;
+  }, {} as Record<NonNullable<SquadPlayer['response_status']>, SquadPlayer[]>);
 
   const getPlayerNameById = (userId: number | null | undefined) => {
     if (!userId) return '';
@@ -329,20 +339,41 @@ export default function EventSquadPage() {
                 <div className="rounded-xl bg-gray-50 dark:bg-gray-800 p-3 sm:p-4">
                   <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Kader festlegen (nur Spieler)</p>
                   {squadCandidatePlayers.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {squadCandidatePlayers.map((player) => {
-                        const checked = editableSquadUserIds.includes(player.id);
+                    <div className="space-y-3">
+                      {responseStatusModules.map((module) => {
+                        const groupPlayers = playersByResponseStatus[module.status] || [];
+                        if (groupPlayers.length === 0) return null;
+
                         return (
-                          <label key={player.id} className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-2">
-                            <input type="checkbox" checked={checked} onChange={(event) => toggleSquadPlayer(player.id, event.target.checked)} className="h-4 w-4" />
-                            <span className="inline-flex items-center gap-2 min-w-0 flex-1">
-                              {renderAvatar(player.name, player.profile_picture, 'w-7 h-7')}
-                              <span className="text-sm text-gray-800 dark:text-gray-200 truncate">{player.name}</span>
-                            </span>
-                            <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${getResponseStatusBadgeClass(player.response_status)}`}>
-                              {getResponseStatusLabel(player.response_status)}
-                            </span>
-                          </label>
+                          <div key={module.status} className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2 sm:p-3">
+                            <h3 className={`font-semibold text-sm mb-2 flex items-center justify-between ${module.titleClass}`}>
+                              <span className="flex items-center">
+                                <span className="mr-2">{module.icon}</span>
+                                {module.title}
+                              </span>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                                {groupPlayers.length}
+                              </span>
+                            </h3>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {groupPlayers.map((player) => {
+                                const checked = editableSquadUserIds.includes(player.id);
+                                return (
+                                  <label key={player.id} className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-2 py-2">
+                                    <input type="checkbox" checked={checked} onChange={(event) => toggleSquadPlayer(player.id, event.target.checked)} className="h-4 w-4" />
+                                    <span className="inline-flex items-center gap-2 min-w-0 flex-1">
+                                      {renderAvatar(player.name, player.profile_picture, 'w-7 h-7')}
+                                      <span className="text-sm text-gray-800 dark:text-gray-200 truncate">{player.name}</span>
+                                    </span>
+                                    <span className="text-[10px] uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                      {getResponseStatusLabel(module.status)}
+                                    </span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
                         );
                       })}
                     </div>
