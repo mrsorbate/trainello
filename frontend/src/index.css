@@ -42,6 +42,13 @@
     -webkit-appearance: none;
     appearance: none;
   }
+
+  .tactic-board-pitch {
+    background-color: #0f8f44;
+    background-image:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 100%),
+      repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0px, rgba(255, 255, 255, 0.06) 34px, rgba(255, 255, 255, 0.02) 34px, rgba(255, 255, 255, 0.02) 68px);
+  }
 }
 
 @layer utilities {

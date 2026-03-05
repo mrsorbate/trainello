@@ -389,6 +389,23 @@ export default function EventSquadPage() {
     };
   }, [draggingPlayerId, draggingSource, dragPosition]);
 
+  useEffect(() => {
+    const boardElement = boardRef.current;
+    if (!boardElement) return;
+
+    const positionedElements = boardElement.querySelectorAll<HTMLElement>('[data-board-x][data-board-y]');
+    positionedElements.forEach((element) => {
+      const xValue = Number(element.dataset.boardX);
+      const yValue = Number(element.dataset.boardY);
+      if (!Number.isFinite(xValue) || !Number.isFinite(yValue)) {
+        return;
+      }
+
+      element.style.left = `${xValue}%`;
+      element.style.top = `${yValue}%`;
+    });
+  }, [boardPlayers, dragPosition?.x_pct, dragPosition?.y_pct, draggingPlayerId]);
+
   const saveMatchSquad = async () => {
     const lineupSlots = editableLineupSlots
       .filter((entry) => MATCH_LINEUP_SLOT_ORDER.includes(String(entry.slot || '').toUpperCase()))
@@ -486,12 +503,7 @@ export default function EventSquadPage() {
             <div className="p-2 sm:p-3 lg:p-4">
               <div
                 ref={boardRef}
-                className="relative h-[20rem] min-[390px]:h-[22rem] sm:h-[34rem] lg:h-[40rem] overflow-hidden"
-                style={{
-                  backgroundColor: '#0f8f44',
-                  backgroundImage:
-                    'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 100%), repeating-linear-gradient(180deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 34px, rgba(255,255,255,0.02) 34px, rgba(255,255,255,0.02) 68px)',
-                }}
+                className="tactic-board-pitch relative h-[20rem] min-[390px]:h-[22rem] sm:h-[34rem] lg:h-[40rem] overflow-hidden"
               >
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute inset-2 sm:inset-3 border-2 border-white/80 rounded-[14px] sm:rounded-[18px]" />
@@ -521,7 +533,8 @@ export default function EventSquadPage() {
                     <div
                       key={entry.slot}
                       className="absolute -translate-x-1/2 -translate-y-1/2 z-10"
-                      style={{ left: `${left}%`, top: `${top}%` }}
+                      data-board-x={left}
+                      data-board-y={top}
                     >
                       <div
                         className={`rounded-full border-2 border-white/90 ring-2 ring-green-300/70 dark:ring-green-800/80 shadow-md bg-white/90 dark:bg-gray-900/80 p-0.5 ${isTrainer ? 'cursor-grab active:cursor-grabbing touch-none' : ''}`}
@@ -538,7 +551,8 @@ export default function EventSquadPage() {
                 {isTrainer && dragPosition?.insideBoard && draggingPlayerId && (
                   <div
                     className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none z-20"
-                    style={{ left: `${dragPosition.x_pct}%`, top: `${dragPosition.y_pct}%` }}
+                    data-board-x={dragPosition.x_pct}
+                    data-board-y={dragPosition.y_pct}
                   >
                     <div className="rounded-full border-2 border-primary-300 dark:border-primary-500 ring-2 ring-primary-200 dark:ring-primary-700 shadow-md bg-primary-50/80 dark:bg-primary-900/60 p-0.5">
                       {renderAvatar(getPlayerNameById(draggingPlayerId), undefined, 'w-8 h-8 min-[390px]:w-9 min-[390px]:h-9 sm:w-12 sm:h-12')}
