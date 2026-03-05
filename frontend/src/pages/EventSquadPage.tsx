@@ -9,6 +9,8 @@ import { resolveAssetUrl } from '../lib/utils';
 import { useSmartBack } from '../hooks/useSmartBack';
 
 const MATCH_LINEUP_SLOT_ORDER = ['TW', 'LV', 'IV1', 'IV2', 'RV', 'DM', 'ZM', 'OM', 'LF', 'ST', 'RF'];
+const MAX_BOARD_PLAYERS = 11;
+const MAX_BENCH_PLAYERS = 5;
 
 const DEFAULT_BOARD_POSITIONS: Array<{ x_pct: number; y_pct: number }> = [
   { x_pct: 50, y_pct: 88 },
@@ -231,6 +233,8 @@ export default function EventSquadPage() {
   const benchPlayers = squadCandidatePlayers.filter(
     (player) => editableSquadUserIds.includes(player.id) && !boardPlayerIds.has(player.id)
   );
+  const boardPlayerCount = boardPlayers.length;
+  const benchPlayerCount = benchPlayers.length;
 
   const acceptedPlayers = squadCandidatePlayers.filter((player) => player.response_status === 'accepted');
 
@@ -252,6 +256,11 @@ export default function EventSquadPage() {
 
   const toggleSquadPlayer = (userId: number, shouldSelect: boolean) => {
     if (!isTrainer) return;
+
+    if (shouldSelect && !editableSquadUserIds.includes(userId) && benchPlayerCount >= MAX_BENCH_PLAYERS) {
+      showToast(`Die Bank ist auf ${MAX_BENCH_PLAYERS} Spieler begrenzt.`, 'warning');
+      return;
+    }
 
     setEditableSquadUserIds((prev) => {
       const nextSet = new Set(prev);
@@ -296,7 +305,7 @@ export default function EventSquadPage() {
 
       const nextSlot = getFreeSlot(prev);
       if (!nextSlot) {
-        showToast('Es können maximal 11 Spieler auf dem Board platziert werden.', 'warning');
+        showToast(`Es können maximal ${MAX_BOARD_PLAYERS} Spieler auf dem Board platziert werden.`, 'warning');
         return prev;
       }
 
@@ -310,6 +319,11 @@ export default function EventSquadPage() {
   };
 
   const movePlayerToBench = (playerId: number) => {
+    if (benchPlayerCount >= MAX_BENCH_PLAYERS) {
+      showToast(`Die Bank ist auf ${MAX_BENCH_PLAYERS} Spieler begrenzt.`, 'warning');
+      return;
+    }
+
     setEditableLineupSlots((prev) => {
       const next = prev.map((entry) => (
         Number(entry.user_id) === playerId
@@ -475,7 +489,10 @@ export default function EventSquadPage() {
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6">
           <div className={`${isTrainer ? 'xl:col-span-8' : 'xl:col-span-12'} card p-0 overflow-hidden`}>
             <div className="px-4 sm:px-5 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-              <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Taktik-Board</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Taktik-Board</p>
+                <span className="text-xs text-gray-600 dark:text-gray-300">{boardPlayerCount}/{MAX_BOARD_PLAYERS}</span>
+              </div>
             </div>
 
             <div className="p-2 sm:p-3 lg:p-4">
@@ -549,7 +566,7 @@ export default function EventSquadPage() {
 
             {isTrainer && (
               <div className="px-4 sm:px-5 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Bank</p>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Bank ({benchPlayerCount}/{MAX_BENCH_PLAYERS})</p>
                 {benchPlayers.length > 0 ? (
                   <div className="-mx-1 px-1 overflow-x-auto">
                     <div className="flex sm:flex-wrap gap-2 min-w-max sm:min-w-0">
@@ -577,7 +594,11 @@ export default function EventSquadPage() {
           {isTrainer && (
             <div className="xl:col-span-4 space-y-4 sm:space-y-6">
               <div className="card">
-                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-3">Kader festlegen (nur Zusagen)</p>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Kader festlegen (nur Zusagen)</p>
+                <div className="mb-3 flex items-center justify-between text-xs text-gray-600 dark:text-gray-300">
+                  <span>Board: {boardPlayerCount}/{MAX_BOARD_PLAYERS}</span>
+                  <span>Bank: {benchPlayerCount}/{MAX_BENCH_PLAYERS}</span>
+                </div>
                 {acceptedPlayers.length > 0 ? (
                   <div className="space-y-3 lg:max-h-[62vh] lg:overflow-y-auto lg:pr-1">
                     <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800/60 p-3 sm:p-4">
@@ -637,9 +658,6 @@ export default function EventSquadPage() {
               <div className="card">
                 <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-3">Aktionen</p>
                 <div className="flex flex-col gap-2">
-                  <button type="button" onClick={() => saveMatchSquad()} disabled={saveMatchSquadMutation.isPending || releaseMatchSquadMutation.isPending || !squadChanged} className="btn btn-secondary w-full">
-                    {saveMatchSquadMutation.isPending ? 'Speichert...' : 'Kader speichern'}
-                  </button>
                   <button type="button" onClick={() => releaseMatchSquad()} disabled={saveMatchSquadMutation.isPending || releaseMatchSquadMutation.isPending || editableSquadUserIds.length === 0} className="btn btn-primary w-full">
                     {releaseMatchSquadMutation.isPending ? 'Gibt frei...' : 'Kader freigeben'}
                   </button>
