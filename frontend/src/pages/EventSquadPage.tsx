@@ -58,6 +58,7 @@ export default function EventSquadPage() {
   const [draggingSource, setDraggingSource] = useState<'bench' | 'board' | null>(null);
   const [dragPosition, setDragPosition] = useState<{ x_pct: number; y_pct: number; insideBoard: boolean } | null>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
+  const dragPositionRef = useRef<{ x_pct: number; y_pct: number; insideBoard: boolean } | null>(null);
 
   const { data: event, isLoading: isEventLoading } = useQuery({
     queryKey: ['event', eventId],
@@ -325,17 +326,14 @@ export default function EventSquadPage() {
     }
 
     setEditableLineupSlots((prev) => {
-      const next = prev.map((entry) => (
-        Number(entry.user_id) === playerId
-          ? { ...entry, user_id: null }
-          : entry
-      ));
-
-      const changed = next.some((entry, index) => entry.user_id !== prev[index]?.user_id);
-      if (changed) {
-        setSquadChanged(true);
+      const targetIndex = prev.findIndex((entry) => Number(entry.user_id) === playerId);
+      if (targetIndex < 0) {
+        return prev;
       }
 
+      const next = [...prev];
+      next[targetIndex] = { ...next[targetIndex], user_id: null };
+      setSquadChanged(true);
       return next;
     });
   };
@@ -349,6 +347,7 @@ export default function EventSquadPage() {
     setDraggingPlayerId(playerId);
     setDraggingSource(source);
     setDragPosition(nextPosition);
+    dragPositionRef.current = nextPosition;
   };
 
   useEffect(() => {
@@ -357,12 +356,16 @@ export default function EventSquadPage() {
     }
 
     const handlePointerMove = (event: PointerEvent) => {
-      setDragPosition(toBoardPercent(event.clientX, event.clientY));
+      const nextPosition = toBoardPercent(event.clientX, event.clientY);
+      dragPositionRef.current = nextPosition;
+      setDragPosition(nextPosition);
     };
 
     const handlePointerUp = () => {
-      if (dragPosition?.insideBoard) {
-        placePlayerOnBoard(draggingPlayerId, dragPosition.x_pct, dragPosition.y_pct);
+      const lastDragPosition = dragPositionRef.current;
+
+      if (lastDragPosition?.insideBoard) {
+        placePlayerOnBoard(draggingPlayerId, lastDragPosition.x_pct, lastDragPosition.y_pct);
       } else if (draggingSource === 'board') {
         movePlayerToBench(draggingPlayerId);
       }
@@ -370,6 +373,7 @@ export default function EventSquadPage() {
       setDraggingPlayerId(null);
       setDraggingSource(null);
       setDragPosition(null);
+      dragPositionRef.current = null;
     };
 
     window.addEventListener('pointermove', handlePointerMove);
@@ -379,7 +383,7 @@ export default function EventSquadPage() {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [draggingPlayerId, draggingSource, dragPosition]);
+  }, [draggingPlayerId, draggingSource]);
 
   useEffect(() => {
     const boardElement = boardRef.current;
