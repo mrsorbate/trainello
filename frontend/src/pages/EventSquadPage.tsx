@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { ArrowLeft, ClipboardList } from 'lucide-react';
@@ -8,21 +8,21 @@ import { useToast } from '../lib/useToast';
 import { resolveAssetUrl } from '../lib/utils';
 import { useSmartBack } from '../hooks/useSmartBack';
 
-const MATCH_LINEUP_LAYOUT: Array<{ slot: string; className: string }> = [
-  { slot: 'TW', className: 'left-1/2 -translate-x-1/2 bottom-2 sm:bottom-3' },
-  { slot: 'LV', className: 'left-[12%] bottom-[22%]' },
-  { slot: 'IV1', className: 'left-[36%] bottom-[22%]' },
-  { slot: 'IV2', className: 'right-[36%] bottom-[22%]' },
-  { slot: 'RV', className: 'right-[12%] bottom-[22%]' },
-  { slot: 'DM', className: 'left-1/2 -translate-x-1/2 bottom-[40%]' },
-  { slot: 'ZM', className: 'left-[28%] bottom-[54%]' },
-  { slot: 'OM', className: 'right-[28%] bottom-[54%]' },
-  { slot: 'LF', className: 'left-[12%] bottom-[70%]' },
-  { slot: 'ST', className: 'left-1/2 -translate-x-1/2 bottom-[74%]' },
-  { slot: 'RF', className: 'right-[12%] bottom-[70%]' },
-];
+const MATCH_LINEUP_SLOT_ORDER = ['TW', 'LV', 'IV1', 'IV2', 'RV', 'DM', 'ZM', 'OM', 'LF', 'ST', 'RF'];
 
-const MATCH_LINEUP_SLOT_ORDER = MATCH_LINEUP_LAYOUT.map((entry) => entry.slot);
+const DEFAULT_BOARD_POSITIONS: Array<{ x_pct: number; y_pct: number }> = [
+  { x_pct: 50, y_pct: 88 },
+  { x_pct: 12, y_pct: 72 },
+  { x_pct: 36, y_pct: 72 },
+  { x_pct: 64, y_pct: 72 },
+  { x_pct: 88, y_pct: 72 },
+  { x_pct: 50, y_pct: 56 },
+  { x_pct: 28, y_pct: 42 },
+  { x_pct: 72, y_pct: 42 },
+  { x_pct: 12, y_pct: 26 },
+  { x_pct: 50, y_pct: 22 },
+  { x_pct: 88, y_pct: 26 },
+];
 
 type SquadPlayer = {
   id: number;
@@ -30,6 +30,13 @@ type SquadPlayer = {
   profile_picture?: string;
   jersey_number?: number | null;
   response_status?: 'accepted' | 'declined' | 'tentative' | 'pending';
+};
+
+type EditableLineupSlot = {
+  slot: string;
+  user_id: number | null;
+  x_pct?: number | null;
+  y_pct?: number | null;
 };
 
 export default function EventSquadPage() {
@@ -43,8 +50,12 @@ export default function EventSquadPage() {
   const isTrainer = user?.role === 'trainer';
 
   const [editableSquadUserIds, setEditableSquadUserIds] = useState<number[]>([]);
-  const [editableLineupSlots, setEditableLineupSlots] = useState<Array<{ slot: string; user_id: number | null }>>([]);
+  const [editableLineupSlots, setEditableLineupSlots] = useState<EditableLineupSlot[]>([]);
   const [squadChanged, setSquadChanged] = useState(false);
+  const [draggingPlayerId, setDraggingPlayerId] = useState<number | null>(null);
+  const [draggingSource, setDraggingSource] = useState<'bench' | 'board' | null>(null);
+  const [dragPosition, setDragPosition] = useState<{ x_pct: number; y_pct: number; insideBoard: boolean } | null>(null);
+  const boardRef = useRef<HTMLDivElement | null>(null);
 
   const { data: event, isLoading: isEventLoading } = useQuery({
     queryKey: ['event', eventId],
@@ -146,6 +157,25 @@ export default function EventSquadPage() {
 
   const canViewMatchSquad = Boolean(event?.type === 'match' && (isTrainer || matchSquad?.is_released === 1));
 
+  const clampPercent = (value: number, min = 6, max = 94) => Math.min(max, Math.max(min, value));
+
+  const toBoardPercent = (clientX: number, clientY: number) => {
+    const rect = boardRef.current?.getBoundingClientRect();
+    if (!rect || rect.width <= 0 || rect.height <= 0) {
+      return null;
+    }
+
+    const rawX = ((clientX - rect.left) / rect.width) * 100;
+    const rawY = ((clientY - rect.top) / rect.height) * 100;
+    const insideBoard = rawX >= 0 && rawX <= 100 && rawY >= 0 && rawY <= 100;
+
+    return {
+      x_pct: clampPercent(rawX),
+      y_pct: clampPercent(rawY, 8, 92),
+      insideBoard,
+    };
+  };
+
   useEffect(() => {
     if (!matchSquad) return;
 
@@ -158,19 +188,49 @@ export default function EventSquadPage() {
       ? onlyPlayerIds(matchSquad.squad_user_ids)
       : [];
 
-    setEditableSquadUserIds(
-      safeSquadUserIds
-    );
-    setEditableLineupSlots(
-      Array.isArray(matchSquad.lineup_slots)
-        ? matchSquad.lineup_slots.map((entry: any) => ({
-            ...entry,
-            user_id: safeSquadUserIds.includes(Number(entry?.user_id)) ? Number(entry?.user_id) : null,
-          }))
-        : []
-    );
+    const normalizedLineupSlots: EditableLineupSlot[] = Array.isArray(matchSquad.lineup_slots)
+      ? matchSquad.lineup_slots
+          .map((entry: any) => {
+            const slot = String(entry?.slot || '').toUpperCase();
+            if (!MATCH_LINEUP_SLOT_ORDER.includes(slot)) {
+              return null;
+            }
+
+            const userId = safeSquadUserIds.includes(Number(entry?.user_id)) ? Number(entry?.user_id) : null;
+            const slotIndex = MATCH_LINEUP_SLOT_ORDER.indexOf(slot);
+            const defaultPosition = DEFAULT_BOARD_POSITIONS[slotIndex] || { x_pct: 50, y_pct: 50 };
+            const xValue = Number(entry?.x_pct);
+            const yValue = Number(entry?.y_pct);
+
+            return {
+              slot,
+              user_id: userId,
+              x_pct: Number.isFinite(xValue) ? clampPercent(xValue) : defaultPosition.x_pct,
+              y_pct: Number.isFinite(yValue) ? clampPercent(yValue, 8, 92) : defaultPosition.y_pct,
+            } as EditableLineupSlot;
+          })
+          .filter(Boolean) as EditableLineupSlot[]
+      : [];
+
+    setEditableSquadUserIds(safeSquadUserIds);
+    setEditableLineupSlots(normalizedLineupSlots);
     setSquadChanged(false);
   }, [matchSquad?.event_id, matchSquad?.updated_at, playerMemberIds.size]);
+
+  const boardPlayers = editableLineupSlots
+    .filter((entry) => entry.user_id !== null && entry.user_id !== undefined)
+    .map((entry) => ({
+      ...entry,
+      user_id: Number(entry.user_id),
+      player: squadCandidatePlayers.find((player) => player.id === Number(entry.user_id)),
+    }))
+    .filter((entry) => Number.isInteger(entry.user_id));
+
+  const boardPlayerIds = new Set(boardPlayers.map((entry) => entry.user_id));
+
+  const benchPlayers = squadCandidatePlayers.filter(
+    (player) => editableSquadUserIds.includes(player.id) && !boardPlayerIds.has(player.id)
+  );
 
   const getResponseStatusLabel = (status: SquadPlayer['response_status']) => {
     if (status === 'accepted') return 'Zugesagt';
@@ -232,23 +292,100 @@ export default function EventSquadPage() {
     setSquadChanged(true);
   };
 
-  const setLineupPlayerForSlot = (slot: string, rawUserId: string) => {
-    if (!isTrainer) return;
-    const parsedUserId = rawUserId ? Number(rawUserId) : null;
-    const isAllowedUserId = parsedUserId === null || editableSquadUserIds.includes(parsedUserId);
-    if (!isAllowedUserId) return;
+  const getFreeSlot = (slots: EditableLineupSlot[]) => {
+    const usedSlots = new Set(slots.filter((entry) => entry.user_id).map((entry) => entry.slot));
+    return MATCH_LINEUP_SLOT_ORDER.find((slot) => !usedSlots.has(slot)) || null;
+  };
+
+  const placePlayerOnBoard = (playerId: number, xPct: number, yPct: number) => {
+    if (!editableSquadUserIds.includes(playerId)) {
+      return;
+    }
+
+    let hasChanged = false;
 
     setEditableLineupSlots((prev) => {
-      const withoutSlot = prev.filter((entry) => entry.slot !== slot);
-      return [...withoutSlot, { slot, user_id: parsedUserId }];
+      const sanitizedX = clampPercent(xPct);
+      const sanitizedY = clampPercent(yPct, 8, 92);
+      const existingIndex = prev.findIndex((entry) => Number(entry.user_id) === playerId);
+
+      if (existingIndex >= 0) {
+        hasChanged = true;
+        return prev.map((entry, index) => (
+          index === existingIndex ? { ...entry, x_pct: sanitizedX, y_pct: sanitizedY } : entry
+        ));
+      }
+
+      const nextSlot = getFreeSlot(prev);
+      if (!nextSlot) {
+        showToast('Es können maximal 11 Spieler auf dem Board platziert werden.', 'warning');
+        return prev;
+      }
+
+      hasChanged = true;
+      return [...prev, { slot: nextSlot, user_id: playerId, x_pct: sanitizedX, y_pct: sanitizedY }];
     });
-    setSquadChanged(true);
+
+    if (hasChanged) {
+      setSquadChanged(true);
+    }
   };
 
-  const getLineupUserForSlot = (slot: string): number | null => {
-    const found = editableLineupSlots.find((entry) => entry.slot === slot);
-    return found ? (found.user_id ?? null) : null;
+  const movePlayerToBench = (playerId: number) => {
+    setEditableLineupSlots((prev) => {
+      const next = prev.map((entry) => (
+        Number(entry.user_id) === playerId
+          ? { ...entry, user_id: null }
+          : entry
+      ));
+
+      const changed = next.some((entry, index) => entry.user_id !== prev[index]?.user_id);
+      if (changed) {
+        setSquadChanged(true);
+      }
+
+      return next;
+    });
   };
+
+  const startDrag = (playerId: number, source: 'bench' | 'board', event: React.PointerEvent) => {
+    if (!isTrainer) return;
+    if (source === 'bench' && !editableSquadUserIds.includes(playerId)) return;
+
+    event.preventDefault();
+    const nextPosition = toBoardPercent(event.clientX, event.clientY);
+    setDraggingPlayerId(playerId);
+    setDraggingSource(source);
+    setDragPosition(nextPosition);
+  };
+
+  useEffect(() => {
+    if (!draggingPlayerId || !draggingSource) {
+      return;
+    }
+
+    const handlePointerMove = (event: PointerEvent) => {
+      setDragPosition(toBoardPercent(event.clientX, event.clientY));
+    };
+
+    const handlePointerUp = () => {
+      if (dragPosition?.insideBoard) {
+        placePlayerOnBoard(draggingPlayerId, dragPosition.x_pct, dragPosition.y_pct);
+      }
+
+      setDraggingPlayerId(null);
+      setDraggingSource(null);
+      setDragPosition(null);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [draggingPlayerId, draggingSource, dragPosition]);
 
   const saveMatchSquad = async () => {
     const lineupSlots = editableLineupSlots
@@ -258,6 +395,8 @@ export default function EventSquadPage() {
         user_id: entry.user_id === null || entry.user_id === undefined || !editableSquadUserIds.includes(Number(entry.user_id))
           ? null
           : Number(entry.user_id),
+        x_pct: Number.isFinite(Number(entry.x_pct)) ? clampPercent(Number(entry.x_pct)) : null,
+        y_pct: Number.isFinite(Number(entry.y_pct)) ? clampPercent(Number(entry.y_pct), 8, 92) : null,
       }));
 
     await saveMatchSquadMutation.mutateAsync({
@@ -395,39 +534,82 @@ export default function EventSquadPage() {
 
             <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Taktik-Board (4-3-3)</p>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Taktik-Board (flexibel)</p>
               </div>
-              <div className="relative h-72 sm:h-80 bg-green-50 dark:bg-green-900/20">
-                {MATCH_LINEUP_LAYOUT.map((entry) => {
-                  const selectedUserId = getLineupUserForSlot(entry.slot);
-                  const selectedLabel = getPlayerNameById(selectedUserId);
+              <div ref={boardRef} className="relative h-72 sm:h-80 bg-green-50 dark:bg-green-900/20 overflow-hidden">
+                {boardPlayers.map((entry) => {
+                  const player = entry.player;
+                  if (!player) return null;
+
+                  const left = Number.isFinite(Number(entry.x_pct)) ? Number(entry.x_pct) : 50;
+                  const top = Number.isFinite(Number(entry.y_pct)) ? Number(entry.y_pct) : 50;
+
                   return (
-                    <div key={entry.slot} className={`absolute ${entry.className} w-[84px] sm:w-[96px]`}>
-                      <div className="rounded-lg border border-green-200 dark:border-green-800 bg-white/90 dark:bg-gray-800/90 p-1.5 text-center shadow-sm">
-                        <p className="text-[10px] font-semibold text-green-700 dark:text-green-300 mb-1">{entry.slot}</p>
-                        {isTrainer ? (
-                          <select
-                            value={selectedUserId ?? ''}
-                            onChange={(event) => setLineupPlayerForSlot(entry.slot, event.target.value)}
-                            aria-label={`Aufstellung ${entry.slot}`}
-                            title={`Aufstellung ${entry.slot}`}
-                            className="w-full text-[11px] rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-1 py-1"
-                          >
-                            <option value="">-</option>
-                            {editableSquadUserIds.map((userId) => (
-                              <option key={`${entry.slot}-${userId}`} value={userId}>
-                                {getPlayerNameById(userId)}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <p className="text-[11px] text-gray-700 dark:text-gray-200 truncate">{selectedLabel || '-'}</p>
-                        )}
+                    <div
+                      key={entry.slot}
+                      className="absolute -translate-x-1/2 -translate-y-1/2"
+                      style={{ left: `${left}%`, top: `${top}%` }}
+                    >
+                      <div
+                        className={`rounded-lg border border-green-200 dark:border-green-800 bg-white/95 dark:bg-gray-800/95 px-2 py-1.5 shadow-sm min-w-[120px] ${isTrainer ? 'cursor-grab active:cursor-grabbing touch-none' : ''}`}
+                        onPointerDown={isTrainer ? (event) => startDrag(player.id, 'board', event) : undefined}
+                      >
+                        <div className="flex items-center gap-2">
+                          {renderAvatar(player.name, player.profile_picture, 'w-6 h-6')}
+                          <p className="text-[11px] text-gray-800 dark:text-gray-100 truncate flex-1">{player.name}</p>
+                          {isTrainer && (
+                            <button
+                              type="button"
+                              onClick={() => movePlayerToBench(player.id)}
+                              className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200"
+                              title="Zur Bank"
+                              aria-label="Zur Bank"
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
                 })}
+
+                {isTrainer && dragPosition?.insideBoard && draggingPlayerId && (
+                  <div
+                    className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                    style={{ left: `${dragPosition.x_pct}%`, top: `${dragPosition.y_pct}%` }}
+                  >
+                    <div className="rounded-lg border border-primary-300 bg-primary-50/90 dark:bg-primary-900/60 px-2 py-1.5 shadow-sm min-w-[120px]">
+                      <p className="text-[11px] text-primary-700 dark:text-primary-200 truncate">
+                        {getPlayerNameById(draggingPlayerId)}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
+
+              {isTrainer && (
+                <div className="px-3 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                  <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Bank</p>
+                  {benchPlayers.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {benchPlayers.map((player) => (
+                        <button
+                          key={player.id}
+                          type="button"
+                          onPointerDown={(event) => startDrag(player.id, 'bench', event)}
+                          className="inline-flex items-center gap-2 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-1.5 text-xs text-gray-700 dark:text-gray-200 cursor-grab active:cursor-grabbing touch-none"
+                        >
+                          {renderAvatar(player.name, player.profile_picture, 'w-5 h-5')}
+                          <span>{player.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Keine Spieler auf der Bank.</p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ) : (

@@ -12,6 +12,7 @@ export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const eventId = parseInt(id!);
   const { user } = useAuthStore();
+  const isTrainer = user?.role === 'trainer';
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -31,6 +32,19 @@ export default function EventDetailPage() {
       const response = await eventsAPI.getById(eventId);
       return response.data;
     },
+  });
+
+  const {
+    data: matchSquad,
+    isLoading: isMatchSquadLoading,
+    isError: isMatchSquadError,
+  } = useQuery({
+    queryKey: ['event-match-squad', eventId],
+    queryFn: async () => {
+      const response = await eventsAPI.getMatchSquad(eventId);
+      return response.data;
+    },
+    enabled: Number.isFinite(eventId) && event?.type === 'match' && !isTrainer,
   });
 
   const updateResponseMutation = useMutation({
@@ -71,7 +85,6 @@ export default function EventDetailPage() {
   const tentativeResponses = event?.responses?.filter((r: any) => r.status === 'tentative') || [];
   const pendingResponses = event?.responses?.filter((r: any) => r.status === 'pending') || [];
   
-  const isTrainer = user?.role === 'trainer';
   const isMatchEvent = event?.type === 'match';
   const isVisibilityAll = event?.visibility_all === 1 || event?.visibility_all === true;
   const canViewResponses = isTrainer || isVisibilityAll;
@@ -81,6 +94,18 @@ export default function EventDetailPage() {
     if (Number.isNaN(deadlineDate.getTime())) return true;
     const tentativeCutoff = new Date(deadlineDate.getTime() - 60 * 60 * 1000);
     return new Date() < tentativeCutoff;
+  })();
+
+  const isMatchSquadReleased = matchSquad?.is_released === 1;
+  const isPlayerInMatchSquad = Array.isArray(matchSquad?.squad_user_ids)
+    ? matchSquad.squad_user_ids.map((entry: any) => Number(entry)).includes(Number(user?.id))
+    : false;
+
+  const playerMatchSquadStatusText = (() => {
+    if (isMatchSquadLoading) return 'Kaderstatus wird geladen...';
+    if (isMatchSquadError) return 'Kaderstatus konnte nicht geladen werden.';
+    if (!isMatchSquadReleased) return 'Der Kader ist noch nicht freigegeben.';
+    return isPlayerInMatchSquad ? 'Du bist im Kader.' : 'Du bist nicht im Kader.';
   })();
 
   useEffect(() => {
@@ -560,9 +585,15 @@ export default function EventDetailPage() {
               <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 mb-3">
                 {isTrainer ? 'Kader festlegen, Aufstellung bauen und Team freigeben.' : 'Freigegebenen Kader und Aufstellung ansehen.'}
               </p>
-              <Link to={`/events/${eventId}/squad`} className="w-full btn btn-primary inline-flex items-center justify-center">
-                Zur Kaderseite
-              </Link>
+              {isTrainer ? (
+                <Link to={`/events/${eventId}/squad`} className="w-full btn btn-primary inline-flex items-center justify-center">
+                  Zur Kaderseite
+                </Link>
+              ) : (
+                <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-3 text-sm font-medium text-gray-800 dark:text-gray-200">
+                  {playerMatchSquadStatusText}
+                </div>
+              )}
             </div>
           )}
 

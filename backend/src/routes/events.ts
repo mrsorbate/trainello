@@ -131,6 +131,8 @@ function hasMatchingPitchTypeInHomeVenues(homeVenuesRaw: unknown, selectedPitchT
 type MatchLineupSlot = {
   slot: string;
   user_id: number | null;
+  x_pct?: number | null;
+  y_pct?: number | null;
 };
 
 type MatchSquadRow = {
@@ -143,6 +145,23 @@ type MatchSquadRow = {
 };
 
 const MATCH_LINEUP_SLOTS = ['TW', 'LV', 'IV1', 'IV2', 'RV', 'DM', 'ZM', 'OM', 'LF', 'ST', 'RF'];
+
+function normalizePercentCoordinate(value: unknown): number | null {
+  if (value === null || value === undefined || String(value).trim() === '') {
+    return null;
+  }
+
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  if (parsed < 0 || parsed > 100) {
+    return null;
+  }
+
+  return Math.round(parsed * 10) / 10;
+}
 
 function normalizeSquadUserIds(rawValue: unknown, allowedMemberIds: Set<number>): number[] {
   if (!Array.isArray(rawValue)) {
@@ -181,7 +200,12 @@ function normalizeLineupSlots(rawValue: unknown, squadUserIds: Set<number>): Mat
     }
 
     seenSlots.add(slot);
-    normalized.push({ slot, user_id: parsedUserId });
+    normalized.push({
+      slot,
+      user_id: parsedUserId,
+      x_pct: normalizePercentCoordinate(source.x_pct),
+      y_pct: normalizePercentCoordinate(source.y_pct),
+    });
   }
 
   return normalized;
@@ -227,6 +251,8 @@ function parseStoredLineupSlots(rawValue: unknown): MatchLineupSlot[] {
         return {
           slot,
           user_id: parsedUserId,
+          x_pct: normalizePercentCoordinate(source.x_pct),
+          y_pct: normalizePercentCoordinate(source.y_pct),
         };
       })
       .filter(Boolean) as MatchLineupSlot[];
