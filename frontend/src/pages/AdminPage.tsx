@@ -29,6 +29,7 @@ export default function AdminPage() {
   
   const [showOrganizationSettings, setShowOrganizationSettings] = useState(false);
   const [organizationName, setOrganizationName] = useState('');
+  const [organizationShortName, setOrganizationShortName] = useState('');
   const [timezone, setTimezone] = useState('Europe/Berlin');
   
   const [showCreateTeam, setShowCreateTeam] = useState(false);
@@ -186,6 +187,7 @@ export default function AdminPage() {
     queryFn: async () => {
       const response = await adminAPI.getSettings();
       setOrganizationName(response.data.name || '');
+      setOrganizationShortName(response.data.short_name || '');
       setTimezone(response.data.timezone || 'Europe/Berlin');
       return response.data;
     },
@@ -227,7 +229,7 @@ export default function AdminPage() {
   });
 
   const updateSettingsMutation = useMutation({
-    mutationFn: (data: { organizationName: string; timezone: string }) =>
+    mutationFn: (data: { organizationName: string; organizationShortName?: string | null; timezone: string }) =>
       adminAPI.updateSettings(data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
@@ -368,7 +370,11 @@ export default function AdminPage() {
 
   const handleUpdateSettings = (e: React.FormEvent) => {
     e.preventDefault();
-    updateSettingsMutation.mutate({ organizationName, timezone });
+    updateSettingsMutation.mutate({
+      organizationName,
+      organizationShortName: organizationShortName.trim() ? organizationShortName.trim() : null,
+      timezone,
+    });
   };
 
   const handleLogoFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -903,6 +909,25 @@ export default function AdminPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Kurzer Vereinsname (mobil)
+              </label>
+              <input
+                type="text"
+                value={organizationShortName}
+                onChange={(e) => setOrganizationShortName(e.target.value)}
+                className="input"
+                placeholder="z.B. SVM"
+                title="Kurzer Vereinsname"
+                aria-label="Kurzer Vereinsname"
+                maxLength={32}
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Optional: Wird in der mobilen Navigation statt dem langen Namen verwendet.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Zeitzone
               </label>
               <select
@@ -944,6 +969,10 @@ export default function AdminPage() {
                 <div>
                   <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Vereinsname:</span>
                   <p className="text-lg font-semibold text-gray-900 dark:text-white">{settings?.name || 'Nicht festgelegt'}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Kurzer Vereinsname:</span>
+                  <p className="text-gray-900 dark:text-white">{settings?.short_name || 'Nicht festgelegt'}</p>
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Zeitzone:</span>

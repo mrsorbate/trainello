@@ -15,6 +15,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS organizations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL DEFAULT 'Dein Verein',
+    short_name TEXT,
     logo TEXT,
     timezone TEXT DEFAULT 'Europe/Berlin',
     setup_completed INTEGER DEFAULT 0,
@@ -482,6 +483,13 @@ try {
   if (!hasInvitedUserId) {
     db.exec('ALTER TABLE trainer_invites ADD COLUMN invited_user_id INTEGER');
     console.log('✅ Added invited_user_id column to trainer_invites table');
+  }
+
+  const organizationColumns = db.pragma('table_info(organizations)') as Array<{ name: string }>;
+  const hasOrganizationShortName = organizationColumns.some((col) => col.name === 'short_name');
+  if (!hasOrganizationShortName) {
+    db.exec('ALTER TABLE organizations ADD COLUMN short_name TEXT');
+    console.log('✅ Added short_name column to organizations table');
   }
 
   // Ensure at least one organization exists

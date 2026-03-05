@@ -50,7 +50,7 @@ const upload = multer({
 // This creates the first admin user and completes organization setup
 router.post('/first-setup', async (req, res) => {
   try {
-    const { organizationName, adminUsername, adminEmail, adminPassword, timezone } = req.body;
+    const { organizationName, organizationShortName, adminUsername, adminEmail, adminPassword, timezone } = req.body;
 
     // Validate input
     if (!organizationName || !adminUsername || !adminEmail || !adminPassword) {
@@ -101,9 +101,13 @@ router.post('/first-setup', async (req, res) => {
     // Update organization
     db.prepare(`
       UPDATE organizations 
-      SET name = ?, timezone = ?, setup_completed = 1, updated_at = CURRENT_TIMESTAMP
+      SET name = ?, short_name = ?, timezone = ?, setup_completed = 1, updated_at = CURRENT_TIMESTAMP
       WHERE id = 1
-    `).run(organizationName, timezone || 'Europe/Berlin');
+    `).run(
+      organizationName,
+      typeof organizationShortName === 'string' && organizationShortName.trim().length > 0 ? organizationShortName.trim() : null,
+      timezone || 'Europe/Berlin'
+    );
 
     // Generate token
     const token = jwt.sign(
@@ -946,7 +950,7 @@ router.get('/settings', (req: AuthRequest, res) => {
 // Complete setup wizard
 router.post('/settings/setup', (req: AuthRequest, res) => {
   try {
-    const { organizationName, timezone } = req.body;
+    const { organizationName, organizationShortName, timezone } = req.body;
 
     if (!organizationName) {
       return res.status(400).json({ error: 'Organization name is required' });
@@ -954,9 +958,13 @@ router.post('/settings/setup', (req: AuthRequest, res) => {
 
     db.prepare(`
       UPDATE organizations 
-      SET name = ?, timezone = ?, setup_completed = 1, updated_at = CURRENT_TIMESTAMP
+      SET name = ?, short_name = ?, timezone = ?, setup_completed = 1, updated_at = CURRENT_TIMESTAMP
       WHERE id = 1
-    `).run(organizationName, timezone || 'Europe/Berlin');
+    `).run(
+      organizationName,
+      typeof organizationShortName === 'string' && organizationShortName.trim().length > 0 ? organizationShortName.trim() : null,
+      timezone || 'Europe/Berlin'
+    );
 
     const org = db.prepare('SELECT * FROM organizations WHERE id = 1').get();
     res.json(org);
@@ -981,7 +989,7 @@ router.delete('/organization', (req: AuthRequest, res) => {
 
     db.prepare(`
       UPDATE organizations
-      SET name = ?, logo = NULL, timezone = 'Europe/Berlin', setup_completed = 0, updated_at = CURRENT_TIMESTAMP
+      SET name = ?, short_name = NULL, logo = NULL, timezone = 'Europe/Berlin', setup_completed = 0, updated_at = CURRENT_TIMESTAMP
       WHERE id = 1
     `).run('Neuer Verein');
 

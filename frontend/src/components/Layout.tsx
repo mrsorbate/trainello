@@ -80,6 +80,8 @@ export default function Layout({ organization }: LayoutProps) {
   };
 
   const organizationName = organization?.name || 'Dein Verein';
+  const organizationShortName = String(organization?.short_name || '').trim();
+  const organizationNameMobile = organizationShortName || organizationName;
   const organizationLogo = organization?.logo;
   const firstName = user?.name?.trim().split(/\s+/)[0] || user?.name || '';
 
@@ -103,12 +105,6 @@ export default function Layout({ organization }: LayoutProps) {
 
   const teamsMenuLabel = teams?.length === 1 ? 'Mein Team' : 'Meine Teams';
   const menuProfilePicture = profile?.profile_picture || user?.profile_picture;
-  const roleLabel = user?.role === 'admin' ? 'Admin' : user?.role === 'trainer' ? 'Trainer' : 'Spieler';
-  const roleBadgeClass = user?.role === 'admin'
-    ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200'
-    : user?.role === 'trainer'
-      ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-      : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -131,7 +127,10 @@ export default function Layout({ organization }: LayoutProps) {
                         />
                       )}
                       {organizationName !== 'Dein Verein' && (
-                        <span className="hidden min-[390px]:block text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 leading-tight max-w-[95px] truncate whitespace-nowrap sm:max-w-[220px]">{organizationName}</span>
+                        <>
+                          <span className="hidden min-[390px]:block sm:hidden text-xs font-medium text-gray-600 dark:text-gray-400 leading-tight max-w-[95px] truncate whitespace-nowrap">{organizationNameMobile}</span>
+                          <span className="hidden sm:block text-sm font-medium text-gray-600 dark:text-gray-400 leading-tight max-w-[220px] truncate whitespace-nowrap">{organizationName}</span>
+                        </>
                       )}
                     </>
                   )}
@@ -189,9 +188,6 @@ export default function Layout({ organization }: LayoutProps) {
                   <Link to="/settings" className="font-medium truncate max-w-[64px] min-[390px]:max-w-[90px] hover:underline">
                     {firstName}
                   </Link>
-                  <span className={`hidden min-[390px]:inline text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap ${roleBadgeClass}`}>
-                    {roleLabel}
-                  </span>
                 </div>
               </div>
               <div className="hidden md:flex items-center space-x-3 px-2">
@@ -214,9 +210,6 @@ export default function Layout({ organization }: LayoutProps) {
                   <Link to="/settings" className="font-medium hover:underline">
                     {firstName}
                   </Link>
-                  <span className={`ml-2 text-xs px-2 py-1 rounded-full ${roleBadgeClass}`}>
-                    {roleLabel}
-                  </span>
                 </span>
               </div>
               <button
