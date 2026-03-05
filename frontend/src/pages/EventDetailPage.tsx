@@ -314,6 +314,15 @@ export default function EventDetailPage() {
     || (event?.arrival_minutes !== null && event?.arrival_minutes !== undefined);
   const backTarget = event?.team_id ? `/teams/${event.team_id}/events` : '/events';
 
+  const handleBackNavigation = (fallbackTarget: string) => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate(fallbackTarget, { replace: true });
+  };
+
   const renderResponseModule = (
     title: string,
     count: number,
@@ -378,7 +387,7 @@ export default function EventDetailPage() {
       <div className="space-y-4 sm:space-y-6">
         <div className="flex items-start sm:items-center space-x-3 sm:space-x-4">
           <button
-            onClick={() => navigate('/events')}
+            onClick={() => handleBackNavigation('/events')}
             className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
             aria-label="Zurück"
             title="Zurück"
@@ -400,14 +409,15 @@ export default function EventDetailPage() {
   return (
     <div className="space-y-5 sm:space-y-6">
       <div className="flex items-start sm:items-center space-x-3 sm:space-x-4">
-        <Link
-          to={backTarget}
+        <button
+          type="button"
+          onClick={() => handleBackNavigation(backTarget)}
           className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
           aria-label="Zurück"
           title="Zurück"
         >
           <ArrowLeft className="w-6 h-6" />
-        </Link>
+        </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-2 sm:space-x-3">
             {event?.type === 'match' && opponentCrestUrl ? (
