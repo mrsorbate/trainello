@@ -232,29 +232,7 @@ export default function EventSquadPage() {
     (player) => editableSquadUserIds.includes(player.id) && !boardPlayerIds.has(player.id)
   );
 
-  const getResponseStatusLabel = (status: SquadPlayer['response_status']) => {
-    if (status === 'accepted') return 'Zugesagt';
-    if (status === 'declined') return 'Abgesagt';
-    if (status === 'tentative') return 'Vielleicht';
-    return 'Keine Antwort';
-  };
-
-  const responseStatusModules: Array<{
-    status: NonNullable<SquadPlayer['response_status']>;
-    title: string;
-    icon: string;
-    titleClass: string;
-  }> = [
-    { status: 'accepted', title: 'Zugesagt', icon: '✓', titleClass: 'text-green-700 dark:text-green-300' },
-    { status: 'declined', title: 'Abgesagt', icon: '✗', titleClass: 'text-red-700 dark:text-red-300' },
-    { status: 'tentative', title: 'Vielleicht', icon: '?', titleClass: 'text-yellow-700 dark:text-yellow-300' },
-    { status: 'pending', title: 'Keine Antwort', icon: '⏳', titleClass: 'text-gray-700 dark:text-gray-300' },
-  ];
-
-  const playersByResponseStatus = responseStatusModules.reduce((accumulator, module) => {
-    accumulator[module.status] = squadCandidatePlayers.filter((player) => (player.response_status || 'pending') === module.status);
-    return accumulator;
-  }, {} as Record<NonNullable<SquadPlayer['response_status']>, SquadPlayer[]>);
+  const acceptedPlayers = squadCandidatePlayers.filter((player) => player.response_status === 'accepted');
 
   const getPlayerNameById = (userId: number | null | undefined) => {
     if (!userId) return '';
@@ -599,48 +577,49 @@ export default function EventSquadPage() {
           {isTrainer && (
             <div className="xl:col-span-4 space-y-4 sm:space-y-6">
               <div className="card">
-                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-3">Kader festlegen (nur Spieler)</p>
-                {squadCandidatePlayers.length > 0 ? (
+                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-3">Kader festlegen (nur Zusagen)</p>
+                {acceptedPlayers.length > 0 ? (
                   <div className="space-y-3 lg:max-h-[62vh] lg:overflow-y-auto lg:pr-1">
-                    {responseStatusModules.map((module) => {
-                      const groupPlayers = playersByResponseStatus[module.status] || [];
-                      if (groupPlayers.length === 0) return null;
+                    <div className="rounded-lg border border-green-200 dark:border-green-700 bg-green-50/40 dark:bg-green-900/20 p-2 sm:p-3">
+                      <h3 className="font-semibold text-sm mb-2 flex items-center justify-between text-green-700 dark:text-green-300">
+                        <span className="flex items-center">
+                          <span className="mr-2">✓</span>
+                          Zugesagt
+                        </span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-white/80 text-green-700 dark:bg-gray-800 dark:text-green-300">
+                          {acceptedPlayers.length}
+                        </span>
+                      </h3>
 
-                      return (
-                        <div key={module.status} className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 sm:p-3">
-                          <h3 className={`font-semibold text-sm mb-2 flex items-center justify-between ${module.titleClass}`}>
-                            <span className="flex items-center">
-                              <span className="mr-2">{module.icon}</span>
-                              {module.title}
-                            </span>
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
-                              {groupPlayers.length}
-                            </span>
-                          </h3>
-
-                          <div className="grid grid-cols-1 gap-2">
-                            {groupPlayers.map((player) => {
-                              const checked = editableSquadUserIds.includes(player.id);
-                              return (
-                                <label key={player.id} className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-2">
-                                  <input type="checkbox" checked={checked} onChange={(event) => toggleSquadPlayer(player.id, event.target.checked)} className="h-4 w-4" />
-                                  <span className="inline-flex items-center gap-2 min-w-0 flex-1">
-                                    {renderAvatar(player.name, player.profile_picture, 'w-7 h-7')}
-                                    <span className="text-sm text-gray-800 dark:text-gray-200 truncate">{player.name}</span>
-                                  </span>
-                                  <span className="text-[10px] uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                    {getResponseStatusLabel(module.status)}
-                                  </span>
-                                </label>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
+                      <div className="grid grid-cols-1 gap-2">
+                        {acceptedPlayers.map((player) => {
+                          const isEnabled = editableSquadUserIds.includes(player.id);
+                          return (
+                            <div key={player.id} className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-2">
+                              <span className="inline-flex items-center gap-2 min-w-0 flex-1">
+                                {renderAvatar(player.name, player.profile_picture, 'w-7 h-7')}
+                                <span className="text-sm text-gray-800 dark:text-gray-200 truncate">{player.name}</span>
+                              </span>
+                              <button
+                                type="button"
+                                role="switch"
+                                aria-checked={isEnabled}
+                                aria-label={`${player.name} im Kader umschalten`}
+                                onClick={() => toggleSquadPlayer(player.id, !isEnabled)}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isEnabled ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'}`}
+                              >
+                                <span
+                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isEnabled ? 'translate-x-6' : 'translate-x-1'}`}
+                                />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Keine Spieler im Team gefunden.</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Aktuell gibt es keine zugesagten Spieler.</p>
                 )}
               </div>
 
