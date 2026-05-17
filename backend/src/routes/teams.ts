@@ -6,9 +6,9 @@ import { randomBytes } from 'crypto';
 import db from '../database/init';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { CreateTeamDTO } from '../types';
+import { FussballDeClient, buildTeamPageUrl } from '../services/fussballDe/client';
 
 const router = Router();
-const HARDCODED_FUSSBALL_API_TOKEN = 'w1G797J1N7u8a0e1R0C8A1Z2e5TYQm1Sezgk0lBUik';
 const hasTeamsCalendarTokenColumn = (() => {
   try {
     const columns = db.prepare("PRAGMA table_info('teams')").all() as Array<{ name: string }>;
@@ -794,292 +794,78 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
   }
 });
 
-// Update fussball.de team id (trainers only)
+// fussball.de game import using the local scraping client
 export const runTeamGameImport = async (teamId: number, createdByUserId: number) => {
-  void createdByUserId;
-  const teamExists = db.prepare('SELECT id FROM teams WHERE id = ?').get(teamId) as any;
-  if (!teamExists) {
-    throw new Error('TEAM_NOT_FOUND');
-  }
-
-  return {
-    success: true,
-    imported: 0,
-    updated: 0,
-    skipped: 0,
-    created: [],
-    updatedItems: [],
-    skippedDetails: [],
-    mode: 'internal',
-    message: 'Externer Import ist deaktiviert. Spiele werden intern verwaltet.',
-  };
-
-  const importDebugEnabled = process.env.FUSSBALL_IMPORT_DEBUG === '1';
-  const importDebugLog = (message: string, payload?: unknown) => {
-    if (!importDebugEnabled) return;
-    if (payload === undefined) {
-      console.log(`[fussball-import-debug] ${message}`);
-      return;
-    }
-    console.log(`[fussball-import-debug] ${message}`, payload);
-  };
-
   const team = db.prepare(
-      `SELECT id, name, fussballde_id, fussballde_team_name, default_response, default_rsvp_deadline_hours, default_rsvp_deadline_hours_match,
-        default_arrival_minutes, default_arrival_minutes_match, home_venues, default_home_venue_name
+    `SELECT id, name, fussballde_id, fussballde_team_name,
+            default_response, default_rsvp_deadline_hours_match, default_rsvp_deadline_hours,
+            default_arrival_minutes_match, default_arrival_minutes,
+            home_venues, default_home_venue_name
      FROM teams WHERE id = ?`
   ).get(teamId) as any;
 
-  if (!team || !team.fussballde_id) {
-    throw new Error('TEAM_NOT_FOUND');
-  }
+  if (!team) throw new Error('TEAM_NOT_FOUND');
 
   if (!team.fussballde_id) {
-    throw new Error('TEAM_NO_FUSSBALL_ID');
+    return {
+      success: true, imported: 0, updated: 0, skipped: 0,
+      created: [], updatedItems: [], skippedDetails: [],
+      mode: 'internal',
+      message: 'Für dieses Team ist keine fussball.de ID hinterlegt. Spiele werden intern verwaltet.',
+    };
   }
 
-  const envToken = HARDCODED_FUSSBALL_API_TOKEN;
-  const apiBaseUrl = process.env.FUSSBALL_API_BASE_URL || 'https://api-fussball.de/api';
+  const client = new FussballDeClient({ timeoutMs: 15000 });
+  const teamPageUrl = buildTeamPageUrl(team.fussballde_id);
+  const matches = await client.getSpielplan({ teamPageUrl });
 
-  if (!envToken) {
-    throw new Error('MISSING_API_TOKEN');
-  }
-
-  const response = await fetch(`${apiBaseUrl}/team/${encodeURIComponent(team.fussballde_id)}`, {
-    method: 'GET',
-    headers: {
-      'x-auth-token': envToken,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`EXTERNAL_API_${response.status}`);
-  }
-
-  const payload = await response.json() as any;
-
-  const pickFirstString = (...values: unknown[]): string => {
-    for (const value of values) {
-      if (typeof value === 'string' && value.trim()) {
-        return value.trim();
-      }
+  const parseFussballDeDate = (dateStr: string | undefined): Date | null => {
+    if (!dateStr) return null;
+    const cleaned = dateStr.replace(/\s+/g, ' ').trim();
+    const germanMatch = cleaned.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[^0-9]*(\d{1,2}):(\d{2}))?/);
+    if (germanMatch) {
+      const d = parseInt(germanMatch[1], 10);
+      const m = parseInt(germanMatch[2], 10) - 1;
+      const y = parseInt(germanMatch[3], 10);
+      const h = germanMatch[4] !== undefined ? parseInt(germanMatch[4], 10) : 19;
+      const min = germanMatch[5] !== undefined ? parseInt(germanMatch[5], 10) : 0;
+      const date = new Date(y, m, d, h, min, 0);
+      return isNaN(date.getTime()) ? null : date;
     }
-    return '';
+    const iso = new Date(cleaned);
+    return isNaN(iso.getTime()) ? null : iso;
   };
 
   const parseRsvpHours = (value: unknown): number | null => {
-    if (value === null || value === undefined || String(value).trim() === '') {
-      return null;
-    }
+    if (value === null || value === undefined || String(value).trim() === '') return null;
     const parsed = parseInt(String(value), 10);
-    if (!Number.isFinite(parsed) || parsed < 0 || parsed > 168) {
-      return null;
-    }
-    return parsed;
+    return Number.isFinite(parsed) && parsed >= 0 && parsed <= 168 ? parsed : null;
   };
 
   const parseArrivalMinutes = (value: unknown): number | null => {
-    if (value === null || value === undefined || String(value).trim() === '') {
-      return null;
-    }
+    if (value === null || value === undefined || String(value).trim() === '') return null;
     const parsed = parseInt(String(value), 10);
-    if (!Number.isFinite(parsed) || parsed < 0 || parsed > 240) {
-      return null;
-    }
-    return parsed;
+    return Number.isFinite(parsed) && parsed >= 0 && parsed <= 240 ? parsed : null;
   };
 
-  const normalizeTeamName = (value: unknown): string => {
-    return String(value || '')
-      .toLowerCase()
-      .replace(/ä/g, 'ae')
-      .replace(/ö/g, 'oe')
-      .replace(/ü/g, 'ue')
-      .replace(/ß/g, 'ss')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]/g, '');
-  };
+  const normalizeTeamName = (v: unknown) =>
+    String(v || '').toLowerCase()
+      .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
 
-  const ownTeamCandidates = [team.fussballde_team_name, team.name]
-    .map((name) => normalizeTeamName(name))
-    .filter(Boolean);
-
-  const namesMatch = (leftRaw: unknown, rightRaw: unknown): boolean => {
-    const left = normalizeTeamName(leftRaw);
-    const right = normalizeTeamName(rightRaw);
-    if (!left || !right) return false;
-    if (left === right) return true;
-    if (left.length >= 6 && right.includes(left)) return true;
-    if (right.length >= 6 && left.includes(right)) return true;
-    return false;
-  };
+  const ownTeamName = String(team.fussballde_team_name || team.name || '').trim();
+  const ownTeamNorm = normalizeTeamName(ownTeamName);
 
   const defaultRsvpHours = parseRsvpHours(team.default_rsvp_deadline_hours_match) ?? parseRsvpHours(team.default_rsvp_deadline_hours);
   const defaultArrivalMinutes = parseArrivalMinutes(team.default_arrival_minutes_match) ?? parseArrivalMinutes(team.default_arrival_minutes);
-  const defaultHomeVenue = resolveDefaultHomeVenue(
-    parseHomeVenuesFromDb(team.home_venues),
-    team.default_home_venue_name
-  );
-
-  const parseGameDate = (game: any): Date | null => {
-    const parseDateWithOptionalTime = (dateValue: string, timeValue?: string): Date | null => {
-      const dateText = String(dateValue || '').trim();
-      const timeText = String(timeValue || '').trim();
-
-      const normalizedTime = (() => {
-        if (!timeText) return '19:00';
-        const clean = timeText.replace(/[^0-9:]/g, '');
-        const [hour, minute] = clean.split(':');
-        const hh = String(Math.min(23, Math.max(0, parseInt(hour || '0', 10) || 0))).padStart(2, '0');
-        const mm = String(Math.min(59, Math.max(0, parseInt(minute || '0', 10) || 0))).padStart(2, '0');
-        return `${hh}:${mm}`;
-      })();
-
-      const germanMatch = dateText.match(/^(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{2,4})$/);
-      if (germanMatch) {
-        const day = germanMatch[1].padStart(2, '0');
-        const month = germanMatch[2].padStart(2, '0');
-        const yearRaw = germanMatch[3];
-        const year = yearRaw.length === 2 ? `20${yearRaw}` : yearRaw;
-        const parsed = new Date(`${year}-${month}-${day}T${normalizedTime}`);
-        return isNaN(parsed.getTime()) ? null : parsed;
-      }
-
-      const isoLike = dateText.includes('T')
-        ? dateText
-        : `${dateText}T${normalizedTime}`;
-      const parsed = new Date(isoLike);
-      return isNaN(parsed.getTime()) ? null : parsed;
-    };
-
-    const timestampValue = game?.timestamp ?? game?.kickoff_timestamp ?? game?.match_timestamp;
-    if (timestampValue !== undefined && timestampValue !== null && String(timestampValue).trim() !== '') {
-      const numeric = Number(timestampValue);
-      if (Number.isFinite(numeric)) {
-        const date = new Date(numeric > 1e12 ? numeric : numeric * 1000);
-        if (!isNaN(date.getTime())) {
-          return date;
-        }
-      }
-    }
-
-    const dateTimeRaw = pickFirstString(
-      game?.datetime,
-      game?.date_time,
-      game?.kickoff_datetime,
-      game?.matchDateTime,
-      game?.start_time,
-      game?.spielbeginn,
-    );
-    if (dateTimeRaw) {
-      const parsed = parseDateWithOptionalTime(dateTimeRaw);
-      if (parsed) {
-        return parsed;
-      }
-    }
-
-    const dateRaw = pickFirstString(
-      game?.date,
-      game?.match_date,
-      game?.game_date,
-      game?.matchDate,
-      game?.datum,
-    );
-    const timeRaw = pickFirstString(
-      game?.time,
-      game?.match_time,
-      game?.kickoff,
-      game?.kickoff_time,
-      game?.uhrzeit,
-    );
-
-    if (dateRaw && timeRaw) {
-      const parsed = parseDateWithOptionalTime(dateRaw, timeRaw);
-      if (parsed) {
-        return parsed;
-      }
-    }
-
-    if (dateRaw) {
-      const parsed = parseDateWithOptionalTime(dateRaw);
-      if (parsed) {
-        return parsed;
-      }
-    }
-
-    return null;
-  };
-
-  const getSeasonBounds = (referenceDate: Date): { start: Date; end: Date } => {
-    const year = referenceDate.getFullYear();
-    const month = referenceDate.getMonth();
-    const seasonStartYear = month >= 6 ? year : year - 1;
-    const start = new Date(seasonStartYear, 6, 1, 0, 0, 0, 0);
-    const end = new Date(seasonStartYear + 1, 5, 30, 23, 59, 59, 999);
-    return { start, end };
-  };
-
-  const payloadData = payload?.data;
-  const rawCollections: any[][] = [
-    Array.isArray(payloadData) ? payloadData : [],
-    Array.isArray(payloadData?.nextGames) ? payloadData.nextGames : [],
-    Array.isArray(payloadData?.prevGames) ? payloadData.prevGames : [],
-    Array.isArray(payloadData?.games) ? payloadData.games : [],
-    Array.isArray(payloadData?.allGames) ? payloadData.allGames : [],
-    Array.isArray(payloadData?.matches) ? payloadData.matches : [],
-    Array.isArray(payloadData?.fixtures) ? payloadData.fixtures : [],
-  ];
-
-  const allCandidateGames = rawCollections.flat();
-  const seenGames = new Set<string>();
-  const uniqueGames = allCandidateGames.filter((game) => {
-    const uniqueKey = [
-      pickFirstString(game?.id, game?.match_id, game?.game_id, game?.fixture_id, game?.event_id),
-      pickFirstString(game?.datetime, game?.date_time, game?.kickoff_datetime, game?.date, game?.match_date, game?.game_date),
-      pickFirstString(game?.homeTeam, game?.home_team, game?.home, game?.hometeam, game?.heim, game?.team_home),
-      pickFirstString(game?.awayTeam, game?.away_team, game?.away, game?.awayteam, game?.gast, game?.team_away),
-      pickFirstString(game?.title, game?.match_title),
-    ].join('|');
-
-    if (seenGames.has(uniqueKey)) {
-      return false;
-    }
-    seenGames.add(uniqueKey);
-    return true;
-  });
-
-  const seasonBounds = getSeasonBounds(new Date());
-  const seasonGames = uniqueGames.filter((game) => {
-    const gameDate = parseGameDate(game);
-    if (!gameDate) return false;
-    return gameDate >= seasonBounds.start && gameDate <= seasonBounds.end;
-  });
-
-  importDebugLog('Imported payload game collections', {
-    teamId,
-    teamFussballDeId: team.fussballde_id,
-    candidateGames: allCandidateGames.length,
-    uniqueGames: uniqueGames.length,
-    seasonGames: seasonGames.length,
-  });
-
-  if (seasonGames.length > 0) {
-    importDebugLog(
-      'Sample payload keys (first 3 games)',
-      seasonGames.slice(0, 3).map((game, index) => ({
-        index,
-        keys: Object.keys((game || {}) as Record<string, unknown>).slice(0, 120),
-      }))
-    );
-  }
+  const defaultHomeVenue = resolveDefaultHomeVenue(parseHomeVenuesFromDb(team.home_venues), team.default_home_venue_name);
 
   const members = db.prepare('SELECT user_id FROM team_members WHERE team_id = ?').all(teamId) as Array<{ user_id: number }>;
-  const memberIds = members.map((member) => member.user_id);
+  const memberIds = members.map((m) => m.user_id);
+
   const allowedStatuses = new Set(['pending', 'accepted', 'tentative', 'declined']);
   const defaultResponseStatus = allowedStatuses.has(String(team.default_response || 'pending'))
-    ? String(team.default_response || 'pending')
-    : 'pending';
+    ? String(team.default_response || 'pending') : 'pending';
 
   const insertEventStmt = db.prepare(
     `INSERT INTO events (
@@ -1089,376 +875,108 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
   const insertResponseStmt = db.prepare('INSERT INTO event_responses (event_id, user_id, status) VALUES (?, ?, ?)');
-  const existingEventByExternalIdStmt = db.prepare(
-    'SELECT id, location, location_venue, location_street, location_zip_city FROM events WHERE external_game_id = ? LIMIT 1'
-  );
-  const existingLegacyMatchStmt = db.prepare(
-    `SELECT id, location, location_venue, location_street, location_zip_city
-     FROM events
-     WHERE team_id = ?
-       AND type = 'match'
-       AND external_game_id IS NULL
-       AND start_time = ?
-     LIMIT 1`
-  );
-  const updateImportedEventStmt = db.prepare(
-    `UPDATE events
-     SET title = ?,
-       description = ?,
-       location = ?,
-       location_venue = ?,
-       location_street = ?,
-       location_zip_city = ?,
-       arrival_minutes = ?,
-       start_time = ?,
-       end_time = ?,
-       rsvp_deadline = ?,
-       duration_minutes = ?,
-       is_home_match = ?,
-       opponent_crest_url = ?,
-       external_game_id = COALESCE(external_game_id, ?),
-       updated_at = CURRENT_TIMESTAMP
-     WHERE id = ?`
-  );
 
-  const created: Array<{ id: number; title: string; start_time: string }> = [];
-  const updated: Array<{ id: number; title: string; start_time: string }> = [];
-  const skipped: Array<{ reason: string; game: string }> = [];
+  const created: string[] = [];
+  const updated: string[] = [];
+  const skipped: string[] = [];
 
-  for (const game of seasonGames) {
-    const gameDate = parseGameDate(game);
+  for (const match of matches) {
+    const gameDate = parseFussballDeDate(match.date);
     if (!gameDate) {
-      skipped.push({ reason: 'invalid_date', game: pickFirstString(game?.id, game?.match_id, game?.game_id, game?.title) || 'unknown' });
+      skipped.push(`${match.homeTeam} - ${match.awayTeam}: Kein Datum`);
       continue;
     }
-    const gameDateSafe = gameDate as Date;
 
-    let homeTeam = pickFirstString(game?.homeTeam, game?.home_team, game?.home, game?.hometeam, game?.heim, game?.team_home);
-    let awayTeam = pickFirstString(game?.awayTeam, game?.away_team, game?.away, game?.awayteam, game?.gast, game?.team_away);
+    const homeNorm = normalizeTeamName(match.homeTeam);
+    const awayNorm = normalizeTeamName(match.awayTeam);
+    const isHome = ownTeamNorm.length >= 4
+      ? homeNorm.includes(ownTeamNorm) || ownTeamNorm.includes(homeNorm)
+      : homeNorm === ownTeamNorm;
+    const isAway = ownTeamNorm.length >= 4
+      ? awayNorm.includes(ownTeamNorm) || ownTeamNorm.includes(awayNorm)
+      : awayNorm === ownTeamNorm;
 
-    const rawTitle = pickFirstString(game?.title, game?.match_title);
-
-    if (!homeTeam && !awayTeam && rawTitle && rawTitle.includes(' - ')) {
-      const parts = rawTitle.split(' - ');
-      homeTeam = parts[0]?.trim() || '';
-      awayTeam = parts[1]?.trim() || '';
+    if (!isHome && !isAway && ownTeamNorm) {
+      skipped.push(`${match.homeTeam} - ${match.awayTeam}: Team nicht identifiziert`);
+      continue;
     }
 
-    let homeMatched = false;
-    let awayMatched = false;
-    for (const ownName of ownTeamCandidates) {
-      if (!homeMatched && namesMatch(ownName, homeTeam)) {
-        homeMatched = true;
+    const title = `${match.homeTeam} - ${match.awayTeam}`;
+    const startTime = gameDate.toISOString();
+
+    // Check if event already exists by date proximity + team names
+    const existing = db.prepare(
+      `SELECT id, home_goals, away_goals FROM events
+       WHERE team_id = ? AND type = 'match'
+         AND abs(strftime('%s', start_time) - strftime('%s', ?)) < 86400
+         AND (title LIKE ? OR title LIKE ?)`
+    ).get(teamId, startTime, `%${match.homeTeam}%`, `%${match.awayTeam}%`) as any;
+
+    if (existing) {
+      if (match.result && (existing.home_goals === null || existing.away_goals === null)) {
+        db.prepare('UPDATE events SET home_goals = ?, away_goals = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+          .run(match.result.home ?? null, match.result.away ?? null, existing.id);
+        updated.push(title);
+      } else {
+        skipped.push(title);
       }
-      if (!awayMatched && namesMatch(ownName, awayTeam)) {
-        awayMatched = true;
-      }
+      continue;
     }
 
-    const isHomeMatch = homeMatched && !awayMatched ? 1 : 0;
-
-    const isOwnTeamName = (value: unknown): boolean => {
-      return ownTeamCandidates.some((ownName) => namesMatch(ownName, value));
-    };
-
-    const opponentName = (() => {
-      if (homeMatched && !awayMatched) {
-        return awayTeam;
-      }
-      if (awayMatched && !homeMatched) {
-        return homeTeam;
-      }
-
-      const candidates = [homeTeam, awayTeam]
-        .map((value) => String(value || '').trim())
-        .filter(Boolean);
-      const nonOwn = candidates.find((value) => !isOwnTeamName(value));
-      return nonOwn || '';
-    })();
-
-    const title = opponentName
-      ? `Spiel gegen ${opponentName}`
-      : pickFirstString(rawTitle, 'Spiel');
-
-    const homeCrest = pickFirstString(
-      game?.homeImg,
-      game?.home_img,
-      game?.homeLogo,
-      game?.home_logo,
-      game?.homeBadge,
-      game?.home_badge,
-      game?.heimWappen,
-      game?.heim_wappen,
-    );
-    const awayCrest = pickFirstString(
-      game?.awayImg,
-      game?.away_img,
-      game?.awayLogo,
-      game?.away_logo,
-      game?.awayBadge,
-      game?.away_badge,
-      game?.gastWappen,
-      game?.gast_wappen,
-    );
-
-    const opponentCrestUrl = (() => {
-      if (homeMatched && !awayMatched) {
-        return awayCrest || null;
-      }
-      if (awayMatched && !homeMatched) {
-        return homeCrest || null;
-      }
-
-      if (opponentName) {
-        if (namesMatch(opponentName, homeTeam)) {
-          return homeCrest || null;
-        }
-        if (namesMatch(opponentName, awayTeam)) {
-          return awayCrest || null;
-        }
-      }
-
-      return awayCrest || homeCrest || null;
-    })();
-
-    const gameIdRaw = pickFirstString(
-      game?.id,
-      game?.match_id,
-      game?.game_id,
-      game?.fixture_id,
-      game?.event_id,
-    );
-
-    const syntheticId = `${team.fussballde_id}:${gameDateSafe.toISOString()}:${homeTeam}:${awayTeam}`;
-    const externalGameId = gameIdRaw || syntheticId;
-
-    const endDate = new Date(gameDateSafe.getTime() + 120 * 60 * 1000);
-    const rsvpHours = defaultRsvpHours;
-    let rsvpDeadline: string | null = null;
-    if (rsvpHours != null) {
-      rsvpDeadline = new Date(gameDateSafe.getTime() - rsvpHours! * 60 * 60 * 1000).toISOString();
+    // Skip past games without a known result (nothing useful to import)
+    const now = new Date();
+    if (gameDate < now && !match.result) {
+      skipped.push(`${title}: Vergangenes Spiel ohne Ergebnis`);
+      continue;
     }
 
-    const locationObjects = [
-      game?.location,
-      game?.venue,
-      game?.address,
-      game?.adresse,
-      game?.place,
-      game?.sportfield,
-      game?.match_location,
-      game?.matchLocation,
-      game?.locationDetails,
-      game?.location_details,
-      game?.sportstaette,
-      game?.spielstaette,
-      game?.spielstätte,
-    ]
-      .filter((value): value is Record<string, unknown> => Boolean(value) && typeof value === 'object');
-
-    const pickFromLocationObjects = (...keys: string[]): string | null => {
-      const values: unknown[] = [];
-      for (const obj of locationObjects) {
-        for (const key of keys) {
-          values.push(obj[key]);
-        }
-      }
-      return pickFirstString(...values);
-    };
-
-    const venue = pickFirstString(
-      game?.location_venue,
-      game?.venue_name,
-      game?.venueName,
-      game?.location_name,
-      game?.locationName,
-      game?.location,
-      game?.venue,
-      game?.stadium,
-      game?.place,
-      game?.sportfield,
-      game?.sportstaette,
-      game?.spielstaette,
-      game?.spielstätte,
-      game?.facility,
-      game?.field,
-      game?.ground,
-      pickFromLocationObjects('name', 'title', 'venue', 'venue_name', 'stadium', 'place', 'sportfield', 'sportstaette', 'spielstaette', 'spielstätte', 'facility', 'field', 'ground'),
-    );
-
-    const streetBase = pickFirstString(
-      game?.street,
-      game?.strasse,
-      game?.address,
-      game?.adresse,
-      game?.location_street,
-      game?.street_name,
-      game?.streetName,
-      pickFromLocationObjects('street', 'strasse', 'address', 'adresse', 'address1', 'line1', 'street_name', 'streetName'),
-    );
-    const houseNumber = pickFirstString(
-      game?.house_number,
-      game?.houseNumber,
-      game?.hausnummer,
-      pickFromLocationObjects('house_number', 'houseNumber', 'number', 'nr', 'hausnummer'),
-    );
-    const street = streetBase
-      ? (houseNumber && !streetBase.includes(houseNumber) ? `${streetBase} ${houseNumber}` : streetBase)
+    const competition = match.competition || '';
+    const description = competition ? `Wettbewerb: ${competition}` : '';
+    const endTime = new Date(gameDate.getTime() + 105 * 60 * 1000).toISOString();
+    const rsvpDeadline = defaultRsvpHours !== null
+      ? new Date(gameDate.getTime() - defaultRsvpHours * 3600000).toISOString()
       : null;
 
-    const zip = pickFirstString(
-      game?.zip,
-      game?.postal_code,
-      game?.postalCode,
-      game?.plz,
-      game?.postcode,
-      pickFromLocationObjects('zip', 'postal_code', 'postalCode', 'plz', 'postcode'),
-    );
-    const city = pickFirstString(
-      game?.city,
-      game?.ort,
-      game?.town,
-      game?.municipality,
-      pickFromLocationObjects('city', 'ort', 'town', 'municipality'),
-    );
-    const zipCity = pickFirstString(
-      game?.zip_city,
-      game?.zipCity,
-      game?.location_zip_city,
-      game?.postleitzahl_stadt,
-      game?.plz_ort,
-      pickFromLocationObjects('zip_city', 'zipCity', 'postleitzahl_stadt', 'plz_ort', 'plzOrt'),
-    ) || (zip || city ? `${zip ? `${zip} ` : ''}${city || ''}`.trim() : null);
+    const locationVenue = match.venue || (defaultHomeVenue ? defaultHomeVenue.name : null) || null;
+    const locationStreet = defaultHomeVenue ? defaultHomeVenue.street || null : null;
+    const locationZipCity = defaultHomeVenue ? defaultHomeVenue.zip_city || null : null;
+    const pitchType = defaultHomeVenue ? defaultHomeVenue.pitch_type || null : null;
+    const location = [locationVenue, locationStreet, locationZipCity].filter(Boolean).join(', ') || null;
 
-    const resolvedVenue = venue || (isHomeMatch ? defaultHomeVenue?.name ?? null : null);
-    const resolvedStreet = street || (isHomeMatch ? defaultHomeVenue?.street ?? null : null);
-    const resolvedZipCity = zipCity || (isHomeMatch ? defaultHomeVenue?.zip_city ?? null : null);
-    const description = pickFirstString(game?.competition, game?.competition_short, game?.league, game?.staffel) || null;
-
-    importDebugLog('Resolved game address fields', {
-      externalGameId,
-      title,
-      extracted: {
-        venue: venue || null,
-        street: street || null,
-        zipCity: zipCity || null,
-      },
-      raw: {
-        location: game?.location ?? null,
-        venue: game?.venue ?? null,
-        address: game?.address ?? null,
-        adresse: game?.adresse ?? null,
-        street: game?.street ?? null,
-        city: game?.city ?? null,
-        zip: game?.zip ?? null,
-        plz: game?.plz ?? null,
-        location_street: game?.location_street ?? null,
-        location_zip_city: game?.location_zip_city ?? null,
-      },
-    });
-
-    const exists = existingEventByExternalIdStmt.get(externalGameId) as {
-      id: number;
-      location: string | null;
-      location_venue: string | null;
-      location_street: string | null;
-      location_zip_city: string | null;
-    } | undefined;
-    const legacyMatch = !exists
-      ? (existingLegacyMatchStmt.get(teamId, gameDateSafe.toISOString()) as {
-          id: number;
-          location: string | null;
-          location_venue: string | null;
-          location_street: string | null;
-          location_zip_city: string | null;
-        } | undefined)
-      : undefined;
-    const eventToUpdate = exists || legacyMatch;
-    if (eventToUpdate) {
-      const eventToUpdateSafe = eventToUpdate as {
-        id: number;
-        location: string | null;
-        location_venue: string | null;
-        location_street: string | null;
-        location_zip_city: string | null;
-      };
-      const fallbackFromDefaultHomeVenue = Boolean(isHomeMatch && !venue && defaultHomeVenue?.name);
-      const locationForUpdate =
-        fallbackFromDefaultHomeVenue && eventToUpdateSafe.location
-          ? eventToUpdateSafe.location
-          : resolvedVenue;
-      const locationVenueForUpdate =
-        fallbackFromDefaultHomeVenue && eventToUpdateSafe.location_venue
-          ? eventToUpdateSafe.location_venue
-          : resolvedVenue;
-      const locationStreetForUpdate =
-        fallbackFromDefaultHomeVenue && eventToUpdateSafe.location_street
-          ? eventToUpdateSafe.location_street
-          : resolvedStreet;
-      const locationZipCityForUpdate =
-        fallbackFromDefaultHomeVenue && eventToUpdateSafe.location_zip_city
-          ? eventToUpdateSafe.location_zip_city
-          : resolvedZipCity;
-
-      updateImportedEventStmt.run(
-        title,
-        description,
-        locationForUpdate,
-        locationVenueForUpdate,
-        locationStreetForUpdate,
-        locationZipCityForUpdate,
-        defaultArrivalMinutes,
-        gameDateSafe.toISOString(),
-        endDate.toISOString(),
-        rsvpDeadline,
-        120,
-        isHomeMatch,
-        opponentCrestUrl,
-        externalGameId,
-        eventToUpdateSafe.id,
-      );
-
-      updated.push({
-        id: Number(eventToUpdateSafe.id),
-        title,
-        start_time: gameDateSafe.toISOString(),
-      });
-      continue;
-    }
-
-    const result = insertEventStmt.run(
+    const insertResult = insertEventStmt.run(
       teamId,
       title,
       'match',
       description,
-      resolvedVenue,
-      resolvedVenue,
-      resolvedStreet,
-      resolvedZipCity,
-      null,
-      null,
+      location,
+      locationVenue,
+      locationStreet,
+      locationZipCity,
+      pitchType,
+      null, // meeting_point
       defaultArrivalMinutes,
-      gameDateSafe.toISOString(),
-      endDate.toISOString(),
+      startTime,
+      endTime,
       rsvpDeadline,
-      120,
-      1,
-      1,
+      105, // duration_minutes
+      1, // visibility_all
+      1, // invite_all
       createdByUserId,
-      externalGameId,
-      isHomeMatch,
-      opponentCrestUrl,
+      null, // external_game_id
+      isHome ? 1 : 0,
+      null, // opponent_crest_url
     );
 
-    for (const userId of memberIds) {
-      insertResponseStmt.run(result.lastInsertRowid, userId, defaultResponseStatus);
+    const eventId = insertResult.lastInsertRowid as number;
+    for (const memberId of memberIds) {
+      try {
+        insertResponseStmt.run(eventId, memberId, defaultResponseStatus);
+      } catch {
+        // ignore duplicate responses
+      }
     }
 
-    created.push({
-      id: Number(result.lastInsertRowid),
-      title,
-      start_time: gameDateSafe.toISOString(),
-    });
+    created.push(title);
   }
 
   return {
@@ -1469,9 +987,9 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
     created,
     updatedItems: updated,
     skippedDetails: skipped,
+    mode: 'fussball.de',
   };
 };
-
 router.post('/:id/import-next-games', async (req: AuthRequest, res) => {
   try {
     const teamId = parseInt(req.params.id, 10);
@@ -1556,6 +1074,42 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'Team not found' });
     }
 
+    // Try to fetch live standings from fussball.de if a team ID is configured
+    if (team.fussballde_id) {
+      try {
+        const client = new FussballDeClient({ timeoutMs: 15000 });
+        const teamPageUrl = buildTeamPageUrl(team.fussballde_id);
+        const standings = await client.getTabelle({ teamPageUrl });
+
+        if (standings.length > 0) {
+          const table = standings.map((row, index) => ({
+            place: row.rank ?? (index + 1),
+            team: row.team,
+            games: row.played ?? 0,
+            won: null,
+            draw: null,
+            lost: null,
+            goal: row.goalDiff !== undefined
+              ? (row.goalDiff >= 0 ? `+${row.goalDiff}` : String(row.goalDiff))
+              : '-',
+            points: row.points ?? 0,
+            img: null,
+          }));
+
+          // Use league name from recently imported matches if available
+          const recentMatches = db.prepare(
+            `SELECT description FROM events WHERE team_id = ? AND type = 'match' LIMIT 10`
+          ).all(teamId) as any[];
+          const leagueName = parseInternalLeagueName(recentMatches) || 'fussball.de Tabelle';
+
+          return res.json({ table, leagueName, source: 'fussball.de' });
+        }
+      } catch (externalError) {
+        console.warn('fussball.de table fetch failed, falling back to internal:', externalError);
+      }
+    }
+
+    // Fallback: calculate standings from internally tracked matches
     const internalMatches = db.prepare(
       `SELECT title, description, end_time, is_home_match, home_goals, away_goals
        FROM events
@@ -1568,160 +1122,7 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
     const table = buildInternalTableRows(team, internalMatches);
     const internalLeagueName = parseInternalLeagueName(internalMatches) || 'Interne Tabelle';
 
-    return res.json({
-      table,
-      leagueName: internalLeagueName,
-      source: 'internal',
-    });
-
-    if (!team.fussballde_id) {
-      return res.status(400).json({ error: 'Für dieses Team ist keine fussball.de ID hinterlegt' });
-    }
-
-    const envToken = HARDCODED_FUSSBALL_API_TOKEN;
-    const apiBaseUrl = process.env.FUSSBALL_API_BASE_URL || 'https://api-fussball.de/api';
-
-    if (!envToken) {
-      return res.status(500).json({ error: 'FUSSBALL_API_TOKEN ist nicht konfiguriert' });
-    }
-
-    const response = await fetch(`${apiBaseUrl}/team/table/${encodeURIComponent(team.fussballde_id)}`, {
-      method: 'GET',
-      headers: {
-        'x-auth-token': envToken,
-      },
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        return res.status(502).json({
-          error: 'api-fussball.de Fehler (401): API-Token ungültig oder abgelaufen.',
-        });
-      }
-      return res.status(502).json({ error: `api-fussball.de Fehler (${response.status})` });
-    }
-
-    const payload = await response.json() as any;
-
-    if (!payload?.success || !Array.isArray(payload?.data)) {
-      return res.status(502).json({ error: 'Ungültige Antwort von api-fussball.de' });
-    }
-
-    const pickFirstString = (...values: unknown[]): string | null => {
-      for (const value of values) {
-        if (typeof value === 'string' && value.trim()) {
-          return value.trim();
-        }
-      }
-      return null;
-    };
-
-    const isFriendlyCompetition = (value: string | null): boolean => {
-      if (!value) {
-        return false;
-      }
-      return /(freundschaft|friendly|testspiel)/i.test(value);
-    };
-
-    let leagueName: string | null = pickFirstString(
-      payload?.leagueName,
-      payload?.league_name,
-      payload?.league,
-      payload?.leagueTitle,
-      payload?.league_title,
-      payload?.competition,
-      payload?.competitionName,
-      payload?.competition_name,
-      payload?.division,
-      payload?.group,
-      payload?.staffel,
-      payload?.klasse,
-      payload?.liga,
-      payload?.title,
-      payload?.name,
-      payload?.meta?.leagueName,
-      payload?.meta?.league_name,
-      payload?.meta?.competition,
-      payload?.meta?.competition_name,
-      payload?.meta?.staffel,
-      payload?.meta?.klasse,
-      payload?.meta?.liga,
-      payload?.data?.leagueName,
-      payload?.data?.league_name,
-      payload?.data?.league,
-      payload?.data?.leagueTitle,
-      payload?.data?.league_title,
-      payload?.data?.competition,
-      payload?.data?.competitionName,
-      payload?.data?.competition_name,
-      payload?.data?.division,
-      payload?.data?.group,
-      payload?.data?.staffel,
-      payload?.data?.klasse,
-      payload?.data?.liga,
-      Array.isArray(payload?.data) ? payload.data[0]?.leagueName : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.league_name : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.league : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.leagueTitle : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.league_title : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.competition : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.competitionName : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.competition_name : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.division : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.group : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.staffel : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.klasse : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.liga : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.title : null,
-      Array.isArray(payload?.data) ? payload.data[0]?.name : null,
-    );
-
-    try {
-      const teamInfoResponse = await fetch(`${apiBaseUrl}/team/${encodeURIComponent(team.fussballde_id)}`, {
-        method: 'GET',
-        headers: {
-          'x-auth-token': envToken,
-        },
-      });
-
-      if (teamInfoResponse.ok) {
-        const teamInfoPayload = await teamInfoResponse.json() as any;
-        const nextGames = Array.isArray(teamInfoPayload?.data?.nextGames) ? teamInfoPayload.data.nextGames : [];
-        const prevGames = Array.isArray(teamInfoPayload?.data?.prevGames) ? teamInfoPayload.data.prevGames : [];
-        const extractCompetition = (games: any[]) => {
-          const game = games.find((entry) => entry && typeof entry === 'object');
-          if (!game) {
-            return null;
-          }
-          return pickFirstString(
-            game.competition_short,
-            game.competitionShort,
-            game.competition_short_name,
-            game.competitionShortName,
-            game.competition_abbreviation,
-            game.competitionAbbreviation,
-            game.league_short,
-            game.leagueShort,
-            game.league_code,
-            game.leagueCode,
-            game.competition,
-            game.league,
-          );
-        };
-
-        const shortCompetition = extractCompetition(nextGames) || extractCompetition(prevGames) || null;
-        if (!leagueName && shortCompetition && !isFriendlyCompetition(shortCompetition)) {
-          leagueName = shortCompetition;
-        }
-      }
-    } catch (teamInfoError) {
-      console.warn('Get external team league name warning:', teamInfoError);
-    }
-
-    return res.json({
-      table: payload.data,
-      leagueName,
-    });
+    return res.json({ table, leagueName: internalLeagueName, source: 'internal' });
   } catch (error) {
     console.error('Get external team table error:', error);
     return res.status(500).json({ error: 'Failed to fetch external team table' });
