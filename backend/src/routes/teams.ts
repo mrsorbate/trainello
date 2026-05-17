@@ -1175,7 +1175,7 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
     const rsvpHours = defaultRsvpHours;
     let rsvpDeadline: string | null = null;
     if (rsvpHours != null) {
-      rsvpDeadline = new Date(gameDateSafe.getTime() - rsvpHours * 60 * 60 * 1000).toISOString();
+      rsvpDeadline = new Date(gameDateSafe.getTime() - rsvpHours! * 60 * 60 * 1000).toISOString();
     }
 
     const locationObjects = [
