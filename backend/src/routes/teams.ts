@@ -1566,11 +1566,11 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
     ).all(teamId) as any[];
 
     const table = buildInternalTableRows(team, internalMatches);
-    const leagueName = parseInternalLeagueName(internalMatches) || 'Interne Tabelle';
+    const internalLeagueName = parseInternalLeagueName(internalMatches) || 'Interne Tabelle';
 
     return res.json({
       table,
-      leagueName,
+      leagueName: internalLeagueName,
       source: 'internal',
     });
 
