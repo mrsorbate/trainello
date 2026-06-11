@@ -301,6 +301,11 @@ export const profileAPI = {
 // Settings API
 export const settingsAPI = {
   getOrganization: () => api.get('/settings/organization'),
+  
+  getTrainerTeamNames: () => api.get('/settings/trainer-team-names'),
+  
+  updateTrainerTeamName: (teamId: number, customName: string | null) =>
+    api.put(`/settings/trainer-team-names/${teamId}`, { trainer_custom_team_name: customName }),
 };
 
 export default api;

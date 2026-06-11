@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { profileAPI } from '../lib/api';
+import { profileAPI, settingsAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
-import { User, Lock, Camera, Trash2, Check, AlertCircle } from 'lucide-react';
+import { User, Lock, Camera, Trash2, Check, AlertCircle, Edit2 } from 'lucide-react';
 import { useToast } from '../lib/useToast';
 import { resolveAssetUrl } from '../lib/utils';
 
@@ -26,6 +26,8 @@ export default function SettingsPage() {
   const [position, setPosition] = useState('');
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showDeletePictureConfirmModal, setShowDeletePictureConfirmModal] = useState(false);
+  const [editingTeamId, setEditingTeamId] = useState<number | null>(null);
+  const [customTeamNames, setCustomTeamNames] = useState<Record<number, string>>({});
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
@@ -34,6 +36,24 @@ export default function SettingsPage() {
       return response.data;
     },
   });
+
+  const { data: trainerTeams } = useQuery({
+    queryKey: ['trainer-team-names'],
+    queryFn: async () => {
+      const response = await settingsAPI.getTrainerTeamNames();
+      return response.data;
+    },
+  });
+
+  useEffect(() => {
+    if (trainerTeams) {
+      const namesMap = trainerTeams.reduce((acc: Record<number, string>, team: any) => {
+        acc[team.id] = team.trainer_custom_team_name || '';
+        return acc;
+      }, {});
+      setCustomTeamNames(namesMap);
+    }
+  }, [trainerTeams]);
 
   const updatePasswordMutation = useMutation({
     mutationFn: (data: { currentPassword: string; newPassword: string }) =>
@@ -112,6 +132,19 @@ export default function SettingsPage() {
     },
     onError: () => {
       showToast('Profilbild konnte nicht entfernt werden', 'error');
+    },
+  });
+
+  const updateTrainerTeamNameMutation = useMutation({
+    mutationFn: ({ teamId, customName }: { teamId: number; customName: string | null }) =>
+      settingsAPI.updateTrainerTeamName(teamId, customName),
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['trainer-team-names'] });
+      showToast('Teamname gespeichert', 'success');
+      setEditingTeamId(null);
+    },
+    onError: (error: any) => {
+      showToast(error.response?.data?.error || 'Teamname konnte nicht gespeichert werden', 'error');
     },
   });
 
@@ -560,6 +593,81 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+
+      {/* Trainer Team Names Section */}
+      {authUser?.role === 'trainer' && trainerTeams && trainerTeams.length > 0 && (
+        <div className="card">
+          <h2 className="text-xl font-semibold mb-4 flex items-center">
+            <Edit2 className="w-6 h-6 mr-2 text-primary-600" />
+            Meine Teamnamen
+          </h2>
+
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            Gib jedem Team einen persönlichen Namen, um es leichter zu unterscheiden.
+          </p>
+
+          <div className="space-y-3">
+            {trainerTeams.map((team: any) => (
+              <div key={team.id} className="flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{team.name}</p>
+                  {editingTeamId === team.id ? (
+                    <input
+                      type="text"
+                      value={customTeamNames[team.id] || ''}
+                      onChange={(e) =>
+                        setCustomTeamNames({
+                          ...customTeamNames,
+                          [team.id]: e.target.value,
+                        })
+                      }
+                      placeholder="z.B. Mein U19 Team"
+                      className="input mt-2"
+                      autoFocus
+                    />
+                  ) : (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {customTeamNames[team.id]
+                        ? `Mein Name: ${customTeamNames[team.id]}`
+                        : 'Kein persönlicher Name gesetzt'}
+                    </p>
+                  )}
+                </div>
+
+                {editingTeamId === team.id ? (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        updateTrainerTeamNameMutation.mutate({
+                          teamId: team.id,
+                          customName: customTeamNames[team.id] || null,
+                        });
+                      }}
+                      disabled={updateTrainerTeamNameMutation.isPending}
+                      className="btn btn-sm btn-primary"
+                    >
+                      {updateTrainerTeamNameMutation.isPending ? 'Speichert...' : 'Speichern'}
+                    </button>
+                    <button
+                      onClick={() => setEditingTeamId(null)}
+                      className="btn btn-sm btn-secondary"
+                    >
+                      Abbrechen
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setEditingTeamId(team.id)}
+                    className="btn btn-sm btn-secondary"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Change Password Section */}
       <div className="card">

@@ -492,6 +492,14 @@ try {
     console.log('✅ Added short_name column to organizations table');
   }
 
+  // Add trainer_custom_team_name to team_members for personalized team names
+  const teamMembersColumns = db.pragma('table_info(team_members)') as Array<{ name: string }>;
+  const hasCustomTeamName = teamMembersColumns.some((col) => col.name === 'trainer_custom_team_name');
+  if (!hasCustomTeamName) {
+    db.exec('ALTER TABLE team_members ADD COLUMN trainer_custom_team_name TEXT');
+    console.log('✅ Added trainer_custom_team_name column to team_members table');
+  }
+
   // Ensure at least one organization exists
   const orgCount = db.prepare('SELECT COUNT(*) as count FROM organizations').get() as { count: number };
   if (orgCount.count === 0) {
