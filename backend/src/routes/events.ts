@@ -201,6 +201,34 @@ function attachTeamMetaToEvents<T extends Record<string, any>>(events: T[]): Arr
   return events.map((event) => attachTeamMetaToEvent(event));
 }
 
+function getTeamNamesByIds(teamIds: number[]): string[] {
+  const normalizedTeamIds = [...new Set(teamIds.map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0))];
+  if (normalizedTeamIds.length === 0) {
+    return [];
+  }
+
+  const placeholders = normalizedTeamIds.map(() => '?').join(',');
+  const rows = db.prepare(
+    `SELECT id, name
+     FROM teams
+     WHERE id IN (${placeholders})`
+  ).all(...normalizedTeamIds) as Array<{ id: number; name: string }>;
+
+  const nameById = new Map(rows.map((row) => [Number(row.id), String(row.name || '').trim()]));
+  return normalizedTeamIds
+    .map((teamId) => nameById.get(teamId) || '')
+    .filter((name) => Boolean(name));
+}
+
+function formatTeamLabel(teamNames: string[]): string {
+  const normalized = [...new Set(teamNames.map((name) => String(name || '').trim()).filter(Boolean))];
+  if (normalized.length === 0) {
+    return '';
+  }
+
+  return normalized.join(' / ');
+}
+
 function formatEventDateTime(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -864,6 +892,8 @@ router.post('/', async (req: AuthRequest, res) => {
       return res.status(403).json({ error: 'Only trainers can create events' });
     }
 
+    const targetTeamLabel = formatTeamLabel(getTeamNamesByIds(targetTeamIds));
+
     const teamSettings = db.prepare(
       `SELECT default_response, default_rsvp_deadline_hours,
               default_rsvp_deadline_hours_training, default_rsvp_deadline_hours_match, default_rsvp_deadline_hours_other,
@@ -1044,7 +1074,7 @@ router.post('/', async (req: AuthRequest, res) => {
       if (notifyUserIds.length > 0) {
         await sendPushToUsers(notifyUserIds, {
           title: 'Neue Terminserie',
-          body: `${title}: ${createdEvents.length} Termine wurden erstellt.`,
+          body: `${targetTeamLabel ? `${targetTeamLabel}: ` : ''}${title}: ${createdEvents.length} Termine wurden erstellt.`,
           url: `/teams/${team_id}/events`,
         });
       }
@@ -1097,7 +1127,7 @@ router.post('/', async (req: AuthRequest, res) => {
       if (notifyUserIds.length > 0) {
         await sendPushToUsers(notifyUserIds, {
           title: 'Neuer Termin',
-          body: `${title} am ${formatEventDateTime(start_time)}`,
+          body: `${targetTeamLabel ? `${targetTeamLabel}: ` : ''}${title} am ${formatEventDateTime(start_time)}`,
           url: `/events/${result.lastInsertRowid}`,
         });
       }
@@ -1629,6 +1659,7 @@ router.delete('/:id', async (req: AuthRequest, res) => {
       const eventsInSeries = db.prepare(
         'SELECT id, team_id, title, start_time, end_time FROM events WHERE series_id = ?'
       ).all(event.series_id) as Array<{ id: number; team_id: number; title: string; start_time: string; end_time: string }>;
+      const seriesTeamLabel = formatTeamLabel(getEventTeams(eventId).map((team) => team.name));
       const notifyUserIds = getDistinctResponseUserIds(eventsInSeries.map((seriesEvent) => seriesEvent.id))
         .filter((userId) => userId !== req.user!.id);
 
@@ -1651,7 +1682,7 @@ router.delete('/:id', async (req: AuthRequest, res) => {
       if (notifyUserIds.length > 0) {
         await sendPushToUsers(notifyUserIds, {
           title: 'Terminserie abgesagt',
-          body: `${event.title || 'Eine Terminserie'} wurde abgesagt.`,
+          body: `${seriesTeamLabel ? `${seriesTeamLabel}: ` : ''}${event.title || 'Eine Terminserie'} wurde abgesagt.`,
           url: `/teams/${event.team_id}/events`,
         });
       }
@@ -1665,6 +1696,8 @@ router.delete('/:id', async (req: AuthRequest, res) => {
       if (!eventToDelete) {
         return res.status(404).json({ error: 'Event not found' });
       }
+
+      const singleEventTeamLabel = formatTeamLabel(getEventTeams(eventId).map((team) => team.name));
 
       const notifyUserIds = getDistinctResponseUserIds([eventId]).filter((userId) => userId !== req.user!.id);
 
@@ -1685,7 +1718,7 @@ router.delete('/:id', async (req: AuthRequest, res) => {
       if (notifyUserIds.length > 0) {
         await sendPushToUsers(notifyUserIds, {
           title: 'Termin abgesagt',
-          body: `${eventToDelete.title || 'Ein Termin'} am ${formatEventDateTime(eventToDelete.start_time)} wurde abgesagt.`,
+          body: `${singleEventTeamLabel ? `${singleEventTeamLabel}: ` : ''}${eventToDelete.title || 'Ein Termin'} am ${formatEventDateTime(eventToDelete.start_time)} wurde abgesagt.`,
           url: `/teams/${eventToDelete.team_id}/events`,
         });
       }
