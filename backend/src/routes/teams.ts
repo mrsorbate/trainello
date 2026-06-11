@@ -225,6 +225,25 @@ const parseExternalLeagueNameFromPrintableMatches = (
     .map(([competition]) => competition)[0] || null;
 };
 
+const calculateRowMatchScore = (rowName: string, configuredName: string): number => {
+  const normalizedRowName = normalizeTeamNameInternal(rowName);
+  const normalizedConfiguredName = normalizeTeamNameInternal(configuredName);
+
+  if (!normalizedRowName || !normalizedConfiguredName) {
+    return 0;
+  }
+
+  if (normalizedRowName === normalizedConfiguredName) {
+    return 100 + normalizedConfiguredName.length;
+  }
+
+  if (normalizedRowName.includes(normalizedConfiguredName)) {
+    return 60 + normalizedConfiguredName.length;
+  }
+
+  return 0;
+};
+
 const buildInternalTableRows = (team: any, matches: any[]) => {
   const rows = new Map<string, { team: string; games: number; won: number; draw: number; lost: number; gf: number; ga: number; points: number }>();
 
@@ -1477,30 +1496,22 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
           ).all(teamId) as any[];
           const leagueName = externalLeagueName || parseInternalLeagueName(recentMatches) || 'fussball.de Tabelle';
 
-          const matchScore = normalizedConfiguredTeamNames.length > 0
-            ? table.reduce((score, row) => {
-                const normalizedRowName = normalizeTeamNameInternal(row.team);
-                return score + (normalizedConfiguredTeamNames.some((configuredName) => (
-                  normalizedRowName === configuredName
-                  || normalizedRowName.includes(configuredName)
-                  || configuredName.includes(normalizedRowName)
-                )) ? 1 : 0);
-              }, 0)
-            : 0;
+          const rowMatches = table
+            .map((row) => {
+              const bestScore = configuredTeamNames.reduce((score, configuredName) => {
+                return Math.max(score, calculateRowMatchScore(row.team, configuredName));
+              }, 0);
 
-          const matchedTeamName = configuredTeamNames
-            .filter((configuredName) => {
-              const normalizedConfiguredName = normalizeTeamNameInternal(configuredName);
-              if (!normalizedConfiguredName) return false;
-
-              return table.some((row) => {
-                const normalizedRowName = normalizeTeamNameInternal(row.team);
-                return normalizedRowName === normalizedConfiguredName
-                  || normalizedRowName.includes(normalizedConfiguredName)
-                  || normalizedConfiguredName.includes(normalizedRowName);
-              });
+              return {
+                rowName: String(row.team || '').trim(),
+                score: bestScore,
+              };
             })
-            .sort((left, right) => right.length - left.length)[0] || null;
+            .filter((entry) => entry.score > 0)
+            .sort((left, right) => right.score - left.score);
+
+          const matchScore = rowMatches.length;
+          const matchedTeamName = rowMatches[0]?.rowName || null;
 
           candidateTables.push({
             sourceEntry,

@@ -71,7 +71,7 @@ export default function MyTablePage() {
   };
 
   const isOwnTeamRow = (section: any, row: any): boolean => {
-    const ownCandidates = [section?.matchedTeamName, section?.teamName]
+    const ownCandidates = [section?.matchedTeamName || section?.teamName]
       .map((name) => normalizeTeamName(name))
       .filter(Boolean);
     if (ownCandidates.length === 0) return false;
@@ -82,7 +82,6 @@ export default function MyTablePage() {
     return ownCandidates.some((candidate) => (
       rowName === candidate
       || rowName.includes(candidate)
-      || candidate.includes(rowName)
     ));
   };
 
@@ -113,7 +112,7 @@ export default function MyTablePage() {
             <div key={section.key || section.teamId} className="card space-y-3">
               <div>
                 <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{section.teamName}</h2>
-                {section.matchedTeamName && section.matchedTeamName !== section.teamName && (
+                {section.matchedTeamName && normalizeTeamName(section.matchedTeamName) !== normalizeTeamName(section.teamName) && (
                   <p className="text-xs text-gray-500 dark:text-gray-400">{section.matchedTeamName}</p>
                 )}
                 <p className="text-xs text-gray-500 dark:text-gray-400">{section.leagueName || 'Unbekannte Liga'}</p>
