@@ -34,6 +34,7 @@ export default function MyTablePage() {
               teamId: Number(team.id),
               teamName: String(team.name || ''),
               leagueName: String(entry?.leagueName || response.data?.leagueName || ''),
+              matchedTeamName: String(entry?.matched_team_name || '').trim(),
               rows: Array.isArray(entry?.table) ? entry.table : [],
             }));
           } catch {
@@ -42,6 +43,7 @@ export default function MyTablePage() {
               teamId: Number(team.id),
               teamName: String(team.name || ''),
               leagueName: '',
+              matchedTeamName: '',
               rows: [],
             }];
           }
@@ -55,6 +57,34 @@ export default function MyTablePage() {
 
   const hasTeams = Array.isArray(teams) && teams.length > 0;
   const sections = useMemo(() => (Array.isArray(tableData) ? tableData : []), [tableData]);
+
+  const normalizeTeamName = (value: unknown): string => {
+    return String(value ?? '')
+      .toLowerCase()
+      .replace(/ä/g, 'ae')
+      .replace(/ö/g, 'oe')
+      .replace(/ü/g, 'ue')
+      .replace(/ß/g, 'ss')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]/g, '');
+  };
+
+  const isOwnTeamRow = (section: any, row: any): boolean => {
+    const ownCandidates = [section?.matchedTeamName, section?.teamName]
+      .map((name) => normalizeTeamName(name))
+      .filter(Boolean);
+    if (ownCandidates.length === 0) return false;
+
+    const rowName = normalizeTeamName(row?.team);
+    if (!rowName) return false;
+
+    return ownCandidates.some((candidate) => (
+      rowName === candidate
+      || rowName.includes(candidate)
+      || candidate.includes(rowName)
+    ));
+  };
 
   if (teamsLoading || (hasTeams && tableLoading)) {
     return <div className="text-sm text-gray-500 dark:text-gray-400 py-4">Lädt Tabellen...</div>;
@@ -83,6 +113,9 @@ export default function MyTablePage() {
             <div key={section.key || section.teamId} className="card space-y-3">
               <div>
                 <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{section.teamName}</h2>
+                {section.matchedTeamName && section.matchedTeamName !== section.teamName && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{section.matchedTeamName}</p>
+                )}
                 <p className="text-xs text-gray-500 dark:text-gray-400">{section.leagueName || 'Unbekannte Liga'}</p>
               </div>
 
@@ -100,7 +133,12 @@ export default function MyTablePage() {
                     </thead>
                     <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                       {section.rows.map((row: any, index: number) => (
-                        <tr key={`${section.teamId}-${index}`}>
+                        <tr
+                          key={`${section.teamId}-${index}`}
+                          className={isOwnTeamRow(section, row)
+                            ? 'bg-primary-100 dark:bg-primary-900/40'
+                            : ''}
+                        >
                           <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{row.place ?? index + 1}</td>
                           <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
                             <div className="flex items-center gap-2">
@@ -114,7 +152,7 @@ export default function MyTablePage() {
                               ) : (
                                 <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700" />
                               )}
-                              <span>{String(row.team || '-')}</span>
+                              <span className={isOwnTeamRow(section, row) ? 'font-semibold text-primary-900 dark:text-primary-100' : ''}>{String(row.team || '-')}</span>
                             </div>
                           </td>
                           <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{row.games ?? '-'}</td>

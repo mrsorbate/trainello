@@ -200,6 +200,31 @@ const parseInternalLeagueName = (matches: any[]): string | null => {
   return null;
 };
 
+const parseExternalLeagueNameFromPrintableMatches = (
+  printableMatches: Array<{ competition?: string }> | undefined,
+): string | null => {
+  if (!Array.isArray(printableMatches) || printableMatches.length === 0) {
+    return null;
+  }
+
+  const counts = new Map<string, number>();
+  for (const match of printableMatches) {
+    const competition = String(match?.competition || '').trim();
+    if (!competition) continue;
+
+    const normalized = competition.toLowerCase();
+    if (/pokal|freundschaft|testspiel|privat|turnier|futsal/.test(normalized)) {
+      continue;
+    }
+
+    counts.set(competition, (counts.get(competition) || 0) + 1);
+  }
+
+  return Array.from(counts.entries())
+    .sort((left, right) => right[1] - left[1])
+    .map(([competition]) => competition)[0] || null;
+};
+
 const buildInternalTableRows = (team: any, matches: any[]) => {
   const rows = new Map<string, { team: string; games: number; won: number; draw: number; lost: number; gf: number; ga: number; points: number }>();
 
@@ -1390,6 +1415,7 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
       }>;
       leagueName: string;
       matchScore: number;
+      matchedTeamName: string | null;
       rowCount: number;
     }> = [];
 
@@ -1442,11 +1468,14 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
               : null,
           }));
 
-          // Use league name from recently imported matches if available
+          // Prefer printable match competition (e.g. Kreisliga A/B) per configured source.
+          const externalLeagueName = parseExternalLeagueNameFromPrintableMatches(externalResult.printableMatches);
+
+          // Fallback to recently imported internal matches if available.
           const recentMatches = db.prepare(
             `SELECT description FROM events WHERE team_id = ? AND type = 'match' LIMIT 10`
           ).all(teamId) as any[];
-          const leagueName = parseInternalLeagueName(recentMatches) || 'fussball.de Tabelle';
+          const leagueName = externalLeagueName || parseInternalLeagueName(recentMatches) || 'fussball.de Tabelle';
 
           const matchScore = normalizedConfiguredTeamNames.length > 0
             ? table.reduce((score, row) => {
@@ -1459,12 +1488,27 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
               }, 0)
             : 0;
 
+          const matchedTeamName = configuredTeamNames
+            .filter((configuredName) => {
+              const normalizedConfiguredName = normalizeTeamNameInternal(configuredName);
+              if (!normalizedConfiguredName) return false;
+
+              return table.some((row) => {
+                const normalizedRowName = normalizeTeamNameInternal(row.team);
+                return normalizedRowName === normalizedConfiguredName
+                  || normalizedRowName.includes(normalizedConfiguredName)
+                  || normalizedConfiguredName.includes(normalizedRowName);
+              });
+            })
+            .sort((left, right) => right.length - left.length)[0] || null;
+
           candidateTables.push({
             sourceEntry,
             sourceId: extractFussballDeTeamId(sourceEntry) || sourceEntry,
             table,
             leagueName,
             matchScore,
+            matchedTeamName,
             rowCount: standings.length,
           });
         } catch (externalError) {
@@ -1498,6 +1542,7 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
         const tables = sortedCandidates.map((candidate) => ({
           table: candidate.table,
           leagueName: candidate.leagueName,
+          matched_team_name: candidate.matchedTeamName,
           source: 'fussball.de',
           source_id: candidate.sourceId,
         }));
@@ -1542,6 +1587,7 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
         {
           table,
           leagueName: internalLeagueName,
+          matched_team_name: null,
           source: 'internal',
           source_id: null,
         },
