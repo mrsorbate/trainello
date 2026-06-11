@@ -62,7 +62,7 @@ export class FussballDeClient {
       ? `https://www.fussball.de/ajax.team.prev.games/-/mode/PAGE/team-id/${teamId}`
       : validated.teamPageUrl;
     const html = await this.fetchHtml(url);
-    return this.resolveMatchResults(parseMatches(html, validated.teamPageUrl));
+    return parseMatches(html, validated.teamPageUrl);
   }
 
   public async getAllMatches(input: TeamSourceInput): Promise<TeamMatch[]> {
