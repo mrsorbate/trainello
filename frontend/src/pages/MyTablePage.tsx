@@ -111,11 +111,15 @@ export default function MyTablePage() {
           {sections.map((section) => (
             <div key={section.key || section.teamId} className="card space-y-3">
               <div>
-                <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{section.teamName}</h2>
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                  {section.teamName}
+                  <span className="ml-2 text-xs sm:text-sm font-normal text-gray-500 dark:text-gray-400">
+                    {section.leagueName || 'Unbekannte Liga'}
+                  </span>
+                </h2>
                 {section.matchedTeamName && normalizeTeamName(section.matchedTeamName) !== normalizeTeamName(section.teamName) && (
                   <p className="text-xs text-gray-500 dark:text-gray-400">{section.matchedTeamName}</p>
                 )}
-                <p className="text-xs text-gray-500 dark:text-gray-400">{section.leagueName || 'Unbekannte Liga'}</p>
               </div>
 
               {Array.isArray(section.rows) && section.rows.length > 0 ? (
