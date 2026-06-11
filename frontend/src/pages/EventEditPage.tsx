@@ -15,6 +15,12 @@ export default function EventEditPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
+  const locationStateFrom = typeof (location.state as any)?.from === 'string'
+    ? (location.state as any).from
+    : '';
+  const originFrom = locationStateFrom && locationStateFrom !== location.pathname
+    ? locationStateFrom
+    : '';
 
   const isTrainer = user?.role === 'trainer';
 
@@ -434,8 +440,10 @@ export default function EventEditPage() {
         navigate(`/teams/${event.team_id}/events`, { replace: true });
         return;
       }
-      const backTarget = (location.state as any)?.from || `/events/${eventId}`;
-      navigate(backTarget, { replace: true, state: { from: (location.state as any)?.from } });
+      navigate(`/events/${eventId}`, {
+        replace: true,
+        state: originFrom ? { from: originFrom } : undefined,
+      });
     },
     onError: (error: any) => {
       showToast(error?.response?.data?.error || 'Termin konnte nicht gespeichert werden', 'error');
@@ -529,7 +537,7 @@ export default function EventEditPage() {
         <button
           type="button"
           onClick={() => {
-            const target = (location.state as any)?.from || `/events/${eventId}`;
+            const target = originFrom || `/events/${eventId}`;
             navigate(target, { replace: true });
           }}
           className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
@@ -1013,7 +1021,7 @@ export default function EventEditPage() {
             <button
               type="button"
               onClick={() => {
-                const target = (location.state as any)?.from || `/events/${eventId}`;
+                const target = originFrom || `/events/${eventId}`;
                 navigate(target, { replace: true });
               }}
               className="btn btn-secondary w-full inline-flex items-center justify-center text-center"

@@ -212,7 +212,8 @@ export default function EventsPage() {
       : '';
 
     const handleEventClick = () => {
-      navigate(`/events/${event.id}`, { state: { from: location.pathname } });
+      const from = `${location.pathname}${location.search}${location.hash}`;
+      navigate(`/events/${event.id}`, { state: { from } });
     };
 
     return (

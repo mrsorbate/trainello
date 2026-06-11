@@ -349,9 +349,15 @@ export default function EventDetailPage() {
   const isMatchWithoutAddress = event?.type === 'match' && locationParts.length === 0;
   const hasMeetingInfo = (event?.meeting_point && String(event.meeting_point).trim().length > 0)
     || (event?.arrival_minutes !== null && event?.arrival_minutes !== undefined);
+  const locationStateFrom = typeof (location.state as any)?.from === 'string'
+    ? (location.state as any).from
+    : '';
+  const resolvedFrom = locationStateFrom && locationStateFrom !== location.pathname
+    ? locationStateFrom
+    : '';
 
   const handleBackNavigation = () => {
-    const target = (location.state as any)?.from || (event?.team_id ? `/teams/${event.team_id}/events` : '/events');
+    const target = resolvedFrom || (event?.team_id ? `/teams/${event.team_id}/events` : '/events');
     navigate(target, { replace: true });
   };
 
@@ -536,6 +542,7 @@ export default function EventDetailPage() {
                       {isTrainer && isMatchWithoutAddress && (
                         <Link
                           to={`/events/${eventId}/edit`}
+                          state={{ from: resolvedFrom || location.pathname }}
                           className="inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
                         >
                           Adresse ergänzen
@@ -606,7 +613,7 @@ export default function EventDetailPage() {
               {isTrainer ? (
                 <Link
                   to={`/events/${eventId}/squad`}
-                  state={{ from: location.pathname }}
+                  state={{ from: resolvedFrom || location.pathname }}
                   className="w-full btn btn-primary inline-flex items-center justify-center"
                 >
                   Zur Kaderseite
@@ -749,7 +756,7 @@ export default function EventDetailPage() {
         <div className="card border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20 space-y-3">
           <Link
             to={`/events/${eventId}/edit`}
-            state={{ from: location.pathname }}
+            state={{ from: resolvedFrom || location.pathname }}
             className="w-full btn btn-secondary flex items-center justify-center space-x-2"
           >
             <Pencil className="w-5 h-5" />

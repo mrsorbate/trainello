@@ -48,6 +48,12 @@ export default function EventSquadPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
+  const locationStateFrom = typeof (location.state as any)?.from === 'string'
+    ? (location.state as any).from
+    : '';
+  const originFrom = locationStateFrom && locationStateFrom !== location.pathname
+    ? locationStateFrom
+    : '';
 
   const isTrainer = user?.role === 'trainer';
 
@@ -445,7 +451,7 @@ export default function EventSquadPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => {
-              const target = (location.state as any)?.from || `/events/${eventId}`;
+              const target = originFrom || `/events/${eventId}`;
               navigate(target, { replace: true });
             }}
             aria-label="Zurück zum Termin"
@@ -467,7 +473,7 @@ export default function EventSquadPage() {
         <button
           type="button"
           onClick={() => {
-            const target = (location.state as any)?.from || `/events/${eventId}`;
+            const target = originFrom || `/events/${eventId}`;
             navigate(target, { replace: true });
           }}
           className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
