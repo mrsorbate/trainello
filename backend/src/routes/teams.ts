@@ -22,6 +22,57 @@ const calendarTokenSelectExpression = hasTeamsCalendarTokenColumn
   ? 'calendar_token'
   : 'NULL AS calendar_token';
 
+const LEGACY_CALENDAR_TOKEN_HEX_REGEX = /^[0-9a-f]{48}$/i;
+const COMPACT_CALENDAR_TOKEN_BASE64URL_REGEX = /^[A-Za-z0-9_-]{32}$/;
+
+const hexTokenToBase64Url = (token: string): string | null => {
+  if (!LEGACY_CALENDAR_TOKEN_HEX_REGEX.test(token)) {
+    return null;
+  }
+
+  return Buffer.from(token, 'hex')
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+};
+
+const base64UrlTokenToHex = (token: string): string | null => {
+  if (!COMPACT_CALENDAR_TOKEN_BASE64URL_REGEX.test(token)) {
+    return null;
+  }
+
+  const padded = token + '='.repeat((4 - (token.length % 4)) % 4);
+  const rawBase64 = padded.replace(/-/g, '+').replace(/_/g, '/');
+  const decoded = Buffer.from(rawBase64, 'base64');
+  if (decoded.length !== 24) {
+    return null;
+  }
+  return decoded.toString('hex');
+};
+
+const getCalendarTokenVariants = (token: string | null | undefined): Set<string> => {
+  const normalized = String(token || '').trim();
+  const variants = new Set<string>();
+  if (!normalized) {
+    return variants;
+  }
+
+  variants.add(normalized);
+
+  const asBase64Url = hexTokenToBase64Url(normalized);
+  if (asBase64Url) {
+    variants.add(asBase64Url);
+  }
+
+  const asHex = base64UrlTokenToHex(normalized);
+  if (asHex) {
+    variants.add(asHex);
+  }
+
+  return variants;
+};
+
 const normalizeTeamNameInternal = (value: unknown): string => {
   return String(value ?? '')
     .toLowerCase()
@@ -287,6 +338,8 @@ const getCalendarUrls = (req: AuthRequest | any, teamId: number, token: string |
     return { calendar_feed_url: null, calendar_webcal_url: null };
   }
 
+  const compactToken = hexTokenToBase64Url(normalizedToken) || normalizedToken;
+
   const forwardedProto = String(req.headers?.['x-forwarded-proto'] || '').split(',')[0]?.trim();
   const protocol = forwardedProto || req.protocol || 'http';
   const host = String(req.get('host') || '').trim();
@@ -294,7 +347,7 @@ const getCalendarUrls = (req: AuthRequest | any, teamId: number, token: string |
     return { calendar_feed_url: null, calendar_webcal_url: null };
   }
 
-  const calendarFeedUrl = `${protocol}://${host}/api/teams/${teamId}/calendar.ics?token=${encodeURIComponent(normalizedToken)}`;
+  const calendarFeedUrl = `${protocol}://${host}/api/teams/${teamId}/calendar.ics?token=${encodeURIComponent(compactToken)}`;
   const calendarWebcalUrl = calendarFeedUrl.replace(/^https?:\/\//i, 'webcal://');
   return {
     calendar_feed_url: calendarFeedUrl,
@@ -351,7 +404,11 @@ router.get('/:id/calendar.ics', (req, res) => {
     }
 
     const team = db.prepare(`SELECT id, name, ${calendarTokenSelectExpression} FROM teams WHERE id = ?`).get(teamId) as any;
-    if (!team || String(team.calendar_token || '') !== token) {
+    const requestedTokenVariants = getCalendarTokenVariants(token);
+    const storedTokenVariants = getCalendarTokenVariants(String(team?.calendar_token || ''));
+    const isTokenValid = Array.from(requestedTokenVariants).some((candidate) => storedTokenVariants.has(candidate));
+
+    if (!team || !isTokenValid) {
       return res.status(403).json({ error: 'Invalid calendar token' });
     }
 
