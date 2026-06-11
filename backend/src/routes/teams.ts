@@ -1474,17 +1474,15 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
     const client = new FussballDeClient({ timeoutMs: 15000 });
     const eventResultLookupStmt = hasEventScoreColumns
       ? db.prepare(
-          `SELECT title, home_goals, away_goals
+          `SELECT title, start_time, home_goals, away_goals
            FROM events
            WHERE team_id = ?
              AND type = 'match'
              AND home_goals IS NOT NULL
              AND away_goals IS NOT NULL
              AND abs(strftime('%s', start_time) - strftime('%s', ?)) < 172800
-             AND title LIKE ?
-             AND title LIKE ?
            ORDER BY abs(strftime('%s', start_time) - strftime('%s', ?)) ASC
-           LIMIT 1`
+           LIMIT 20`
         )
       : null;
 
@@ -1503,29 +1501,34 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
         return null;
       }
 
-      const matchedEvent = eventResultLookupStmt.get(
+      const candidates = eventResultLookupStmt.all(
         teamId,
         parsedDate.toISOString(),
-        `%${homeTeam}%`,
-        `%${awayTeam}%`,
         parsedDate.toISOString(),
-      ) as { title?: string; home_goals?: number; away_goals?: number } | undefined;
+      ) as Array<{ title?: string; start_time?: string; home_goals?: number; away_goals?: number }>;
 
-      if (matchedEvent && Number.isFinite(matchedEvent.home_goals) && Number.isFinite(matchedEvent.away_goals)) {
-        const participants = parseInternalParticipants(matchedEvent.title);
-        if (participants) {
-          const eventHome = normalizeTeamNameInternal(participants.homeTeam);
-          const eventAway = normalizeTeamNameInternal(participants.awayTeam);
-          const matchHome = normalizeTeamNameInternal(homeTeam);
-          const matchAway = normalizeTeamNameInternal(awayTeam);
+      const normalizedMatchHome = normalizeTeamNameInternal(homeTeam);
+      const normalizedMatchAway = normalizeTeamNameInternal(awayTeam);
 
-          if (eventHome === matchHome && eventAway === matchAway) {
-            return { home: Number(matchedEvent.home_goals), away: Number(matchedEvent.away_goals) };
-          }
+      for (const candidate of candidates) {
+        if (!Number.isFinite(candidate.home_goals) || !Number.isFinite(candidate.away_goals)) {
+          continue;
+        }
 
-          if (eventHome === matchAway && eventAway === matchHome) {
-            return { home: Number(matchedEvent.away_goals), away: Number(matchedEvent.home_goals) };
-          }
+        const participants = parseInternalParticipants(candidate.title);
+        if (!participants) {
+          continue;
+        }
+
+        const eventHome = normalizeTeamNameInternal(participants.homeTeam);
+        const eventAway = normalizeTeamNameInternal(participants.awayTeam);
+
+        if (eventHome === normalizedMatchHome && eventAway === normalizedMatchAway) {
+          return { home: Number(candidate.home_goals), away: Number(candidate.away_goals) };
+        }
+
+        if (eventHome === normalizedMatchAway && eventAway === normalizedMatchHome) {
+          return { home: Number(candidate.away_goals), away: Number(candidate.home_goals) };
         }
       }
 
@@ -1632,7 +1635,9 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
             competition: String(match?.competition || ''),
             venue: String(match?.venue || ''),
             statusText: String(match?.statusText || ''),
-            result: fallbackResult || match?.result || null,
+            result: mode === 'last'
+              ? (fallbackResult || null)
+              : (match?.result || null),
           };
         });
 
