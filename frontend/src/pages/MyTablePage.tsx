@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3 } from 'lucide-react';
-import { teamsAPI, badgeProxyUrl } from '../lib/api';
+import { teamsAPI } from '../lib/api';
 
 export default function MyTablePage() {
   const { data: teams, isLoading: teamsLoading, error: teamsError } = useQuery({
@@ -48,6 +48,12 @@ export default function MyTablePage() {
 
   const hasTeams = Array.isArray(teams) && teams.length > 0;
   const sections = useMemo(() => (Array.isArray(tableData) ? tableData : []), [tableData]);
+
+  const getBadgeUrl = (imgUrl: unknown): string | null => {
+    if (typeof imgUrl !== 'string' || !imgUrl) return null;
+    const fullUrl = imgUrl.startsWith('//') ? `https:${imgUrl}` : imgUrl;
+    return `/api/badge-proxy?url=${encodeURIComponent(fullUrl)}`;
+  };
 
   if (teamsLoading || (hasTeams && tableLoading)) {
     return <div className="text-sm text-gray-500 dark:text-gray-400 py-4">Lädt Tabellen...</div>;
@@ -102,7 +108,21 @@ export default function MyTablePage() {
                       {section.rows.map((row: any, index: number) => (
                         <tr key={`${section.teamId}-${index}`}>
                           <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{row.place ?? index + 1}</td>
-                          <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{String(row.team || '-')}</td>
+                          <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                            <div className="flex items-center gap-2">
+                              {getBadgeUrl(row.img) ? (
+                                <img
+                                  src={getBadgeUrl(row.img)!}
+                                  alt={`${String(row.team || 'Team')} Wappen`}
+                                  className="w-6 h-6 object-contain bg-white rounded"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700" />
+                              )}
+                              <span>{String(row.team || '-')}</span>
+                            </div>
+                          </td>
                           <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{row.games ?? '-'}</td>
                           <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{String(row.goal || '-')}</td>
                           <td className="px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white">{row.points ?? '-'}</td>
