@@ -264,13 +264,6 @@ export default function TeamJoinPage() {
               </>
             ) : (
               <>
-                <button
-                  onClick={() => navigate(`/login?redirect=${encodeURIComponent(`/join/${token}`)}`)}
-                  className="btn btn-primary w-full"
-                >
-                  Ich habe schon ein Konto (Anmelden)
-                </button>
-
                 <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">Neu hier? Direkt registrieren</p>
 
@@ -322,6 +315,13 @@ export default function TeamJoinPage() {
                     {registerMutation.isPending ? 'Registriert...' : 'Konto erstellen und Team beitreten'}
                   </button>
                 </div>
+
+                <button
+                  onClick={() => navigate(`/login?redirect=${encodeURIComponent(`/join/${token}`)}`)}
+                  className="btn btn-primary w-full"
+                >
+                  Ich habe schon ein Konto (Anmelden)
+                </button>
               </>
             )}
           </div>
