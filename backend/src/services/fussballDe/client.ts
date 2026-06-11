@@ -98,6 +98,7 @@ export class FussballDeClient {
       }
     }
 
+    // Step 1: Use printable schedule to find match URLs, then extract the Staffel ID
     const printableUrl = teamId
       ? `https://www.fussball.de/vereinsspielplan.druck/-/datum-bis/${this.getCurrentDateIso()}/datum-von/2025-07-01/id/${this.extractCompetitionIdFromPrintableUrl(validated.teamPageUrl) || '00ES8GN9L800006MVV0AG08LVUPGND5I'}/match-type/-1/max/999/mode/PRINT/show-venues/false/team-id/${teamId}`
       : undefined;
@@ -111,9 +112,51 @@ export class FussballDeClient {
           ok: true,
           rowCount: printableMatches.length,
         });
+
+        // Step 2: From a league match URL, extract the Staffel hex ID
+        // The Staffel ID can be found in spieltagsuebersicht links on a match page
         if (printableMatches.length > 0) {
+          const leagueMatches = printableMatches.filter((m) => {
+            const comp = String(m.competition || '').toLowerCase();
+            return /liga|klasse|oberliga|landesliga|verbandsliga|regionalliga|bundesliga|kreis/.test(comp)
+              && !/pokal|freundschaft|testspiel|privat|turnier|futsal/.test(comp);
+          });
+          const sampleMatchUrl = leagueMatches.find((m) => m.matchUrl)?.matchUrl
+            ?? printableMatches.find((m) => m.matchUrl)?.matchUrl;
+
+          if (sampleMatchUrl) {
+            try {
+              const matchHtml = await this.fetchHtml(sampleMatchUrl);
+              // spieltagsuebersicht URLs contain the Staffel hex ID
+              const staffelMatch = matchHtml.match(/spieltagsuebersicht\/[^'"]+staffel\/([A-Z0-9]{20,40})/i);
+              if (staffelMatch?.[1]) {
+                const staffelId = staffelMatch[1];
+                const staffelUrl = `https://www.fussball.de/spieltagsuebersicht/-/staffel/${staffelId}-G`;
+                attempts.push({ url: sampleMatchUrl, ok: true, rowCount: 1 });
+
+                try {
+                  const staffelHtml = await this.fetchHtml(staffelUrl);
+                  const standings = parseStandings(staffelHtml, staffelUrl);
+                  if (standings.length > 0) {
+                    attempts.push({ url: staffelUrl, ok: true, rowCount: standings.length });
+                    return { standings, attempts, printableMatches };
+                  }
+                } catch (staffelError) {
+                  const msg = staffelError instanceof Error ? staffelError.message : String(staffelError);
+                  attempts.push({ url: staffelUrl, ok: false, rowCount: 0, error: msg });
+                }
+              }
+            } catch (matchError) {
+              const msg = matchError instanceof Error ? matchError.message : String(matchError);
+              attempts.push({ url: sampleMatchUrl, ok: false, rowCount: 0, error: msg });
+            }
+          }
+
+          // Step 3: Fallback – reconstruct standings from individual match results
           const standings = await this.buildStandingsFromPrintableMatches(printableMatches);
-          return { standings, attempts, printableMatches };
+          if (standings.length > 0) {
+            return { standings, attempts, printableMatches };
+          }
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
