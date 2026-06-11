@@ -33,6 +33,15 @@ const parseFussballDeIds = (value: unknown): string[] => {
   return [...new Set(matches.filter((entry) => FUSSBALL_DE_ID_REGEX.test(entry)))];
 };
 
+const parseFussballDeTeamNames = (value: unknown): string[] => {
+  return [...new Set(
+    String(value || '')
+      .split(/[\n,;|]/)
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+  )];
+};
+
 const hexTokenToBase64Url = (token: string): string | null => {
   if (!LEGACY_CALENDAR_TOKEN_HEX_REGEX.test(token)) {
     return null;
@@ -597,6 +606,7 @@ router.get('/:id/settings', (req: AuthRequest, res) => {
     return res.json({
       ...settings,
       fussballde_ids: parseFussballDeIds(settings.fussballde_id),
+      fussballde_team_names: parseFussballDeTeamNames(settings.fussballde_team_name),
       home_venues: parseHomeVenuesFromDb(settings.home_venues),
       default_home_venue_name: settings.default_home_venue_name || null,
       calendar_token: undefined,
@@ -615,6 +625,7 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
     const hasFussballId = Object.prototype.hasOwnProperty.call(req.body, 'fussballde_id');
     const hasFussballIds = Object.prototype.hasOwnProperty.call(req.body, 'fussballde_ids');
     const hasFussballTeamName = Object.prototype.hasOwnProperty.call(req.body, 'fussballde_team_name');
+    const hasFussballTeamNames = Object.prototype.hasOwnProperty.call(req.body, 'fussballde_team_names');
     const hasDefaultResponse = Object.prototype.hasOwnProperty.call(req.body, 'default_response');
     const hasDefaultRsvpDeadlineHours = Object.prototype.hasOwnProperty.call(req.body, 'default_rsvp_deadline_hours');
     const hasDefaultRsvpDeadlineHoursTraining = Object.prototype.hasOwnProperty.call(req.body, 'default_rsvp_deadline_hours_training');
@@ -631,6 +642,7 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
       fussballde_id,
       fussballde_ids,
       fussballde_team_name,
+      fussballde_team_names,
       default_response,
       default_rsvp_deadline_hours,
       default_rsvp_deadline_hours_training,
@@ -646,6 +658,7 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
       fussballde_id?: string;
       fussballde_ids?: string[];
       fussballde_team_name?: string;
+      fussballde_team_names?: string[];
       default_response?: string;
       default_rsvp_deadline_hours?: number | string | null;
       default_rsvp_deadline_hours_training?: number | string | null;
@@ -693,9 +706,12 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
     }
 
     let nextFussballTeamName = team.fussballde_team_name as string | null;
-    if (hasFussballTeamName) {
-      const normalizedTeamName = String(fussballde_team_name || '').trim();
-      nextFussballTeamName = normalizedTeamName || null;
+    if (hasFussballTeamName || hasFussballTeamNames) {
+      const rawTeamNameInput = hasFussballTeamNames
+        ? (Array.isArray(fussballde_team_names) ? fussballde_team_names.join(',') : String(fussballde_team_names || ''))
+        : String(fussballde_team_name || '');
+      const normalizedTeamNames = parseFussballDeTeamNames(rawTeamNameInput);
+      nextFussballTeamName = normalizedTeamNames.length > 0 ? normalizedTeamNames.join(',') : null;
     }
 
     const allowedDefaultResponses = new Set(['pending', 'accepted', 'tentative', 'declined']);
@@ -874,6 +890,7 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
     return res.json({
       ...updatedSettings,
       fussballde_ids: parseFussballDeIds(updatedSettings.fussballde_id),
+      fussballde_team_names: parseFussballDeTeamNames(updatedSettings.fussballde_team_name),
       home_venues: parseHomeVenuesFromDb(updatedSettings.home_venues),
       default_home_venue_name: updatedSettings.default_home_venue_name || null,
       calendar_token: undefined,
@@ -971,9 +988,14 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
       .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
 
-  const ownTeamName = String(team.fussballde_team_name || team.name || '').trim();
-  const ownTeamNorm = normalizeTeamName(ownTeamName);
-  const enforceOwnTeamDetection = fussballdeIds.length === 1 && ownTeamNorm.length > 0;
+  const configuredTeamNames = parseFussballDeTeamNames(team.fussballde_team_name);
+  if (configuredTeamNames.length === 0 && String(team.name || '').trim()) {
+    configuredTeamNames.push(String(team.name || '').trim());
+  }
+  const ownTeamNorms = configuredTeamNames
+    .map((teamName) => normalizeTeamName(teamName))
+    .filter(Boolean);
+  const enforceOwnTeamDetection = fussballdeIds.length === 1 && ownTeamNorms.length > 0;
 
   const defaultRsvpHours = parseRsvpHours(team.default_rsvp_deadline_hours_match) ?? parseRsvpHours(team.default_rsvp_deadline_hours);
   const defaultArrivalMinutes = parseArrivalMinutes(team.default_arrival_minutes_match) ?? parseArrivalMinutes(team.default_arrival_minutes);
@@ -1025,12 +1047,16 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
 
     const homeNorm = normalizeTeamName(match.homeTeam);
     const awayNorm = normalizeTeamName(match.awayTeam);
-    const isHome = ownTeamNorm.length >= 4
-      ? homeNorm.includes(ownTeamNorm) || ownTeamNorm.includes(homeNorm)
-      : homeNorm === ownTeamNorm;
-    const isAway = ownTeamNorm.length >= 4
-      ? awayNorm.includes(ownTeamNorm) || ownTeamNorm.includes(awayNorm)
-      : awayNorm === ownTeamNorm;
+    const isHome = ownTeamNorms.some((ownTeamNorm) => (
+      ownTeamNorm.length >= 4
+        ? homeNorm.includes(ownTeamNorm) || ownTeamNorm.includes(homeNorm)
+        : homeNorm === ownTeamNorm
+    ));
+    const isAway = ownTeamNorms.some((ownTeamNorm) => (
+      ownTeamNorm.length >= 4
+        ? awayNorm.includes(ownTeamNorm) || ownTeamNorm.includes(awayNorm)
+        : awayNorm === ownTeamNorm
+    ));
 
     if (!isHome && !isAway && enforceOwnTeamDetection) {
       skipped.push(`${match.homeTeam} - ${match.awayTeam}: Team nicht identifiziert`);

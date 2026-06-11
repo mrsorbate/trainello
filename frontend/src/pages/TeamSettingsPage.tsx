@@ -83,7 +83,10 @@ export default function TeamSettingsPage() {
       ? (settings as any).fussballde_ids
       : [];
     setFussballDeId(idsFromSettings.length > 0 ? idsFromSettings.join('\n') : (settings.fussballde_id || ''));
-    setFussballDeTeamName(settings.fussballde_team_name || '');
+    const teamNamesFromSettings = Array.isArray((settings as any).fussballde_team_names)
+      ? (settings as any).fussballde_team_names
+      : [];
+    setFussballDeTeamName(teamNamesFromSettings.length > 0 ? teamNamesFromSettings.join('\n') : (settings.fussballde_team_name || ''));
     setDefaultResponse((settings.default_response || 'pending') as 'pending' | 'accepted' | 'tentative' | 'declined');
     const legacyDefault =
       settings.default_rsvp_deadline_hours === null || settings.default_rsvp_deadline_hours === undefined
@@ -285,6 +288,15 @@ export default function TeamSettingsPage() {
     return [...new Set(matches)];
   };
 
+  const extractFussballDeTeamNames = (input: string): string[] => {
+    return [...new Set(
+      String(input || '')
+        .split(/[\n,;|]/)
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    )];
+  };
+
   const saveApiSettings = () => {
     const extractedIds = extractFussballDeIds(fussballDeId);
     if (fussballDeId.trim() && extractedIds.length === 0) {
@@ -294,7 +306,7 @@ export default function TeamSettingsPage() {
 
     updateApiSettingsMutation.mutate({
       fussballde_id: extractedIds.length > 0 ? extractedIds.join(',') : undefined,
-      fussballde_team_name: fussballDeTeamName.trim() || undefined,
+      fussballde_team_name: extractFussballDeTeamNames(fussballDeTeamName).join(',') || undefined,
     });
   };
 
@@ -678,17 +690,17 @@ export default function TeamSettingsPage() {
 
             <div>
               <label htmlFor="fussballde-team-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                fussball.de Team-Name
+                fussball.de Team-Namen
               </label>
-              <input
+              <textarea
                 id="fussballde-team-name"
-                type="text"
                 value={fussballDeTeamName}
                 onChange={(e) => setFussballDeTeamName(e.target.value)}
                 className="input w-full"
-                placeholder="z.B. FC Bayern München"
+                placeholder="Ein Teamname pro Zeile"
+                rows={3}
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Der exakte Team-Name von fussball.de für die automatische Heimspiel-Erkennung</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Ein Name pro Zeile. Wird für die automatische Heimspiel-Erkennung verwendet.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
