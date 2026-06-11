@@ -321,6 +321,48 @@ router.get('/teams', (req: AuthRequest, res) => {
   }
 });
 
+// Update team (admin only)
+router.put('/teams/:id', (req: AuthRequest, res) => {
+  try {
+    const teamId = parseInt(req.params.id, 10);
+    const { name, description } = req.body as { name?: string; description?: string };
+
+    if (!Number.isInteger(teamId) || teamId <= 0) {
+      return res.status(400).json({ error: 'Invalid team id' });
+    }
+
+    const normalizedName = String(name || '').trim();
+    if (!normalizedName) {
+      return res.status(400).json({ error: 'Team name is required' });
+    }
+
+    const team = db.prepare('SELECT id, name, description FROM teams WHERE id = ?').get(teamId) as any;
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+
+    const normalizedDescription = String(description || '').trim() || null;
+
+    db.prepare(
+      'UPDATE teams SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+    ).run(normalizedName, normalizedDescription, teamId);
+
+    logAdminAction(req, 'team_renamed', 'team', teamId, {
+      old_team_name: team.name,
+      new_team_name: normalizedName,
+    });
+
+    return res.json({
+      id: teamId,
+      name: normalizedName,
+      description: normalizedDescription,
+    });
+  } catch (error) {
+    console.error('Update team error:', error);
+    return res.status(500).json({ error: 'Failed to update team' });
+  }
+});
+
 // Get all users (admin only)
 router.get('/users', (req: AuthRequest, res) => {
   try {

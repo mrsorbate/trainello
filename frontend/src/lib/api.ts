@@ -271,6 +271,9 @@ export const adminAPI = {
   
   createTeam: (data: { name: string; description?: string }) =>
     api.post('/teams', data),
+
+  updateTeam: (teamId: number, data: { name: string; description?: string }) =>
+    api.put(`/admin/teams/${teamId}`, data),
   
   deleteTeam: (teamId: number) => api.delete(`/admin/teams/${teamId}`),
   

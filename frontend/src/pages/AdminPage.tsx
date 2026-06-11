@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { Navigate } from 'react-router-dom';
-import { Plus, Trash2, Users, UserPlus, UserMinus, Shield, Settings, Upload, Copy, Share2, Check, KeyRound } from 'lucide-react';
+import { Plus, Trash2, Users, UserPlus, UserMinus, Shield, Settings, Upload, Copy, Share2, Check, KeyRound, Edit2 } from 'lucide-react';
 import { useToast, type ToastType } from '../lib/useToast';
 import { resolveAssetUrl } from '../lib/utils';
 
@@ -41,6 +41,10 @@ export default function AdminPage() {
   const [playerSearch, setPlayerSearch] = useState('');
   const [showDeleteTeamConfirmModal, setShowDeleteTeamConfirmModal] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState<any | null>(null);
+  const [showEditTeamModal, setShowEditTeamModal] = useState(false);
+  const [teamToEdit, setTeamToEdit] = useState<any | null>(null);
+  const [editTeamName, setEditTeamName] = useState('');
+  const [editTeamDescription, setEditTeamDescription] = useState('');
   
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
   const [showAssignTrainer, setShowAssignTrainer] = useState(false);
@@ -88,6 +92,7 @@ export default function AdminPage() {
     const hasOpenModal =
       showAssignTrainer ||
       showDeleteTeamConfirmModal ||
+      showEditTeamModal ||
       showRemoveTrainer ||
       showCreateTeam ||
       showCreateTrainer ||
@@ -156,6 +161,14 @@ export default function AdminPage() {
         return;
       }
 
+      if (showEditTeamModal) {
+        setShowEditTeamModal(false);
+        setTeamToEdit(null);
+        setEditTeamName('');
+        setEditTeamDescription('');
+        return;
+      }
+
       if (showAssignTrainer) {
         setShowAssignTrainer(false);
         setSelectedTrainer('');
@@ -167,6 +180,7 @@ export default function AdminPage() {
   }, [
     showAssignTrainer,
     showDeleteTeamConfirmModal,
+    showEditTeamModal,
     showRemoveTrainer,
     showCreateTeam,
     showCreateTrainer,
@@ -274,6 +288,19 @@ export default function AdminPage() {
       await queryClient.invalidateQueries({ queryKey: ['admin-teams'] });
       await queryClient.refetchQueries({ queryKey: ['admin-teams'] });
       queryClient.invalidateQueries({ queryKey: ['teams'] });
+    },
+  });
+
+  const updateTeamMutation = useMutation({
+    mutationFn: (payload: { teamId: number; name: string; description?: string }) =>
+      adminAPI.updateTeam(payload.teamId, {
+        name: payload.name,
+        description: payload.description,
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['admin-teams'] });
+      await queryClient.refetchQueries({ queryKey: ['admin-teams'] });
+      await queryClient.invalidateQueries({ queryKey: ['teams'] });
     },
   });
 
@@ -405,6 +432,38 @@ export default function AdminPage() {
   const handleDeleteTeam = (teamItem: any) => {
     setTeamToDelete(teamItem);
     setShowDeleteTeamConfirmModal(true);
+  };
+
+  const handleEditTeam = (teamItem: any) => {
+    setTeamToEdit(teamItem);
+    setEditTeamName(String(teamItem?.name || ''));
+    setEditTeamDescription(String(teamItem?.description || ''));
+    setShowEditTeamModal(true);
+  };
+
+  const confirmEditTeam = async () => {
+    if (!teamToEdit) return;
+
+    const normalizedName = editTeamName.trim();
+    if (!normalizedName) {
+      showToast('Teamname ist erforderlich', 'warning');
+      return;
+    }
+
+    try {
+      await updateTeamMutation.mutateAsync({
+        teamId: teamToEdit.id,
+        name: normalizedName,
+        description: editTeamDescription.trim() || undefined,
+      });
+      setShowEditTeamModal(false);
+      setTeamToEdit(null);
+      setEditTeamName('');
+      setEditTeamDescription('');
+      showToast('Team erfolgreich umbenannt', 'success');
+    } catch (error: any) {
+      showToast(error?.response?.data?.error || 'Team konnte nicht gespeichert werden', 'error');
+    }
   };
 
   const confirmDeleteTeam = async () => {
@@ -744,6 +803,7 @@ export default function AdminPage() {
       admin_created: 'Admin erstellt',
       trainer_assigned_to_team: 'Trainer zu Team zugewiesen',
       trainer_removed_from_team: 'Trainer aus Team entfernt',
+      team_renamed: 'Team umbenannt',
       team_deleted: 'Team gelöscht',
     };
     return actionMap[action] || action;
@@ -759,6 +819,8 @@ export default function AdminPage() {
       trainer_name: 'Trainer',
       trainer_username: 'Trainer-Benutzername',
       trainer_email: 'Trainer-E-Mail',
+      old_team_name: 'Alter Teamname',
+      new_team_name: 'Neuer Teamname',
       custom_password_provided: 'Manuelles Passwort',
     };
     return labels[key] || key;
@@ -1103,6 +1165,13 @@ export default function AdminPage() {
                 
                 <div className="flex space-x-1.5 sm:space-x-2 ml-2">
                   <button
+                    onClick={() => handleEditTeam(team)}
+                    className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                    title="Team bearbeiten"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button
                     onClick={() => {
                       setSelectedTeam(team.id);
                       setShowAssignTrainer(true);
@@ -1246,6 +1315,64 @@ export default function AdminPage() {
               >
                 {deleteTeamMutation.isPending ? 'Löscht...' : 'Löschen'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Team Modal */}
+      {showEditTeamModal && teamToEdit && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="card max-w-md w-full max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="edit-team-title">
+            <h3 id="edit-team-title" className="text-lg font-semibold mb-4">Team bearbeiten</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Teamname *</label>
+                <input
+                  type="text"
+                  autoFocus
+                  required
+                  value={editTeamName}
+                  onChange={(e) => setEditTeamName(e.target.value)}
+                  className="input mt-1"
+                  placeholder="z.B. FC Musterhausen U19"
+                  title="Teamname"
+                  aria-label="Teamname"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Beschreibung</label>
+                <textarea
+                  value={editTeamDescription}
+                  onChange={(e) => setEditTeamDescription(e.target.value)}
+                  className="input mt-1"
+                  rows={3}
+                  placeholder="Optionale Beschreibung..."
+                />
+              </div>
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  onClick={confirmEditTeam}
+                  className="btn btn-primary w-full sm:w-auto"
+                  disabled={updateTeamMutation.isPending || !editTeamName.trim()}
+                >
+                  {updateTeamMutation.isPending ? 'Speichert...' : 'Speichern'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditTeamModal(false);
+                    setTeamToEdit(null);
+                    setEditTeamName('');
+                    setEditTeamDescription('');
+                  }}
+                  className="btn btn-secondary w-full sm:w-auto"
+                  disabled={updateTeamMutation.isPending}
+                >
+                  Abbrechen
+                </button>
+              </div>
             </div>
           </div>
         </div>
