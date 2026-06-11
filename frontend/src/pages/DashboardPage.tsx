@@ -49,6 +49,7 @@ export default function DashboardPage() {
   };
 
   const teamsWithPhotos = (teams || []).filter((team: any) => Boolean(getTeamPhotoUrl(team)));
+  const combinedTeamNames = (teams || []).map((team: any) => String(team?.name || '').trim()).filter(Boolean).join(' • ');
   const shouldShowTeamPhotoSection = Boolean(
     teams
     && teams.length > 0
@@ -112,27 +113,25 @@ export default function DashboardPage() {
               </div>
             )
           ) : (
-            <div className="space-y-4">
-              {teamsWithPhotos.slice(0, 2).map((team: any) => (
-                <div key={team.id} className="relative w-full min-h-[14rem] sm:min-h-[24rem] rounded-xl overflow-hidden">
-                  <img
-                    src={getTeamPhotoUrl(team)!}
-                    alt={team.name}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-black/25 to-transparent" />
-                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 px-4 text-center">
-                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-black/55 text-white text-sm sm:text-base font-semibold backdrop-blur-sm">
-                      <Users className="w-4 h-4" />
-                      Mein Team
-                    </span>
-                    <h3 className="inline-block px-3 py-1 rounded-md bg-black/55 text-white text-base sm:text-xl font-bold backdrop-blur-sm">
-                      {team.name}
-                    </h3>
-                  </div>
+            teamsWithPhotos[0] && (
+              <div className="relative w-full min-h-[14rem] sm:min-h-[24rem]">
+                <img
+                  src={getTeamPhotoUrl(teamsWithPhotos[0])}
+                  alt={combinedTeamNames || 'Meine Teams'}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-black/25 to-transparent" />
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 px-4 text-center">
+                  <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-black/55 text-white text-sm sm:text-base font-semibold backdrop-blur-sm">
+                    <Users className="w-4 h-4" />
+                    Meine Teams
+                  </span>
+                  <h3 className="inline-block px-3 py-1 rounded-md bg-black/55 text-white text-sm sm:text-lg font-bold backdrop-blur-sm break-words max-w-full">
+                    {combinedTeamNames}
+                  </h3>
                 </div>
-              ))}
-            </div>
+              </div>
+            )
           )}
         </div>
       )}
