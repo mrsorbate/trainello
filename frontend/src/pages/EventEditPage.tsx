@@ -432,10 +432,10 @@ export default function EventEditPage() {
       queryClient.invalidateQueries({ queryKey: ['event', eventId] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
       if (variables.updateSeries && event?.team_id) {
-        navigate(`/teams/${event.team_id}/events`);
+        navigate(`/teams/${event.team_id}/events`, { replace: true });
         return;
       }
-      navigate(`/events/${eventId}`);
+      navigate(`/events/${eventId}`, { replace: true });
     },
     onError: (error: any) => {
       showToast(error?.response?.data?.error || 'Termin konnte nicht gespeichert werden', 'error');
