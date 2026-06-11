@@ -70,9 +70,16 @@ NODE
 
 ensure_prod_env_values() {
     local env_file="$1"
+    local domain_value
 
-    ensure_env_key "DOMAIN" "trainello.de" "$env_file"
-    ensure_env_key "FRONTEND_URL" "https://trainello.de" "$env_file"
+    domain_value="$(get_env_value "DOMAIN" "$env_file" || true)"
+    if is_env_value_empty "$domain_value" || [ "$domain_value" = "app.deine-domain.tld" ]; then
+        domain_value="trainello.de"
+        ensure_env_key "DOMAIN" "$domain_value" "$env_file"
+        echo -e "${YELLOW}⚠️  DOMAIN war nicht gesetzt und wurde automatisch auf ${domain_value} gesetzt${NC}"
+    fi
+
+    ensure_env_key "FRONTEND_URL" "https://${domain_value}" "$env_file"
 
     local jwt_secret
     jwt_secret="$(get_env_value "JWT_SECRET" "$env_file" || true)"

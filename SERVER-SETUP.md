@@ -43,8 +43,8 @@ sudo nano .env
 Setze mindestens:
 
 ```bash
-DOMAIN=trainello.de
-ACME_EMAIL=admin@trainello.de
+DOMAIN=app.svhochweisel.de
+ACME_EMAIL=admin@svhochweisel.de
 JWT_SECRET=ein-langes-zufaelliges-secret
 ```
 
@@ -53,7 +53,7 @@ Zusätzlich für Push (optional manuell, wird sonst beim Setup automatisch erzeu
 ```bash
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
-VAPID_SUBJECT=mailto:admin@trainello.de
+VAPID_SUBJECT=mailto:admin@svhochweisel.de
 ```
 
 Beim Start mit `docker-compose.prod.yml` ergänzt `setup-server.sh` fehlende Werte automatisch:
@@ -68,7 +68,7 @@ Beim Start mit `docker-compose.prod.yml` ergänzt `setup-server.sh` fehlende Wer
 sudo COMPOSE_FILE=docker-compose.prod.yml bash ./setup-server.sh
 ```
 
-Danach läuft die App über HTTPS an `https://trainello.de`.
+Danach läuft die App über HTTPS an `https://<DOMAIN>`.
 
 ## Updates
 

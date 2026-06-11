@@ -151,12 +151,12 @@ Voraussetzungen:
 - Ports `80` und `443` sind erreichbar
 
 In `.env` setzen:
-- `DOMAIN=trainello.de`
-- `ACME_EMAIL=admin@trainello.de`
+- `DOMAIN=app.svhochweisel.de` (oder eine andere Vereins-Domain/Subdomain)
+- `ACME_EMAIL=admin@svhochweisel.de`
 - `JWT_SECRET=<starkes-secret>`
 - `VAPID_PUBLIC_KEY=<public-key>` (optional, wird bei leerem Wert automatisch erstellt)
 - `VAPID_PRIVATE_KEY=<private-key>` (optional, wird bei leerem Wert automatisch erstellt)
-- `VAPID_SUBJECT=mailto:admin@trainello.de` (optional, wird bei leerem Wert automatisch gesetzt)
+- `VAPID_SUBJECT=mailto:admin@svhochweisel.de` (optional, wird bei leerem Wert automatisch gesetzt)
 
 Start:
 ```bash
@@ -164,10 +164,10 @@ docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 Danach läuft die App unter:
-- `https://trainello.de`
+- `https://<DOMAIN>`
 
 Hinweise:
-- `FRONTEND_URL` und `CORS_ORIGIN` sind im Prod-Stack auf `https://trainello.de` gesetzt.
+- `FRONTEND_URL` und `CORS_ORIGIN` werden im Prod-Stack automatisch auf `https://<DOMAIN>` gesetzt.
 - Invite-Links werden damit ebenfalls korrekt als HTTPS-Domain erzeugt.
 - Backend nutzt Security-Header (`helmet`) und Rate-Limits für API/Auth.
 
