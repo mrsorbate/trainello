@@ -3,6 +3,7 @@ import db from '../database/init';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { CreateEventDTO, UpdateEventResponseDTO } from '../types';
 import { randomBytes } from 'crypto';
+import { sendPushToUsers } from '../services/pushNotifications';
 
 const router = Router();
 
@@ -99,6 +100,39 @@ function parseRepeatUntilDate(value: string): Date {
   }
 
   return date;
+}
+
+function formatEventDateTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return 'bald';
+  }
+
+  return new Intl.DateTimeFormat('de-DE', {
+    weekday: 'short',
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
+function getDistinctResponseUserIds(eventIds: number[]): number[] {
+  const normalizedEventIds = [...new Set(eventIds.map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0))];
+  if (normalizedEventIds.length === 0) {
+    return [];
+  }
+
+  const placeholders = normalizedEventIds.map(() => '?').join(', ');
+  const rows = db.prepare(
+    `SELECT DISTINCT user_id
+     FROM event_responses
+     WHERE event_id IN (${placeholders})`
+  ).all(...normalizedEventIds) as Array<{ user_id: number }>;
+
+  return rows
+    .map((row) => Number(row.user_id))
+    .filter((userId) => Number.isInteger(userId) && userId > 0);
 }
 
 function hasMatchingPitchTypeInHomeVenues(homeVenuesRaw: unknown, selectedPitchTypeRaw: unknown): boolean {
@@ -677,7 +711,7 @@ router.post('/:id/squad/release', (req: AuthRequest, res) => {
 });
 
 // Create event (or series)
-router.post('/', (req: AuthRequest, res) => {
+router.post('/', async (req: AuthRequest, res) => {
   try {
     const { 
       team_id, 
@@ -903,6 +937,15 @@ router.post('/', (req: AuthRequest, res) => {
           end_time: end.toISOString()
         });
       }
+
+      const notifyUserIds = invitedUserIds.filter((userId) => userId !== req.user!.id);
+      if (notifyUserIds.length > 0) {
+        await sendPushToUsers(notifyUserIds, {
+          title: 'Neue Terminserie',
+          body: `${title}: ${createdEvents.length} Termine wurden erstellt.`,
+          url: `/teams/${team_id}/events`,
+        });
+      }
       
       return res.status(201).json({
         message: `Created ${createdEvents.length} events in series`,
@@ -944,6 +987,15 @@ router.post('/', (req: AuthRequest, res) => {
 
       for (const userId of invitedUserIds) {
         responseStmt.run(result.lastInsertRowid, userId, defaultResponseStatus);
+      }
+
+      const notifyUserIds = invitedUserIds.filter((userId) => userId !== req.user!.id);
+      if (notifyUserIds.length > 0) {
+        await sendPushToUsers(notifyUserIds, {
+          title: 'Neuer Termin',
+          body: `${title} am ${formatEventDateTime(start_time)}`,
+          url: `/events/${result.lastInsertRowid}`,
+        });
       }
 
       return res.status(201).json({
@@ -1448,13 +1500,13 @@ router.post('/:id/response/:userId', (req: AuthRequest, res) => {
 });
 
 // Delete event (or series)
-router.delete('/:id', (req: AuthRequest, res) => {
+router.delete('/:id', async (req: AuthRequest, res) => {
   try {
     const eventId = parseInt(req.params.id);
     const deleteSeries = req.query.delete_series === 'true';
 
     // Check if event exists
-    const event = db.prepare('SELECT team_id, series_id FROM events WHERE id = ?').get(eventId) as any;
+    const event = db.prepare('SELECT id, team_id, series_id, title, start_time FROM events WHERE id = ?').get(eventId) as any;
     
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
@@ -1485,6 +1537,8 @@ router.delete('/:id', (req: AuthRequest, res) => {
       const eventsInSeries = db.prepare(
         'SELECT id, team_id, title, start_time, end_time FROM events WHERE series_id = ?'
       ).all(event.series_id) as Array<{ id: number; team_id: number; title: string; start_time: string; end_time: string }>;
+      const notifyUserIds = getDistinctResponseUserIds(eventsInSeries.map((seriesEvent) => seriesEvent.id))
+        .filter((userId) => userId !== req.user!.id);
 
       const deleteSeriesTx = db.transaction(() => {
         for (const eventRow of eventsInSeries) {
@@ -1501,6 +1555,15 @@ router.delete('/:id', (req: AuthRequest, res) => {
       });
 
       const result = deleteSeriesTx();
+
+      if (notifyUserIds.length > 0) {
+        await sendPushToUsers(notifyUserIds, {
+          title: 'Terminserie abgesagt',
+          body: `${event.title || 'Eine Terminserie'} wurde abgesagt.`,
+          url: `/teams/${event.team_id}/events`,
+        });
+      }
+
       res.json({ success: true, deleted_count: result.changes });
     } else {
       const eventToDelete = db.prepare(
@@ -1510,6 +1573,8 @@ router.delete('/:id', (req: AuthRequest, res) => {
       if (!eventToDelete) {
         return res.status(404).json({ error: 'Event not found' });
       }
+
+      const notifyUserIds = getDistinctResponseUserIds([eventId]).filter((userId) => userId !== req.user!.id);
 
       const deleteSingleTx = db.transaction(() => {
         upsertDeletedEventStmt.run(
@@ -1524,6 +1589,15 @@ router.delete('/:id', (req: AuthRequest, res) => {
       });
 
       deleteSingleTx();
+
+      if (notifyUserIds.length > 0) {
+        await sendPushToUsers(notifyUserIds, {
+          title: 'Termin abgesagt',
+          body: `${eventToDelete.title || 'Ein Termin'} am ${formatEventDateTime(eventToDelete.start_time)} wurde abgesagt.`,
+          url: `/teams/${eventToDelete.team_id}/events`,
+        });
+      }
+
       res.json({ success: true, deleted_count: 1 });
     }
   } catch (error) {

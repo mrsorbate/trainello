@@ -47,12 +47,14 @@ export const parseMatches = (html: string, source: string): TeamMatch[] => {
         const [leftRaw, rightRaw] = scoreText.includes(':') ? scoreText.split(':', 2) : ['', ''];
         const parsedHome = toNumber(leftRaw);
         const parsedAway = toNumber(rightRaw);
+        const normalizedStatusText = !scoreText.includes(':') && scoreText ? scoreText : undefined;
 
         matches.push({
           date: currentDate,
           homeTeam: clubs[0],
           awayTeam: clubs[1],
           competition: currentCompetition,
+          statusText: normalizedStatusText,
           result: scoreText.includes(':')
             ? parsedHome !== undefined || parsedAway !== undefined
               ? { home: parsedHome, away: parsedAway }
@@ -97,6 +99,7 @@ export const parseMatches = (html: string, source: string): TeamMatch[] => {
             awayTeam,
             competition:
               clean(parsedEvent.superEvent?.name ?? parsedEvent.eventStatus ?? '') || undefined,
+            statusText: clean(parsedEvent.eventStatus ?? '') || undefined,
             venue: clean(parsedEvent.location?.name ?? '') || undefined,
             source,
           });
@@ -129,6 +132,7 @@ export const parseMatches = (html: string, source: string): TeamMatch[] => {
       homeTeam,
       awayTeam,
       competition: cells[1],
+      statusText: cells[cells.length - 1].includes(':') ? undefined : cells[cells.length - 1],
       result: cells[cells.length - 1].includes(':')
         ? {
             home: toNumber(cells[cells.length - 1].split(':')[0]),

@@ -7,6 +7,7 @@ import db from '../database/init';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { CreateTeamDTO } from '../types';
 import { FussballDeClient, buildTeamPageUrl } from '../services/fussballDe/client';
+import { sendPushToUsers } from '../services/pushNotifications';
 
 const router = Router();
 const hasTeamsCalendarTokenColumn = (() => {
@@ -947,10 +948,27 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
   const insertResponseStmt = db.prepare('INSERT INTO event_responses (event_id, user_id, status) VALUES (?, ?, ?)');
+  const upsertDeletedEventStmt = db.prepare(
+    `INSERT INTO deleted_events (event_id, team_id, title, start_time, end_time, deleted_at)
+     VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+     ON CONFLICT(event_id) DO UPDATE SET
+       team_id = excluded.team_id,
+       title = excluded.title,
+       start_time = excluded.start_time,
+       end_time = excluded.end_time,
+       deleted_at = CURRENT_TIMESTAMP`
+  );
 
   const created: string[] = [];
   const updated: string[] = [];
   const skipped: string[] = [];
+  const cancelled: string[] = [];
+  const rescheduled: string[] = [];
+
+  const normalizeStatusText = (value: unknown): string => String(value || '').trim().toLowerCase();
+  const hasAnyKeyword = (haystack: string, keywords: string[]): boolean => keywords.some((keyword) => haystack.includes(keyword));
+  const cancelledKeywords = ['abgesagt', 'abgesetzt', 'faellt aus', 'fällt aus', 'annulliert', 'cancelled', 'canceled'];
+  const postponedKeywords = ['verlegt', 'verschoben', 'neu angesetzt', 'postponed', 'rescheduled'];
 
   for (const match of matches) {
     const gameDate = parseFussballDeDate(match.date);
@@ -975,20 +993,88 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
 
     const title = `${match.homeTeam} - ${match.awayTeam}`;
     const startTime = gameDate.toISOString();
+    const statusSignals = `${String(match.statusText || '')} ${String(match.competition || '')}`.toLowerCase();
+    const isCancelledMatch = hasAnyKeyword(normalizeStatusText(statusSignals), cancelledKeywords);
+    const isPostponedMatch = hasAnyKeyword(normalizeStatusText(statusSignals), postponedKeywords);
 
     // Check if event already exists by date proximity + team names
     const existing = db.prepare(
-      `SELECT id, home_goals, away_goals FROM events
+      `SELECT id, title, start_time, end_time, home_goals, away_goals FROM events
        WHERE team_id = ? AND type = 'match'
          AND abs(strftime('%s', start_time) - strftime('%s', ?)) < 86400
          AND (title LIKE ? OR title LIKE ?)`
     ).get(teamId, startTime, `%${match.homeTeam}%`, `%${match.awayTeam}%`) as any;
 
-    if (existing) {
-      if (match.result && (existing.home_goals === null || existing.away_goals === null)) {
+    const titleCandidates = db.prepare(
+      `SELECT id, title, start_time, end_time, home_goals, away_goals FROM events
+       WHERE team_id = ?
+         AND type = 'match'
+         AND title = ?
+       ORDER BY start_time ASC`
+    ).all(teamId, title) as Array<{
+      id: number;
+      title: string;
+      start_time: string;
+      end_time: string;
+      home_goals: number | null;
+      away_goals: number | null;
+    }>;
+
+    const fallbackExisting = titleCandidates.find((candidate) => {
+      const candidateTime = new Date(candidate.start_time);
+      if (Number.isNaN(candidateTime.getTime())) {
+        return false;
+      }
+      const diffHours = Math.abs(candidateTime.getTime() - gameDate.getTime()) / 3600000;
+      return diffHours <= 336;
+    });
+
+    const existingOrFallback = existing || fallbackExisting;
+
+    if (isCancelledMatch) {
+      if (existingOrFallback) {
+        upsertDeletedEventStmt.run(
+          existingOrFallback.id,
+          teamId,
+          existingOrFallback.title || title,
+          existingOrFallback.start_time || null,
+          existingOrFallback.end_time || null
+        );
+        db.prepare('DELETE FROM events WHERE id = ?').run(existingOrFallback.id);
+        cancelled.push(title);
+      } else {
+        skipped.push(`${title}: Als abgesagt markiert, aber kein Termin gefunden`);
+      }
+      continue;
+    }
+
+    if (existingOrFallback) {
+      const existingStartDate = new Date(existingOrFallback.start_time);
+      const hasValidExistingStart = !Number.isNaN(existingStartDate.getTime());
+      const timeDiffMinutes = hasValidExistingStart
+        ? Math.abs(existingStartDate.getTime() - gameDate.getTime()) / 60000
+        : 0;
+
+      if (match.result && (existingOrFallback.home_goals === null || existingOrFallback.away_goals === null)) {
         db.prepare('UPDATE events SET home_goals = ?, away_goals = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
-          .run(match.result.home ?? null, match.result.away ?? null, existing.id);
+          .run(match.result.home ?? null, match.result.away ?? null, existingOrFallback.id);
         updated.push(title);
+        continue;
+      }
+
+      if ((isPostponedMatch || timeDiffMinutes >= 30) && !match.result) {
+        const endTime = new Date(gameDate.getTime() + 105 * 60 * 1000).toISOString();
+        const rsvpDeadline = defaultRsvpHours !== null
+          ? new Date(gameDate.getTime() - defaultRsvpHours * 3600000).toISOString()
+          : null;
+
+        db.prepare(
+          `UPDATE events
+           SET start_time = ?, end_time = ?, rsvp_deadline = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE id = ?`
+        ).run(startTime, endTime, rsvpDeadline, existingOrFallback.id);
+
+        rescheduled.push(title);
       } else {
         skipped.push(title);
       }
@@ -1049,6 +1135,29 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
     }
 
     created.push(title);
+  }
+
+  const notifyUserIds = memberIds.filter((userId) => userId !== createdByUserId);
+  if (notifyUserIds.length > 0) {
+    if (cancelled.length > 0) {
+      await sendPushToUsers(notifyUserIds, {
+        title: 'Spiel abgesagt',
+        body: cancelled.length === 1
+          ? `${cancelled[0]} wurde abgesagt.`
+          : `${cancelled.length} Spiele wurden abgesagt.`,
+        url: `/teams/${teamId}/events`,
+      });
+    }
+
+    if (rescheduled.length > 0) {
+      await sendPushToUsers(notifyUserIds, {
+        title: 'Spiel verlegt',
+        body: rescheduled.length === 1
+          ? `${rescheduled[0]} wurde verlegt.`
+          : `${rescheduled.length} Spiele wurden verlegt.`,
+        url: `/teams/${teamId}/events`,
+      });
+    }
   }
 
   return {

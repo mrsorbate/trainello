@@ -9,6 +9,7 @@ export type TeamMatch = {
   awayTeam: string;
   competition?: string;
   venue?: string;
+  statusText?: string;
   result?: MatchResult;
   source: string;
 };
