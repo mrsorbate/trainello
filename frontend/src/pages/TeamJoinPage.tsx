@@ -282,14 +282,6 @@ export default function TeamJoinPage() {
             )}
           </div>
 
-          {!user ? (
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-              <p className="text-sm text-amber-900 dark:text-amber-100">
-                Du musst angemeldet sein, um beizutreten. Melde dich an oder erstelle ein Konto.
-              </p>
-            </div>
-          ) : null}
-
           <div className="space-y-3">
             {user ? (
               <>
