@@ -107,13 +107,18 @@ export default function DashboardPage() {
               </div>
             )
           ) : (
-            teamsWithPhotos[0] && (
+            teamsWithPhotos.length >= 2 ? (
               <div className="relative w-full min-h-[14rem] sm:min-h-[24rem]">
-                <img
-                  src={getTeamPhotoUrl(teamsWithPhotos[0])}
-                  alt={combinedTeamNames || 'Meine Teams'}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
+                <div className="absolute inset-0 grid grid-cols-2">
+                  {teamsWithPhotos.slice(0, 2).map((team: any) => (
+                    <img
+                      key={team.id}
+                      src={getTeamPhotoUrl(team)}
+                      alt={team.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ))}
+                </div>
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-black/25 to-transparent" />
                 <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 px-4 text-center">
                   <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-black/55 text-white text-sm sm:text-base font-semibold backdrop-blur-sm">
@@ -125,6 +130,26 @@ export default function DashboardPage() {
                   </h3>
                 </div>
               </div>
+            ) : (
+              teamsWithPhotos[0] && (
+                <div className="relative w-full min-h-[14rem] sm:min-h-[24rem]">
+                  <img
+                    src={getTeamPhotoUrl(teamsWithPhotos[0])}
+                    alt={combinedTeamNames || 'Meine Teams'}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-black/25 to-transparent" />
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 px-4 text-center">
+                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-black/55 text-white text-sm sm:text-base font-semibold backdrop-blur-sm">
+                      <Users className="w-4 h-4" />
+                      Meine Teams
+                    </span>
+                    <h3 className="inline-block px-3 py-1 rounded-md bg-black/55 text-white text-sm sm:text-lg font-bold backdrop-blur-sm break-words max-w-full">
+                      {combinedTeamNames}
+                    </h3>
+                  </div>
+                </div>
+              )
             )
           )}
         </div>
