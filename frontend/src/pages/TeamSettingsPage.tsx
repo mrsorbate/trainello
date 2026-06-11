@@ -281,11 +281,27 @@ export default function TeamSettingsPage() {
     },
   });
 
-  const normalizeFussballDeInput = (input: string): string => input.toUpperCase();
+  const normalizeFussballDeInput = (input: string): string => input;
 
-  const extractFussballDeIds = (input: string): string[] => {
-    const matches = String(input || '').toUpperCase().match(/[A-Z0-9]{16,40}/g) || [];
-    return [...new Set(matches)];
+  const extractFussballDeSources = (input: string): string[] => {
+    const raw = String(input || '');
+    const entries = raw
+      .split(/[\n,;|]/)
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+
+    const sources: string[] = [];
+    for (const entry of entries) {
+      if (/^https?:\/\/(?:www\.)?fussball\.de\//i.test(entry)) {
+        sources.push(entry);
+        continue;
+      }
+
+      const ids = entry.toUpperCase().match(/[A-Z0-9]{16,40}/g) || [];
+      sources.push(...ids);
+    }
+
+    return [...new Set(sources)];
   };
 
   const extractFussballDeTeamNames = (input: string): string[] => {
@@ -298,14 +314,14 @@ export default function TeamSettingsPage() {
   };
 
   const saveApiSettings = () => {
-    const extractedIds = extractFussballDeIds(fussballDeId);
-    if (fussballDeId.trim() && extractedIds.length === 0) {
-      showToast('Ungültiges fussball.de ID-Format', 'warning');
+    const extractedSources = extractFussballDeSources(fussballDeId);
+    if (fussballDeId.trim() && extractedSources.length === 0) {
+      showToast('Ungültiges fussball.de Format (ID oder URL)', 'warning');
       return;
     }
 
     updateApiSettingsMutation.mutate({
-      fussballde_id: extractedIds.length > 0 ? extractedIds.join(',') : undefined,
+      fussballde_id: extractedSources.length > 0 ? extractedSources.join(',') : undefined,
       fussballde_team_name: extractFussballDeTeamNames(fussballDeTeamName).join(',') || undefined,
     });
   };
@@ -658,7 +674,7 @@ export default function TeamSettingsPage() {
             </h2>
             <div>
               <label htmlFor="fussballde-id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                fussball.de IDs
+                fussball.de IDs / URLs
               </label>
               <div className="flex flex-col sm:flex-row gap-2">
                 <textarea
@@ -672,20 +688,20 @@ export default function TeamSettingsPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    const extracted = extractFussballDeIds(fussballDeId);
+                    const extracted = extractFussballDeSources(fussballDeId);
                     if (extracted.length === 0) {
-                      showToast('Keine gültige fussball.de ID in der Eingabe gefunden', 'warning');
+                      showToast('Keine gültige fussball.de Quelle in der Eingabe gefunden', 'warning');
                       return;
                     }
                     setFussballDeId(extracted.join('\n'));
-                    showToast(`${extracted.length} fussball.de ID(s) übernommen`, 'info');
+                    showToast(`${extracted.length} fussball.de Quelle(n) übernommen`, 'info');
                   }}
                   className="btn btn-secondary w-full sm:w-auto whitespace-nowrap"
                 >
-                  Aus URL übernehmen
+                  Quellen normalisieren
                 </button>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Eine ID pro Zeile. Beispiel: 011MI8V6UC000000VTVG0001VTR8C1K7</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Eine ID oder URL pro Zeile. Beispiel-ID: 011MI8V6UC000000VTVG0001VTR8C1K7</p>
             </div>
 
             <div>
@@ -716,7 +732,7 @@ export default function TeamSettingsPage() {
               <button
                 type="button"
                 onClick={() => importNextGamesMutation.mutate()}
-                disabled={importNextGamesMutation.isPending || extractFussballDeIds(fussballDeId).length === 0}
+                disabled={importNextGamesMutation.isPending || extractFussballDeSources(fussballDeId).length === 0}
                 className="btn btn-secondary w-full disabled:opacity-50"
               >
                 {importNextGamesMutation.isPending ? 'Import läuft...' : 'Spiele importieren'}

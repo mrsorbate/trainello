@@ -26,11 +26,49 @@ const calendarTokenSelectExpression = hasTeamsCalendarTokenColumn
 const LEGACY_CALENDAR_TOKEN_HEX_REGEX = /^[0-9a-f]{48}$/i;
 const COMPACT_CALENDAR_TOKEN_BASE64URL_REGEX = /^[A-Za-z0-9_-]{32}$/;
 const FUSSBALL_DE_ID_REGEX = /^[A-Z0-9]{16,40}$/;
+const FUSSBALL_DE_URL_REGEX = /^https?:\/\/(?:www\.)?fussball\.de\//i;
+
+const extractFussballDeTeamId = (source: string): string | null => {
+  const fromPath = source.match(/\/team-id\/([^/#!?]+)/i)?.[1];
+  if (fromPath && FUSSBALL_DE_ID_REGEX.test(fromPath.toUpperCase())) {
+    return fromPath.toUpperCase();
+  }
+
+  const uppercase = source.toUpperCase();
+  return FUSSBALL_DE_ID_REGEX.test(uppercase) ? uppercase : null;
+};
+
+const buildFussballDeTeamPageUrl = (source: string): string => {
+  return FUSSBALL_DE_URL_REGEX.test(source.trim())
+    ? source.trim()
+    : buildTeamPageUrl(source.trim().toUpperCase());
+};
+
+const parseFussballDeSources = (value: unknown): string[] => {
+  const raw = String(value || '');
+  const parts = raw
+    .split(/[\n,;|]/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+
+  const sources: string[] = [];
+  for (const part of parts) {
+    if (FUSSBALL_DE_URL_REGEX.test(part)) {
+      sources.push(part);
+      continue;
+    }
+
+    const ids = (part.toUpperCase().match(/[A-Z0-9]{16,40}/g) || [])
+      .filter((entry) => FUSSBALL_DE_ID_REGEX.test(entry));
+    sources.push(...ids);
+  }
+
+  return [...new Set(sources)];
+};
 
 const parseFussballDeIds = (value: unknown): string[] => {
-  const raw = String(value || '').toUpperCase();
-  const matches = raw.match(/[A-Z0-9]{16,40}/g) || [];
-  return [...new Set(matches.filter((entry) => FUSSBALL_DE_ID_REGEX.test(entry)))];
+  const sources = parseFussballDeSources(value);
+  return [...new Set(sources.map((source) => extractFussballDeTeamId(source)).filter(Boolean) as string[])];
 };
 
 const parseFussballDeTeamNames = (value: unknown): string[] => {
@@ -605,7 +643,7 @@ router.get('/:id/settings', (req: AuthRequest, res) => {
 
     return res.json({
       ...settings,
-      fussballde_ids: parseFussballDeIds(settings.fussballde_id),
+      fussballde_ids: parseFussballDeSources(settings.fussballde_id),
       fussballde_team_names: parseFussballDeTeamNames(settings.fussballde_team_name),
       home_venues: parseHomeVenuesFromDb(settings.home_venues),
       default_home_venue_name: settings.default_home_venue_name || null,
@@ -696,10 +734,10 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
       const rawFussballIdInput = hasFussballIds
         ? (Array.isArray(fussballde_ids) ? fussballde_ids.join(',') : String(fussballde_ids || ''))
         : String(fussballde_id || '').trim();
-      const normalizedFussballIds = parseFussballDeIds(rawFussballIdInput);
+      const normalizedFussballIds = parseFussballDeSources(rawFussballIdInput);
 
       if (rawFussballIdInput && normalizedFussballIds.length === 0) {
-        return res.status(400).json({ error: 'Ungültiges fussball.de ID-Format' });
+        return res.status(400).json({ error: 'Ungültiges fussball.de Format (ID oder URL)' });
       }
 
       nextFussballId = normalizedFussballIds.length > 0 ? normalizedFussballIds.join(',') : null;
@@ -889,7 +927,7 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
 
     return res.json({
       ...updatedSettings,
-      fussballde_ids: parseFussballDeIds(updatedSettings.fussballde_id),
+      fussballde_ids: parseFussballDeSources(updatedSettings.fussballde_id),
       fussballde_team_names: parseFussballDeTeamNames(updatedSettings.fussballde_team_name),
       home_venues: parseHomeVenuesFromDb(updatedSettings.home_venues),
       default_home_venue_name: updatedSettings.default_home_venue_name || null,
@@ -914,26 +952,26 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
 
   if (!team) throw new Error('TEAM_NOT_FOUND');
 
-  const fussballdeIds = parseFussballDeIds(team.fussballde_id);
+  const fussballdeSources = parseFussballDeSources(team.fussballde_id);
 
-  if (fussballdeIds.length === 0) {
+  if (fussballdeSources.length === 0) {
     return {
       success: true, imported: 0, updated: 0, skipped: 0,
       created: [], updatedItems: [], skippedDetails: [],
       mode: 'internal',
-      message: 'Für dieses Team ist keine fussball.de ID hinterlegt. Spiele werden intern verwaltet.',
+      message: 'Für dieses Team ist keine fussball.de Quelle (ID/URL) hinterlegt. Spiele werden intern verwaltet.',
     };
   }
 
   const client = new FussballDeClient({ timeoutMs: 15000 });
   const matchesBySource = await Promise.all(
-    fussballdeIds.map(async (fussballdeId) => {
-      const teamPageUrl = buildTeamPageUrl(fussballdeId);
+    fussballdeSources.map(async (sourceEntry) => {
+      const teamPageUrl = buildFussballDeTeamPageUrl(sourceEntry);
       try {
         const sourceMatches = await client.getSpielplan({ teamPageUrl });
-        return sourceMatches.map((match) => ({ ...match, __sourceId: fussballdeId }));
+        return sourceMatches.map((match) => ({ ...match, __sourceId: sourceEntry }));
       } catch (error) {
-        console.warn(`fussball.de Import fehlgeschlagen für ID ${fussballdeId}:`, error);
+        console.warn(`fussball.de Import fehlgeschlagen für Quelle ${sourceEntry}:`, error);
         return [];
       }
     })
@@ -995,7 +1033,7 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
   const ownTeamNorms = configuredTeamNames
     .map((teamName) => normalizeTeamName(teamName))
     .filter(Boolean);
-  const enforceOwnTeamDetection = fussballdeIds.length === 1 && ownTeamNorms.length > 0;
+  const enforceOwnTeamDetection = fussballdeSources.length === 1 && ownTeamNorms.length > 0;
 
   const defaultRsvpHours = parseRsvpHours(team.default_rsvp_deadline_hours_match) ?? parseRsvpHours(team.default_rsvp_deadline_hours);
   const defaultArrivalMinutes = parseArrivalMinutes(team.default_arrival_minutes_match) ?? parseArrivalMinutes(team.default_arrival_minutes);
@@ -1241,7 +1279,7 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
     updatedItems: updated,
     skippedDetails: skipped,
     mode: 'fussball.de',
-    source_ids: fussballdeIds,
+    source_ids: fussballdeSources,
   };
 };
 router.post('/:id/import-next-games', async (req: AuthRequest, res) => {
@@ -1289,20 +1327,20 @@ router.put('/:id/fussballde-id', (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'Team not found' });
     }
 
-    const normalizedId = String(fussballde_id || '').trim().toUpperCase();
-    if (!normalizedId) {
-      return res.status(400).json({ error: 'fussball.de ID ist erforderlich' });
+    const normalizedSource = String(fussballde_id || '').trim();
+    if (!normalizedSource) {
+      return res.status(400).json({ error: 'fussball.de ID oder URL ist erforderlich' });
     }
 
-    const isValidFormat = /^[A-Z0-9]{16,40}$/.test(normalizedId);
-    if (!isValidFormat) {
-      return res.status(400).json({ error: 'Ungültiges fussball.de ID-Format' });
+    const normalizedSources = parseFussballDeSources(normalizedSource);
+    if (normalizedSources.length === 0) {
+      return res.status(400).json({ error: 'Ungültiges fussball.de Format (ID oder URL)' });
     }
 
     db.prepare('UPDATE teams SET fussballde_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
-      .run(normalizedId, teamId);
+      .run(normalizedSources.join(','), teamId);
 
-    return res.json({ id: teamId, fussballde_id: normalizedId });
+    return res.json({ id: teamId, fussballde_id: normalizedSources.join(',') });
   } catch (error) {
     console.error('Update fussball.de id error:', error);
     return res.status(500).json({ error: 'Failed to update fussball.de ID' });
@@ -1329,27 +1367,27 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
     }
 
     // Try to fetch live standings from fussball.de if a team ID is configured
-    const externalTableIds = parseFussballDeIds(team.fussballde_id);
+    const externalTableSources = parseFussballDeSources(team.fussballde_id);
     const externalAttempts: Array<{
-      requested_id: string;
+      requested_source: string;
       source_url: string;
       ok: boolean;
       row_count: number;
       error?: string;
     }> = [];
 
-    if (externalTableIds.length > 0) {
+    if (externalTableSources.length > 0) {
       const client = new FussballDeClient({ timeoutMs: 15000 });
 
-      for (const tableId of externalTableIds) {
+      for (const sourceEntry of externalTableSources) {
         try {
-          const teamPageUrl = buildTeamPageUrl(tableId);
+          const teamPageUrl = buildFussballDeTeamPageUrl(sourceEntry);
           const externalResult = await client.getTabelleWithDiagnostics({ teamPageUrl });
           const standings = externalResult.standings;
 
           externalAttempts.push(
             ...externalResult.attempts.map((attempt) => ({
-              requested_id: tableId,
+              requested_source: sourceEntry,
               source_url: attempt.url,
               ok: attempt.ok,
               row_count: attempt.rowCount,
@@ -1385,11 +1423,12 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
             table,
             leagueName,
             source: 'fussball.de',
-            source_id: tableId,
+            source_id: extractFussballDeTeamId(sourceEntry) || sourceEntry,
             diagnostics: {
-              configured_ids: externalTableIds,
+              configured_ids: parseFussballDeIds(team.fussballde_id),
+              configured_sources: externalTableSources,
               selected_source: 'fussball.de',
-              selected_source_id: tableId,
+              selected_source_id: extractFussballDeTeamId(sourceEntry) || sourceEntry,
               attempts: externalAttempts,
               fallback_reason: null,
             },
@@ -1397,13 +1436,13 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
         } catch (externalError) {
           const errorMessage = externalError instanceof Error ? externalError.message : String(externalError);
           externalAttempts.push({
-            requested_id: tableId,
-            source_url: buildTeamPageUrl(tableId),
+            requested_source: sourceEntry,
+            source_url: buildFussballDeTeamPageUrl(sourceEntry),
             ok: false,
             row_count: 0,
             error: errorMessage,
           });
-          console.warn(`fussball.de table fetch failed for ID ${tableId}:`, externalError);
+          console.warn(`fussball.de table fetch failed for source ${sourceEntry}:`, externalError);
         }
       }
     }
@@ -1426,12 +1465,13 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
       leagueName: internalLeagueName,
       source: 'internal',
       diagnostics: {
-        configured_ids: externalTableIds,
+        configured_ids: parseFussballDeIds(team.fussballde_id),
+        configured_sources: externalTableSources,
         selected_source: 'internal',
         selected_source_id: null,
         attempts: externalAttempts,
-        fallback_reason: externalTableIds.length === 0
-          ? 'no_fussballde_id_configured'
+        fallback_reason: externalTableSources.length === 0
+          ? 'no_fussballde_source_configured'
           : 'no_external_rows_returned',
       },
     });
