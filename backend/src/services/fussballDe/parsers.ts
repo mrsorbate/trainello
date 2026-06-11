@@ -1,6 +1,14 @@
 import { load } from 'cheerio';
 import type { TeamMatch, TeamStanding } from './types';
 
+export type PrintableMatch = {
+  date?: string;
+  competition?: string;
+  homeTeam: string;
+  awayTeam: string;
+  matchUrl?: string;
+};
+
 type EventLike = {
   startDate?: string;
   homeTeam?: { name?: string };
@@ -179,4 +187,50 @@ export const parseStandings = (html: string, source: string): TeamStanding[] => 
   });
 
   return standings;
+};
+
+export const parsePrintableMatches = (html: string): PrintableMatch[] => {
+  const $ = load(html);
+  const matches: PrintableMatch[] = [];
+
+  let currentCompetition: string | undefined;
+  let currentDate: string | undefined;
+
+  $('table tr').each((_, row) => {
+    const rowNode = $(row);
+
+    if (rowNode.hasClass('row-competition')) {
+      const dateText = clean(rowNode.find('td.column-date').text());
+      currentDate = dateText || currentDate;
+
+      const competitionText = clean(rowNode.find('td.column-team').text());
+      currentCompetition = competitionText || currentCompetition;
+      return;
+    }
+
+    const clubs = rowNode
+      .find('td.column-club .club-name')
+      .map((_i, club) => clean($(club).text()))
+      .get()
+      .filter(Boolean);
+
+    const matchLink = rowNode.find('td.column-score a[href*="/spiel/"]').attr('href');
+    if (clubs.length < 2 || !matchLink) {
+      return;
+    }
+
+    const absoluteMatchUrl = matchLink.startsWith('http')
+      ? matchLink
+      : `https://www.fussball.de${matchLink}`;
+
+    matches.push({
+      date: clean(rowNode.find('td.column-score .info-text').text()) || currentDate,
+      competition: currentCompetition,
+      homeTeam: clubs[0],
+      awayTeam: clubs[1],
+      matchUrl: absoluteMatchUrl,
+    });
+  });
+
+  return matches;
 };
