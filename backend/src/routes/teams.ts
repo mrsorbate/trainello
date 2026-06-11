@@ -1462,6 +1462,75 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
     }
 
     const client = new FussballDeClient({ timeoutMs: 15000 });
+    const eventResultLookupStmt = db.prepare(
+      `SELECT home_goals, away_goals
+       FROM events
+       WHERE team_id = ?
+         AND type = 'match'
+         AND home_goals IS NOT NULL
+         AND away_goals IS NOT NULL
+         AND abs(strftime('%s', start_time) - strftime('%s', ?)) < 172800
+         AND (title LIKE ? OR title LIKE ?)
+       ORDER BY abs(strftime('%s', start_time) - strftime('%s', ?)) ASC
+       LIMIT 1`
+    );
+
+    const resolveResultFromInternalEvents = (match: any, parsedDate: Date | null): { home: number; away: number } | null => {
+      if (!parsedDate) {
+        return null;
+      }
+
+      const homeTeam = String(match?.homeTeam || '').trim();
+      const awayTeam = String(match?.awayTeam || '').trim();
+      if (!homeTeam || !awayTeam) {
+        return null;
+      }
+
+      const byHome = eventResultLookupStmt.get(
+        teamId,
+        parsedDate.toISOString(),
+        `%${homeTeam}%`,
+        `%${awayTeam}%`,
+        parsedDate.toISOString(),
+      ) as { home_goals?: number; away_goals?: number } | undefined;
+
+      if (byHome && Number.isFinite(byHome.home_goals) && Number.isFinite(byHome.away_goals)) {
+        return { home: Number(byHome.home_goals), away: Number(byHome.away_goals) };
+      }
+
+      const byAway = eventResultLookupStmt.get(
+        teamId,
+        parsedDate.toISOString(),
+        `%${awayTeam}%`,
+        `%${homeTeam}%`,
+        parsedDate.toISOString(),
+      ) as { home_goals?: number; away_goals?: number } | undefined;
+
+      if (byAway && Number.isFinite(byAway.home_goals) && Number.isFinite(byAway.away_goals)) {
+        return { home: Number(byAway.away_goals), away: Number(byAway.home_goals) };
+      }
+
+      return null;
+    };
+
+    const parseScheduleDate = (value: unknown): Date | null => {
+      const raw = String(value || '').replace(/\s+/g, ' ').trim();
+      if (!raw) return null;
+
+      const germanMatch = raw.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[^0-9]*(\d{1,2}):(\d{2}))?/);
+      if (germanMatch) {
+        const day = parseInt(germanMatch[1], 10);
+        const month = parseInt(germanMatch[2], 10) - 1;
+        const year = parseInt(germanMatch[3], 10);
+        const hour = germanMatch[4] ? parseInt(germanMatch[4], 10) : 19;
+        const minute = germanMatch[5] ? parseInt(germanMatch[5], 10) : 0;
+        const date = new Date(year, month, day, hour, minute, 0);
+        return Number.isNaN(date.getTime()) ? null : date;
+      }
+
+      const parsed = new Date(raw);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    };
 
     const schedules = await Promise.all(externalScheduleSources.map(async (sourceEntry) => {
       const sourceId = extractFussballDeTeamId(sourceEntry) || sourceEntry;
@@ -1524,21 +1593,26 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
 
         const matchedTeamName = rowMatches[0]?.rowName || null;
 
-        const toPayloadMatches = (matches: any[]) => matches.map((match) => ({
-          date: String(match?.date || ''),
-          homeTeam: String(match?.homeTeam || ''),
-          awayTeam: String(match?.awayTeam || ''),
-          homeBadge: match?.homeBadge
-            ? (String(match.homeBadge).startsWith('//') ? `https:${String(match.homeBadge)}` : String(match.homeBadge))
-            : null,
-          awayBadge: match?.awayBadge
-            ? (String(match.awayBadge).startsWith('//') ? `https:${String(match.awayBadge)}` : String(match.awayBadge))
-            : null,
-          competition: String(match?.competition || ''),
-          venue: String(match?.venue || ''),
-          statusText: String(match?.statusText || ''),
-          result: match?.result || null,
-        }));
+        const toPayloadMatches = (matches: any[]) => matches.map((match) => {
+          const parsedDate = parseScheduleDate(match?.date);
+          const fallbackResult = resolveResultFromInternalEvents(match, parsedDate);
+
+          return {
+            date: String(match?.date || ''),
+            homeTeam: String(match?.homeTeam || ''),
+            awayTeam: String(match?.awayTeam || ''),
+            homeBadge: match?.homeBadge
+              ? (String(match.homeBadge).startsWith('//') ? `https:${String(match.homeBadge)}` : String(match.homeBadge))
+              : null,
+            awayBadge: match?.awayBadge
+              ? (String(match.awayBadge).startsWith('//') ? `https:${String(match.awayBadge)}` : String(match.awayBadge))
+              : null,
+            competition: String(match?.competition || ''),
+            venue: String(match?.venue || ''),
+            statusText: String(match?.statusText || ''),
+            result: match?.result || fallbackResult || null,
+          };
+        });
 
         return {
           source_id: sourceId,
