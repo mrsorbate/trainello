@@ -1632,7 +1632,7 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
             competition: String(match?.competition || ''),
             venue: String(match?.venue || ''),
             statusText: String(match?.statusText || ''),
-            result: match?.result || fallbackResult || null,
+            result: fallbackResult || match?.result || null,
           };
         });
 

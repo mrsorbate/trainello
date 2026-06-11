@@ -205,13 +205,14 @@ export class FussballDeClient {
 
       try {
         const detailHtml = await this.fetchHtml(match.matchUrl);
-        const scoreMatch = detailHtml.match(/\[(\d+)\s*:\s*(\d+)\]|(\d+)\s*:\s*(\d+)/);
+        const scoreMatch = detailHtml.match(/\[(\d{1,2})\s*:\s*(\d{1,2})\]/)
+          || detailHtml.match(/(?:Endstand|Ergebnis|Spielstand)[^\d]{0,20}(\d{1,2})\s*:\s*(\d{1,2})/i);
         if (!scoreMatch) {
           return match;
         }
 
-        const homeScore = scoreMatch[1] ?? scoreMatch[3];
-        const awayScore = scoreMatch[2] ?? scoreMatch[4];
+        const homeScore = scoreMatch[1];
+        const awayScore = scoreMatch[2];
         const parsedHome = Number.parseInt(String(homeScore), 10);
         const parsedAway = Number.parseInt(String(awayScore), 10);
 
