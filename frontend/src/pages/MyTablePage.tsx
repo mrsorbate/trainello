@@ -94,7 +94,6 @@ export default function MyTablePage() {
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">#</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Team</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Sp</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">S/U/N</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tore</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pkt</th>
                       </tr>
@@ -105,7 +104,6 @@ export default function MyTablePage() {
                           <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{row.place ?? index + 1}</td>
                           <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{String(row.team || '-')}</td>
                           <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{row.games ?? '-'}</td>
-                          <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{row.won ?? '-'}/{row.draw ?? '-'}/{row.lost ?? '-'}</td>
                           <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{String(row.goal || '-')}</td>
                           <td className="px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white">{row.points ?? '-'}</td>
                         </tr>

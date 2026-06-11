@@ -295,8 +295,6 @@ export default function TeamPage() {
                   <div className="mt-3 flex items-center text-xs text-gray-600 dark:text-gray-300">
                     <span>Sp: {row.games}</span>
                     <span className="mx-2 text-gray-400 dark:text-gray-500">|</span>
-                    <span>S/U/N: {row.won}/{row.draw}/{row.lost}</span>
-                    <span className="mx-2 text-gray-400 dark:text-gray-500">|</span>
                     <span>Tore: {row.goal}</span>
                     <span className="mx-2 text-gray-400 dark:text-gray-500">|</span>
                     <span>Dif.: {formatGoalDifference(row.goal)}</span>
@@ -312,7 +310,6 @@ export default function TeamPage() {
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">#</th>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Team</th>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sp</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">S/U/N</th>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tore</th>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dif.</th>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pkt</th>
@@ -341,7 +338,6 @@ export default function TeamPage() {
                         </div>
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{row.games}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{row.won}/{row.draw}/{row.lost}</td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{row.goal}</td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-700 dark:text-gray-300">{formatGoalDifference(row.goal)}</td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">{row.points}</td>
