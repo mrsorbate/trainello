@@ -12,11 +12,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['trainello-logo.svg', 'masked-icon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['teamvoteplus-icon.svg', 'teamvoteplus-logo.svg', 'masked-icon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'trainello',
-        short_name: 'trainello',
-        description: 'trainello - Team-Management Software für Sportvereine',
+        name: 'teamvote+',
+        short_name: 'teamvote+',
+        description: 'teamvote+ - Team-Management Software für Sportvereine',
         theme_color: '#071535',
         background_color: '#071535',
         display: 'standalone',
@@ -34,7 +34,7 @@ export default defineConfig({
             purpose: 'any'
           },
           {
-            src: 'trainello-logo.svg',
+            src: 'teamvoteplus-icon.svg',
             sizes: 'any',
             type: 'image/svg+xml',
             purpose: 'any'

@@ -247,7 +247,7 @@ export default function TeamJoinPage() {
               </div>
             )}
             <div>
-              <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">trainello</p>
+              <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">teamvote+</p>
               <p className="text-base font-semibold text-gray-900 dark:text-white">
                 {organization?.name || 'Dein Verein'}
               </p>

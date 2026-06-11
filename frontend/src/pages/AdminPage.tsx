@@ -481,7 +481,7 @@ export default function AdminPage() {
     return [
       `Hi ${normalizedInviteeName},`,
       '',
-      `ab sofort organisieren wir unsere ${normalizedTeamLabel} über trainello.`,
+      `ab sofort organisieren wir unsere ${normalizedTeamLabel} über teamvote+.`,
       '',
       'Hier ist dein persönlicher Einladungslink:',
       '',

@@ -150,7 +150,7 @@ export default function SetupWizardPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            Willkommen bei trainello
+            Willkommen bei teamvote+
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
             {step === 1 ? 'Dein Verein' : step === 2 ? 'Admin-Daten' : step === 3 ? 'Zeitzone' : 'Finale Zusammenfassung'}

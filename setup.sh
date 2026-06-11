@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 trainello - Setup & Start"
+echo "🚀 teamvote+ - Setup & Start"
 echo "================================"
 echo ""
 

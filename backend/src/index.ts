@@ -93,7 +93,7 @@ app.use('/uploads', express.static('uploads'));
 // Root route
 app.get('/', (req, res) => {
   res.json({
-    name: 'trainello API',
+    name: 'teamvote+ API',
     version: '1.0.0',
     status: 'running',
     endpoints: {

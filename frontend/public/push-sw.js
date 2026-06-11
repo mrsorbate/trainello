@@ -1,6 +1,6 @@
 self.addEventListener('push', (event) => {
   let payload = {
-    title: 'Trainello',
+    title: 'teamvote+',
     body: 'Neue Benachrichtigung',
     url: '/',
   };

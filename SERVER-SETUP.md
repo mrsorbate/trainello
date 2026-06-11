@@ -1,4 +1,4 @@
-# trainello auf einem Server installieren
+# teamvote+ auf einem Server installieren
 
 Diese Anleitung ist für einen blanken Linux-Server gedacht und nutzt Docker Compose.
 
@@ -43,8 +43,8 @@ sudo nano .env
 Setze mindestens:
 
 ```bash
-DOMAIN=app.svhochweisel.de
-ACME_EMAIL=admin@svhochweisel.de
+DOMAIN=app.deinverein.de
+ACME_EMAIL=admin@deinverein.de
 JWT_SECRET=ein-langes-zufaelliges-secret
 ```
 
@@ -53,7 +53,7 @@ Zusätzlich für Push (optional manuell, wird sonst beim Setup automatisch erzeu
 ```bash
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
-VAPID_SUBJECT=mailto:admin@svhochweisel.de
+VAPID_SUBJECT=mailto:admin@deinverein.de
 ```
 
 Beim Start mit `docker-compose.prod.yml` ergänzt `setup-server.sh` fehlende Werte automatisch:
@@ -80,7 +80,7 @@ cd /opt/trainello
 sudo bash ./update-server.sh
 ```
 
-Wenn du mehrere Vereins-Instanzen hast (z. B. `/opt/app.svhochweisel.de`, `/opt/app.verein2.de`) und alle nacheinander updaten möchtest:
+Wenn du mehrere Vereins-Instanzen hast (z. B. `/opt/app.deinverein.de`, `/opt/app.verein2.de`) und alle nacheinander updaten möchtest:
 
 ```bash
 cd /opt/trainello

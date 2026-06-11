@@ -85,7 +85,7 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
     return [
       `Hi ${playerName},`,
       '',
-      `ab sofort organisieren wir unsere Trainings und Spiele über trainello.`,
+      `ab sofort organisieren wir unsere Trainings und Spiele über teamvote+.`,
       '',
       'Hier ist dein persönlicher Einladungslink:',
       '',

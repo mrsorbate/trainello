@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ============================================
-# trainello - Push Script
+# teamvote+ - Push Script
 # ============================================
 # Lokal ausführen zum Code pushen
 # Usage: ./push.sh "Deine Commit-Nachricht"

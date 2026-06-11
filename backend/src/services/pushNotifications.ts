@@ -18,7 +18,7 @@ export type PushPayload = {
 
 const VAPID_PUBLIC_KEY = String(process.env.VAPID_PUBLIC_KEY || '').trim();
 const VAPID_PRIVATE_KEY = String(process.env.VAPID_PRIVATE_KEY || '').trim();
-const VAPID_SUBJECT = String(process.env.VAPID_SUBJECT || 'mailto:admin@trainello.app').trim();
+const VAPID_SUBJECT = String(process.env.VAPID_SUBJECT || 'mailto:admin@teamvoteplus.app').trim();
 const isPushConfigured = Boolean(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY);
 
 if (isPushConfigured) {

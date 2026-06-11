@@ -1,4 +1,4 @@
-# trainello
+# teamvote+
 
 Eine benutzerfreundliche Team-Management-App für Sportvereine mit Fokus auf Terminverwaltung, Zu-/Absagen und Kaderverwaltung.
 
@@ -153,12 +153,12 @@ Voraussetzungen:
 - Ports `80` und `443` sind erreichbar
 
 In `.env` setzen:
-- `DOMAIN=app.svhochweisel.de` (oder eine andere Vereins-Domain/Subdomain)
-- `ACME_EMAIL=admin@svhochweisel.de`
+- `DOMAIN=app.deinverein.de` (oder eine andere Vereins-Domain/Subdomain)
+- `ACME_EMAIL=admin@deinverein.de`
 - `JWT_SECRET=<starkes-secret>`
 - `VAPID_PUBLIC_KEY=<public-key>` (optional, wird bei leerem Wert automatisch erstellt)
 - `VAPID_PRIVATE_KEY=<private-key>` (optional, wird bei leerem Wert automatisch erstellt)
-- `VAPID_SUBJECT=mailto:admin@svhochweisel.de` (optional, wird bei leerem Wert automatisch gesetzt)
+- `VAPID_SUBJECT=mailto:admin@deinverein.de` (optional, wird bei leerem Wert automatisch gesetzt)
 
 Start:
 ```bash

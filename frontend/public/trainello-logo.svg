@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="trainelloGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="teamvoteplusGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#2563eb"/>
       <stop offset="100%" style="stop-color:#1e40af"/>
     </linearGradient>
   </defs>
 
   <!-- Main circle background -->
-  <circle cx="256" cy="256" r="240" fill="url(#trainelloGrad)"/>
+  <circle cx="256" cy="256" r="240" fill="url(#teamvoteplusGrad)"/>
 
   <!-- Icon: Two people silhouettes -->
   <!-- Left person head -->
@@ -25,8 +25,8 @@
     <polyline points="120,340 200,420 392,280"/>
   </g>
 
-  <!-- Title text: "trainello" -->
-  <text x="256" y="470" font-family="'Helvetica Neue', Arial, sans-serif" font-size="72" font-weight="800" text-anchor="middle" fill="white" letter-spacing="-2">
-    trainello
+  <!-- Title text: "teamvote+" -->
+  <text x="256" y="466" font-family="'Helvetica Neue', Arial, sans-serif" font-size="56" font-weight="800" text-anchor="middle" fill="white" letter-spacing="-1">
+    teamvote+
   </text>
 </svg>

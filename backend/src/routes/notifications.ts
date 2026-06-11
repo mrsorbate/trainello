@@ -7,7 +7,7 @@ const router = Router();
 
 const VAPID_PUBLIC_KEY = String(process.env.VAPID_PUBLIC_KEY || '').trim();
 const VAPID_PRIVATE_KEY = String(process.env.VAPID_PRIVATE_KEY || '').trim();
-const VAPID_SUBJECT = String(process.env.VAPID_SUBJECT || 'mailto:admin@trainello.app').trim();
+const VAPID_SUBJECT = String(process.env.VAPID_SUBJECT || 'mailto:admin@teamvoteplus.app').trim();
 const isPushConfigured = Boolean(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY);
 
 if (isPushConfigured) {
@@ -147,7 +147,7 @@ router.post('/test', async (req: AuthRequest, res) => {
     return res.status(401).json({ error: 'Authentication required' });
   }
 
-  const title = String(req.body?.title || 'Trainello').trim();
+  const title = String(req.body?.title || 'teamvote+').trim();
   const body = String(req.body?.body || 'Dies ist eine Test-Benachrichtigung.').trim();
   const url = String(req.body?.url || '/').trim();
 
@@ -156,7 +156,7 @@ router.post('/test', async (req: AuthRequest, res) => {
     .all(userId) as StoredPushSubscription[];
 
   await sendPushToSubscriptions(subscriptions, {
-    title: title || 'Trainello',
+    title: title || 'teamvote+',
     body: body || 'Dies ist eine Test-Benachrichtigung.',
     url: url || '/',
   });

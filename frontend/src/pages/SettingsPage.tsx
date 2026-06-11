@@ -234,7 +234,7 @@ export default function SettingsPage() {
 
   const sendTestPushMutation = useMutation({
     mutationFn: () => notificationsAPI.sendTest({
-      title: 'Trainello Test',
+      title: 'teamvote+ Test',
       body: 'Push funktioniert auf diesem Gerät.',
       url: '/events',
     }),

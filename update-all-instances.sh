@@ -17,7 +17,7 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-echo -e "${BLUE}🔄 trainello - Multi-Instanz Update${NC}"
+echo -e "${BLUE}🔄 teamvote+ - Multi-Instanz Update${NC}"
 echo -e "${YELLOW}Base dir:${NC} ${BASE_DIR}"
 echo -e "${YELLOW}Compose file:${NC} ${COMPOSE_FILE}"
 echo -e "${YELLOW}Filter:${NC} ${INSTANCE_FILTER}"

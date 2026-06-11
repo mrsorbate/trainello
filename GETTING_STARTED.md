@@ -1,4 +1,4 @@
-# 🚀 trainello - Installation & Start
+# 🚀 teamvote+ - Installation & Start
 
 Eine moderne Team-Management-App für Sportvereine.
 

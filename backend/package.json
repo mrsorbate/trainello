@@ -1,7 +1,7 @@
 {
-  "name": "trainello-backend",
+  "name": "teamvoteplus-backend",
   "version": "1.0.0",
-  "description": "Backend for trainello",
+  "description": "Backend for teamvote+",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

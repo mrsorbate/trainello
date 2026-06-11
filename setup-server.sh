@@ -8,7 +8,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-APP_NAME="trainello"
+APP_NAME="teamvote+"
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
 FRONTEND_PORT="${FRONTEND_PORT:-8080}"
 BACKEND_PORT="${BACKEND_PORT:-3000}"
@@ -125,7 +125,7 @@ ensure_prod_env_values() {
     domain_value="$(get_env_value "DOMAIN" "$env_file" || true)"
     if is_env_value_empty "$domain_value" || [ "$domain_value" = "app.deine-domain.tld" ]; then
         ensure_env_key "DOMAIN" "" "$env_file"
-        prompt_env_value "$env_file" "DOMAIN" "Produktions-Domain" "trainello.de" "true"
+        prompt_env_value "$env_file" "DOMAIN" "Produktions-Domain" "teamvoteplus.de" "true"
         domain_value="$(get_env_value "DOMAIN" "$env_file" || true)"
     fi
 

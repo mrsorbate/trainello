@@ -62,8 +62,7 @@ export default function LoginPage() {
         <div className="text-center">
           {/* App Branding */}
           <div className="flex flex-col items-center mb-5 sm:mb-6">
-            <img src="/trainello-logo.svg" alt="trainello logo" className="h-16 w-16 mb-3" />
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">trainello</h1>
+            <img src="/teamvoteplus-logo.svg" alt="teamvote+" className="h-14 sm:h-16 w-auto mb-3" />
           </div>
 
           {/* Separator */}
