@@ -7,6 +7,16 @@ import { authenticate, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const SHORT_TOKEN_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+const createShortJoinToken = (length = 8): string => {
+  const bytes = crypto.randomBytes(length);
+  let token = '';
+  for (let i = 0; i < length; i += 1) {
+    token += SHORT_TOKEN_CHARS[bytes[i] % SHORT_TOKEN_CHARS.length];
+  }
+  return token;
+};
 
 const ensureTrainerInviteSchema = () => {
   db.exec(`
@@ -124,7 +134,20 @@ router.post('/teams/:teamId/join-link', authenticate, (req: AuthRequest, res) =>
       return res.status(404).json({ error: 'Team not found' });
     }
 
-    const token = crypto.randomBytes(24).toString('hex');
+    let token = '';
+    const tokenExistsStmt = db.prepare('SELECT 1 FROM team_invites WHERE token = ? LIMIT 1');
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const candidate = createShortJoinToken(8);
+      const exists = tokenExistsStmt.get(candidate);
+      if (!exists) {
+        token = candidate;
+        break;
+      }
+    }
+
+    if (!token) {
+      return res.status(500).json({ error: 'Could not generate unique join link token' });
+    }
 
     const stmt = db.prepare(
       'INSERT INTO team_invites (team_id, token, role, created_by, expires_at, max_uses, player_name) VALUES (?, ?, ?, ?, ?, ?, ?)'
