@@ -107,7 +107,7 @@ NODE
 }
 
 generate_vapid_keys_with_docker() {
-    docker run --rm node:20-alpine node <<'NODE'
+    docker run --rm -i node:20-alpine node <<'NODE'
 const crypto = require('crypto');
 const ecdh = crypto.createECDH('prime256v1');
 ecdh.generateKeys();
