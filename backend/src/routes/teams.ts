@@ -414,10 +414,11 @@ router.get('/:id/calendar.ics', (req, res) => {
     }
 
     const events = db.prepare(
-      `SELECT id, title, description, start_time, end_time, location_venue, location_street, location_zip_city, location, updated_at
-       FROM events
-       WHERE team_id = ?
-       ORDER BY start_time ASC`
+      `SELECT e.id, e.title, e.description, e.start_time, e.end_time, e.location_venue, e.location_street, e.location_zip_city, e.location, e.updated_at
+       FROM events e
+       INNER JOIN event_teams et ON et.event_id = e.id
+       WHERE et.team_id = ?
+       ORDER BY e.start_time ASC`
     ).all(teamId) as Array<any>;
 
     const deletedEvents = db.prepare(

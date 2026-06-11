@@ -113,6 +113,16 @@ db.exec(`
     FOREIGN KEY (created_by) REFERENCES users(id)
   );
 
+  CREATE TABLE IF NOT EXISTS event_teams (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER NOT NULL,
+    team_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+    FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+    UNIQUE(event_id, team_id)
+  );
+
   -- Event responses table (Zu-/Absagen)
   CREATE TABLE IF NOT EXISTS event_responses (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -202,6 +212,8 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_events_start_time ON events(start_time);
   CREATE INDEX IF NOT EXISTS idx_event_responses_event ON event_responses(event_id);
   CREATE INDEX IF NOT EXISTS idx_event_responses_user ON event_responses(user_id);
+  CREATE INDEX IF NOT EXISTS idx_event_teams_event ON event_teams(event_id);
+  CREATE INDEX IF NOT EXISTS idx_event_teams_team ON event_teams(team_id);
   CREATE INDEX IF NOT EXISTS idx_deleted_events_team_deleted_at ON deleted_events(team_id, deleted_at);
   CREATE INDEX IF NOT EXISTS idx_event_match_squads_event ON event_match_squads(event_id);
   CREATE INDEX IF NOT EXISTS idx_team_invites_token ON team_invites(token);
@@ -328,6 +340,13 @@ try {
     console.log('✅ Added series_id column to events table');
   }
 
+
+  db.exec(`
+    INSERT OR IGNORE INTO event_teams (event_id, team_id)
+    SELECT id, team_id
+    FROM events
+    WHERE team_id IS NOT NULL
+  `);
   db.exec('DROP TRIGGER IF EXISTS trg_event_responses_declined_comment_insert');
   db.exec('DROP TRIGGER IF EXISTS trg_event_responses_declined_comment_update');
   

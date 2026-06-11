@@ -87,16 +87,14 @@ export default function TeamJoinPage() {
     onSuccess: (response: any) => {
       const authToken = response?.data?.token;
       const authUser = response?.data?.user;
-      const targetTeamId = response?.data?.team_id || teamData?.team_id;
 
       if (authToken && authUser) {
-        localStorage.setItem('auth-token', authToken);
-        localStorage.setItem('auth-user', JSON.stringify(authUser));
+        setAuth(authToken, authUser);
       }
 
       showToast('Konto erstellt und Team beigetreten', 'success');
       window.setTimeout(() => {
-        window.location.href = `/teams/${targetTeamId}`;
+        navigate('/', { replace: true });
       }, 500);
     },
     onError: (error: any) => {

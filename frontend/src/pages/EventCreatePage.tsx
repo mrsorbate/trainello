@@ -23,7 +23,7 @@ export default function EventCreatePage() {
 
   const isTrainer = user?.role === 'trainer';
 
-  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(initialTeamId);
+  const [selectedTeamIds, setSelectedTeamIds] = useState<number[]>(initialTeamId ? [initialTeamId] : []);
   const [eventData, setEventData] = useState({
     title: '',
     type: 'training' as 'training' | 'match' | 'other',
@@ -214,23 +214,43 @@ export default function EventCreatePage() {
 
   useEffect(() => {
     if (initialTeamId) {
-      setSelectedTeamId(initialTeamId);
+      setSelectedTeamIds([initialTeamId]);
       return;
     }
-    if (teamsForCreate?.length && selectedTeamId === null) {
-      setSelectedTeamId(teamsForCreate[0].id);
+    if (teamsForCreate?.length && selectedTeamIds.length === 0) {
+      setSelectedTeamIds([teamsForCreate[0].id]);
     }
-  }, [initialTeamId, teamsForCreate, selectedTeamId]);
+  }, [initialTeamId, teamsForCreate, selectedTeamIds.length]);
 
-  const effectiveTeamId = selectedTeamId;
+  const effectiveTeamId = selectedTeamIds[0] ?? null;
+
+  const toggleTeamSelection = (teamId: number) => {
+    setSelectedTeamIds((prev) => {
+      if (prev.includes(teamId)) {
+        const next = prev.filter((id) => id !== teamId);
+        return next.length > 0 ? next : prev;
+      }
+      return [...prev, teamId];
+    });
+  };
 
   const { data: membersForCreate } = useQuery({
-    queryKey: ['team-members', effectiveTeamId],
+    queryKey: ['team-members', selectedTeamIds],
     queryFn: async () => {
-      const response = await teamsAPI.getMembers(effectiveTeamId!);
-      return response.data;
+      const responses = await Promise.all(selectedTeamIds.map((teamId) => teamsAPI.getMembers(teamId)));
+      const byId = new Map<number, any>();
+
+      for (const response of responses) {
+        for (const member of response.data || []) {
+          if (!byId.has(member.id)) {
+            byId.set(member.id, member);
+          }
+        }
+      }
+
+      return Array.from(byId.values());
     },
-    enabled: isTrainer && !!effectiveTeamId,
+    enabled: isTrainer && selectedTeamIds.length > 0,
   });
 
   const allMemberIds = membersForCreate?.map((member: any) => member.id) || [];
@@ -343,11 +363,11 @@ export default function EventCreatePage() {
   }, [membersForCreate, eventData.invited_user_ids.length]);
 
   useEffect(() => {
-    if (!effectiveTeamId) {
+    if (selectedTeamIds.length === 0) {
       return;
     }
     setEventData((prev) => ({ ...prev, invited_user_ids: [], invite_all: true }));
-  }, [effectiveTeamId]);
+  }, [selectedTeamIds]);
 
   useEffect(() => {
     if (!teamSettings) {
@@ -450,6 +470,7 @@ export default function EventCreatePage() {
     const resolvedLocation = eventData.location_venue || eventData.location_zip_city || eventData.location;
     const dataToSend: any = {
       team_id: effectiveTeamId,
+      team_ids: selectedTeamIds,
       title: eventData.title,
       type: eventData.type,
       description: eventData.description,
@@ -529,7 +550,7 @@ export default function EventCreatePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {!initialTeamId && teamsForCreate?.length === 1 && (
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Team</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Teams</label>
                 <div className="mt-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200">
                   {teamsForCreate[0].name}
                 </div>
@@ -537,27 +558,37 @@ export default function EventCreatePage() {
             )}
             {!initialTeamId && (!teamsForCreate || teamsForCreate.length > 1) && (
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Team *</label>
-                <select
-                  value={selectedTeamId ?? ''}
-                  onChange={(e) => setSelectedTeamId(parseInt(e.target.value, 10))}
-                  className="input mt-1"
-                  title="Team auswählen"
-                  aria-label="Team auswählen"
-                  required
-                >
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Teams *</label>
+                <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {teamsForCreate?.length ? (
-                    teamsForCreate.map((team: any) => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
-                    ))
+                    teamsForCreate.map((team: any) => {
+                      const checked = selectedTeamIds.includes(team.id);
+                      return (
+                        <label
+                          key={team.id}
+                          className={`flex items-center gap-3 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
+                            checked
+                              ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                              : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleTeamSelection(team.id)}
+                            className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-200">{team.name}</span>
+                        </label>
+                      );
+                    })
                   ) : (
-                    <option value="" disabled>
-                      Keine Teams verfügbar
-                    </option>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Keine Teams verfügbar</div>
                   )}
-                </select>
+                </div>
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  Wenn du mehrere Teams auswählst, wird ein gemeinsamer Termin für alle markierten Teams erstellt.
+                </p>
               </div>
             )}
 

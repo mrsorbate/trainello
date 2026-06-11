@@ -121,6 +121,7 @@ export const eventsAPI = {
   
   create: (data: {
     team_id: number;
+    team_ids?: number[];
     title: string;
     type: string;
     description?: string;

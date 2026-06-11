@@ -1,29 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1b2e56" />
-      <stop offset="100%" stop-color="#071535" />
-    </linearGradient>
-    <linearGradient id="lime" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#a7f248" />
-      <stop offset="100%" stop-color="#d9ef43" />
-    </linearGradient>
-    <style>
-      .link{stroke:url(#lime);stroke-width:14;stroke-linecap:round;stroke-linejoin:round}
-    </style>
-  </defs>
-
-  <rect x="32" y="32" width="448" height="448" rx="86" fill="url(#bg)" />
-
-  <line class="link" x1="256" y1="170" x2="188" y2="216" />
-  <line class="link" x1="256" y1="170" x2="324" y2="216" />
-  <line class="link" x1="188" y1="262" x2="244" y2="286" />
-  <line class="link" x1="324" y1="262" x2="266" y2="286" />
-  <line class="link" x1="192" y1="320" x2="306" y2="256" />
-
-  <circle cx="256" cy="146" r="30" fill="url(#lime)" />
-  <circle cx="164" cy="238" r="30" fill="#ecf2f7" />
-  <circle cx="348" cy="238" r="30" fill="#ecf2f7" />
-  <circle cx="188" cy="332" r="30" fill="#ecf2f7" />
-  <circle cx="324" cy="332" r="30" fill="#ecf2f7" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+  <rect width="160" height="160" rx="32" fill="#f0f0f0"/>
+  <rect x="20" y="20" width="120" height="120" rx="26" fill="#222222" opacity="0.08"/>
+  <polyline points="44,82 66,106 116,52" stroke="#222222" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>

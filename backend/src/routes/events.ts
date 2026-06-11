@@ -102,6 +102,105 @@ function parseRepeatUntilDate(value: string): Date {
   return date;
 }
 
+type EventTeamRow = { id: number; name: string };
+
+function normalizeTeamIds(primaryTeamId: number, rawTeamIds: unknown): number[] {
+  const extraTeamIds = Array.isArray(rawTeamIds) ? rawTeamIds : [];
+  return [...new Set([primaryTeamId, ...extraTeamIds].map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0))];
+}
+
+function getEventTeams(eventId: number): EventTeamRow[] {
+  return db.prepare(
+    `SELECT t.id, t.name
+     FROM event_teams et
+     INNER JOIN teams t ON t.id = et.team_id
+     WHERE et.event_id = ?
+     ORDER BY t.name COLLATE NOCASE ASC`
+  ).all(eventId) as EventTeamRow[];
+}
+
+function getEventTeamIds(eventId: number): number[] {
+  return getEventTeams(eventId).map((team) => Number(team.id)).filter((teamId) => Number.isInteger(teamId) && teamId > 0);
+}
+
+function getMemberIdsForTeams(teamIds: number[]): number[] {
+  const normalizedTeamIds = [...new Set(teamIds.map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0))];
+  if (normalizedTeamIds.length === 0) {
+    return [];
+  }
+
+  const placeholders = normalizedTeamIds.map(() => '?').join(',');
+  const rows = db.prepare(
+    `SELECT DISTINCT user_id
+     FROM team_members
+     WHERE team_id IN (${placeholders})`
+  ).all(...normalizedTeamIds) as Array<{ user_id: number }>;
+
+  return rows.map((row) => Number(row.user_id)).filter((userId) => Number.isInteger(userId) && userId > 0);
+}
+
+function isMemberOfAnyTeam(userId: number, teamIds: number[]): boolean {
+  if (!Number.isInteger(userId) || userId <= 0 || teamIds.length === 0) {
+    return false;
+  }
+
+  const normalizedTeamIds = [...new Set(teamIds.map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0))];
+  const placeholders = normalizedTeamIds.map(() => '?').join(',');
+  const row = db.prepare(
+    `SELECT 1 as match
+     FROM team_members
+     WHERE user_id = ? AND team_id IN (${placeholders})
+     LIMIT 1`
+  ).get(userId, ...normalizedTeamIds) as { match?: number } | undefined;
+
+  return Boolean(row?.match);
+}
+
+function isTrainerForAllTeams(userId: number, teamIds: number[]): boolean {
+  if (!Number.isInteger(userId) || userId <= 0 || teamIds.length === 0) {
+    return false;
+  }
+
+  const normalizedTeamIds = [...new Set(teamIds.map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0))];
+  const placeholders = normalizedTeamIds.map(() => '?').join(',');
+  const rows = db.prepare(
+    `SELECT team_id
+     FROM team_members
+     WHERE user_id = ? AND role = 'trainer' AND team_id IN (${placeholders})`
+  ).all(userId, ...normalizedTeamIds) as Array<{ team_id: number }>;
+
+  return new Set(rows.map((row) => Number(row.team_id))).size === normalizedTeamIds.length;
+}
+
+function canManageEvent(userId: number, eventId: number, createdBy: number): boolean {
+  if (Number(userId) === Number(createdBy)) {
+    return true;
+  }
+
+  return isTrainerForAllTeams(userId, getEventTeamIds(eventId));
+}
+
+function addEventTeamLinks(eventId: number, teamIds: number[]) {
+  const insertStmt = db.prepare('INSERT OR IGNORE INTO event_teams (event_id, team_id) VALUES (?, ?)');
+  for (const teamId of teamIds) {
+    insertStmt.run(eventId, teamId);
+  }
+}
+
+function attachTeamMetaToEvent<T extends Record<string, any>>(event: T): T & { team_ids: number[]; team_names: string[]; team_name: string } {
+  const teams = getEventTeams(Number(event.id));
+  return {
+    ...event,
+    team_ids: teams.map((team) => Number(team.id)),
+    team_names: teams.map((team) => String(team.name || '')),
+    team_name: teams.map((team) => String(team.name || '')).join(' / ') || String(event.team_name || ''),
+  };
+}
+
+function attachTeamMetaToEvents<T extends Record<string, any>>(events: T[]): Array<T & { team_ids: number[]; team_names: string[]; team_name: string }> {
+  return events.map((event) => attachTeamMetaToEvent(event));
+}
+
 function formatEventDateTime(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -351,7 +450,6 @@ router.get('/my-upcoming', (req: AuthRequest, res) => {
 
     const events = db.prepare(`
       SELECT e.*, 
-             t.name as team_name,
              u.name as created_by_name,
              er.status as my_status,
              er.comment as my_comment,
@@ -360,16 +458,20 @@ router.get('/my-upcoming', (req: AuthRequest, res) => {
              (SELECT COUNT(*) FROM event_responses WHERE event_id = e.id AND status = 'tentative') as tentative_count,
              (SELECT COUNT(*) FROM event_responses WHERE event_id = e.id AND status = 'pending') as pending_count
       FROM events e
-      INNER JOIN teams t ON e.team_id = t.id
       INNER JOIN users u ON e.created_by = u.id
-      INNER JOIN team_members tm ON e.team_id = tm.team_id AND tm.user_id = ?
       LEFT JOIN event_responses er ON er.event_id = e.id AND er.user_id = ?
       WHERE e.start_time >= ?
+        AND EXISTS (
+          SELECT 1
+          FROM event_teams et
+          INNER JOIN team_members tm ON tm.team_id = et.team_id
+          WHERE et.event_id = e.id AND tm.user_id = ?
+        )
       ORDER BY e.start_time ASC
       LIMIT 6
-    `).all(req.user!.id, req.user!.id, now);
+    `).all(req.user!.id, now, req.user!.id);
 
-    res.json(events);
+    res.json(attachTeamMetaToEvents(events as any[]));
   } catch (error) {
     console.error('Get my upcoming events error:', error);
     res.status(500).json({ error: 'Failed to fetch upcoming events' });
@@ -388,7 +490,6 @@ router.get('/my-all', (req: AuthRequest, res) => {
 
     const events = db.prepare(`
       SELECT e.*, 
-             t.name as team_name,
              u.name as created_by_name,
              er.status as my_status,
              er.comment as my_comment,
@@ -397,15 +498,19 @@ router.get('/my-all', (req: AuthRequest, res) => {
              (SELECT COUNT(*) FROM event_responses WHERE event_id = e.id AND status = 'tentative') as tentative_count,
              (SELECT COUNT(*) FROM event_responses WHERE event_id = e.id AND status = 'pending') as pending_count
       FROM events e
-      INNER JOIN teams t ON e.team_id = t.id
       INNER JOIN users u ON e.created_by = u.id
-      INNER JOIN team_members tm ON e.team_id = tm.team_id AND tm.user_id = ?
       LEFT JOIN event_responses er ON er.event_id = e.id AND er.user_id = ?
       WHERE e.start_time ${comparator} ?
+        AND EXISTS (
+          SELECT 1
+          FROM event_teams et
+          INNER JOIN team_members tm ON tm.team_id = et.team_id
+          WHERE et.event_id = e.id AND tm.user_id = ?
+        )
       ORDER BY e.start_time ${orderDirection}
-    `).all(req.user!.id, req.user!.id, now);
+    `).all(req.user!.id, now, req.user!.id);
 
-    res.json(events);
+    res.json(attachTeamMetaToEvents(events as any[]));
   } catch (error) {
     console.error('Get my all events error:', error);
     res.status(500).json({ error: 'Failed to fetch all events' });
@@ -433,8 +538,8 @@ router.get('/', (req: AuthRequest, res) => {
     }
 
     let query = `
-      SELECT e.*, 
-             t.name as team_name,
+            SELECT e.*, 
+              t.name as team_name,
              u.name as created_by_name,
              er.status as my_status,
              er.comment as my_comment,
@@ -443,13 +548,14 @@ router.get('/', (req: AuthRequest, res) => {
              (SELECT COUNT(*) FROM event_responses WHERE event_id = e.id AND status = 'tentative') as tentative_count,
              (SELECT COUNT(*) FROM event_responses WHERE event_id = e.id AND status = 'pending') as pending_count
       FROM events e
-      INNER JOIN teams t ON e.team_id = t.id
+      INNER JOIN event_teams et_filter ON et_filter.event_id = e.id AND et_filter.team_id = ?
+      INNER JOIN teams t ON et_filter.team_id = t.id
       INNER JOIN users u ON e.created_by = u.id
       LEFT JOIN event_responses er ON er.event_id = e.id AND er.user_id = ?
-      WHERE e.team_id = ?
+      WHERE 1 = 1
     `;
 
-    const params: any[] = [req.user!.id, team_id];
+    const params: any[] = [team_id, req.user!.id];
 
     if (from) {
       query += ' AND e.start_time >= ?';
@@ -470,7 +576,7 @@ router.get('/', (req: AuthRequest, res) => {
 
     const events = db.prepare(query).all(...params);
 
-    res.json(events);
+    res.json(attachTeamMetaToEvents(events as any[]));
   } catch (error) {
     console.error('Get events error:', error);
     res.status(500).json({ error: 'Failed to fetch events' });
@@ -483,10 +589,9 @@ router.get('/:id', (req: AuthRequest, res) => {
     const eventId = parseInt(req.params.id);
 
     const event = db.prepare(`
-      SELECT e.*, u.name as created_by_name, t.name as team_name
+      SELECT e.*, u.name as created_by_name
       FROM events e
       INNER JOIN users u ON e.created_by = u.id
-      INNER JOIN teams t ON e.team_id = t.id
       WHERE e.id = ?
     `).get(eventId) as any;
 
@@ -495,13 +600,15 @@ router.get('/:id', (req: AuthRequest, res) => {
     }
 
     // Check membership
-    const membership = db.prepare(
-      'SELECT role FROM team_members WHERE team_id = ? AND user_id = ?'
-    ).get(event.team_id, req.user!.id) as any;
-
-    if (!membership) {
+    const eventTeamIds = getEventTeamIds(eventId);
+    if (!isMemberOfAnyTeam(req.user!.id, eventTeamIds)) {
       return res.status(403).json({ error: 'Not a team member' });
     }
+
+    const isTrainer = eventTeamIds.some((teamId) => {
+      const membership = db.prepare('SELECT role FROM team_members WHERE team_id = ? AND user_id = ?').get(teamId, req.user!.id) as any;
+      return membership?.role === 'trainer';
+    });
 
     // Get responses
     let responses = db.prepare(`
@@ -512,12 +619,12 @@ router.get('/:id', (req: AuthRequest, res) => {
       ORDER BY er.responded_at DESC
     `).all(eventId);
 
-    const canViewResponses = membership.role === 'trainer' || event.visibility_all === 1 || event.visibility_all === true;
+    const canViewResponses = isTrainer || event.visibility_all === 1 || event.visibility_all === true;
     if (!canViewResponses) {
       responses = responses.filter((response: any) => response.user_id === req.user!.id);
     }
 
-    const eventWithSeriesMeta = { ...event } as any;
+    const eventWithSeriesMeta = attachTeamMetaToEvent({ ...event }) as any;
     if (event.series_id) {
       const seriesEvents = db.prepare(
         'SELECT start_time FROM events WHERE series_id = ? ORDER BY start_time ASC'
@@ -555,7 +662,7 @@ router.get('/:id/squad', (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Invalid event id' });
     }
 
-    const event = db.prepare('SELECT id, team_id, type FROM events WHERE id = ?').get(eventId) as any;
+    const event = db.prepare('SELECT id, team_id, type, created_by FROM events WHERE id = ?').get(eventId) as any;
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }
@@ -564,8 +671,7 @@ router.get('/:id/squad', (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Squad is only available for match events' });
     }
 
-    const membership = db.prepare('SELECT role FROM team_members WHERE team_id = ? AND user_id = ?').get(event.team_id, req.user!.id) as any;
-    if (!membership) {
+    if (!isMemberOfAnyTeam(req.user!.id, getEventTeamIds(eventId))) {
       return res.status(403).json({ error: 'Not a team member' });
     }
 
@@ -575,7 +681,8 @@ router.get('/:id/squad', (req: AuthRequest, res) => {
 
     const payload = createMatchSquadResponse(squadRow);
 
-    if (membership.role !== 'trainer' && payload.is_released !== 1) {
+    const canManage = canManageEvent(req.user!.id, eventId, event.created_by);
+    if (!canManage && payload.is_released !== 1) {
       return res.json({
         event_id: eventId,
         squad_user_ids: [],
@@ -606,7 +713,7 @@ router.put('/:id/squad', (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Invalid event id' });
     }
 
-    const event = db.prepare('SELECT id, team_id, type FROM events WHERE id = ?').get(eventId) as any;
+    const event = db.prepare('SELECT id, team_id, type, created_by FROM events WHERE id = ?').get(eventId) as any;
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }
@@ -615,13 +722,11 @@ router.put('/:id/squad', (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Squad is only available for match events' });
     }
 
-    const membership = db.prepare('SELECT role FROM team_members WHERE team_id = ? AND user_id = ?').get(event.team_id, req.user!.id) as any;
-    if (!membership || membership.role !== 'trainer') {
+    if (!canManageEvent(req.user!.id, eventId, event.created_by)) {
       return res.status(403).json({ error: 'Only trainers can edit match squad' });
     }
 
-    const teamMemberRows = db.prepare('SELECT user_id FROM team_members WHERE team_id = ?').all(event.team_id) as Array<{ user_id: number }>;
-    const allowedMemberIds = new Set(teamMemberRows.map((row) => Number(row.user_id)).filter((value) => Number.isInteger(value)));
+    const allowedMemberIds = new Set(getMemberIdsForTeams(getEventTeamIds(eventId)));
 
     const squadUserIds = normalizeSquadUserIds(req.body?.squad_user_ids, allowedMemberIds);
     const squadSet = new Set(squadUserIds);
@@ -660,7 +765,7 @@ router.post('/:id/squad/release', (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Invalid event id' });
     }
 
-    const event = db.prepare('SELECT id, team_id, type FROM events WHERE id = ?').get(eventId) as any;
+    const event = db.prepare('SELECT id, team_id, type, created_by FROM events WHERE id = ?').get(eventId) as any;
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }
@@ -669,8 +774,7 @@ router.post('/:id/squad/release', (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Squad is only available for match events' });
     }
 
-    const membership = db.prepare('SELECT role FROM team_members WHERE team_id = ? AND user_id = ?').get(event.team_id, req.user!.id) as any;
-    if (!membership || membership.role !== 'trainer') {
+    if (!canManageEvent(req.user!.id, eventId, event.created_by)) {
       return res.status(403).json({ error: 'Only trainers can release match squad' });
     }
 
@@ -714,7 +818,8 @@ router.post('/:id/squad/release', (req: AuthRequest, res) => {
 router.post('/', async (req: AuthRequest, res) => {
   try {
     const { 
-      team_id, 
+      team_id,
+      team_ids,
       title, 
       type, 
       description, 
@@ -754,12 +859,8 @@ router.post('/', async (req: AuthRequest, res) => {
 
     const resolvedLocation = location_venue || location || null;
 
-    // Check if user is trainer
-    const membership = db.prepare(
-      'SELECT role FROM team_members WHERE team_id = ? AND user_id = ?'
-    ).get(team_id, req.user!.id) as any;
-
-    if (!membership || membership.role !== 'trainer') {
+    const targetTeamIds = normalizeTeamIds(team_id, team_ids);
+    if (!isTrainerForAllTeams(req.user!.id, targetTeamIds)) {
       return res.status(403).json({ error: 'Only trainers can create events' });
     }
 
@@ -846,8 +947,7 @@ router.post('/', async (req: AuthRequest, res) => {
     };
 
     // Get all team members for responses
-    const members = db.prepare('SELECT user_id FROM team_members WHERE team_id = ?').all(team_id) as any[];
-    const memberIds = members.map((member) => member.user_id);
+    const memberIds = getMemberIdsForTeams(targetTeamIds);
 
     let invitedUserIds = invited_user_ids?.length ? invited_user_ids : (invite_all ? memberIds : []);
     invitedUserIds = invitedUserIds.filter((id) => memberIds.includes(id));
@@ -926,6 +1026,8 @@ router.post('/', async (req: AuthRequest, res) => {
           seriesId
         );
         
+        addEventTeamLinks(Number(result.lastInsertRowid), targetTeamIds);
+
         // Create pending responses for all team members
         for (const userId of invitedUserIds) {
           responseStmt.run(result.lastInsertRowid, userId, defaultResponseStatus);
@@ -978,6 +1080,8 @@ router.post('/', async (req: AuthRequest, res) => {
         req.user!.id
       );
 
+      addEventTeamLinks(Number(result.lastInsertRowid), targetTeamIds);
+
       const resolvedSingleRsvpDeadline = getDefaultRsvpDeadline(start_time);
 
       // Create pending responses for all team members
@@ -1001,6 +1105,7 @@ router.post('/', async (req: AuthRequest, res) => {
       return res.status(201).json({
         id: result.lastInsertRowid,
         team_id,
+        team_ids: targetTeamIds,
         title,
         type,
         description,
@@ -1076,18 +1181,14 @@ router.put('/:id', (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    const membership = db.prepare(
-      'SELECT role FROM team_members WHERE team_id = ? AND user_id = ?'
-    ).get(event.team_id, req.user!.id) as any;
-
-    if (!membership || membership.role !== 'trainer') {
+    const eventTeamIds = getEventTeamIds(eventId);
+    if (!canManageEvent(req.user!.id, eventId, event.created_by)) {
       return res.status(403).json({ error: 'Only trainers can edit events' });
     }
 
     const resolvedLocation = location_venue || location || null;
 
-    const teamMembers = db.prepare('SELECT user_id FROM team_members WHERE team_id = ?').all(event.team_id) as Array<{ user_id: number }>;
-    const teamMemberIds = teamMembers.map((member) => Number(member.user_id));
+    const teamMemberIds = getMemberIdsForTeams(eventTeamIds);
     const normalizedInvitedUserIds = Array.isArray(invited_user_ids)
       ? [...new Set(invited_user_ids.map((value) => Number(value)).filter((value) => Number.isFinite(value) && teamMemberIds.includes(value)))]
       : [];
@@ -1292,6 +1393,8 @@ router.put('/:id', (req: AuthRequest, res) => {
           event.series_id
         );
 
+        addEventTeamLinks(Number(inserted.lastInsertRowid), eventTeamIds);
+
         syncInvitesForEvent(Number(inserted.lastInsertRowid));
       }
 
@@ -1370,7 +1473,7 @@ router.post('/:id/response', (req: AuthRequest, res) => {
     }
 
     // Check if event exists and user is member
-    const event = db.prepare('SELECT team_id, rsvp_deadline FROM events WHERE id = ?').get(eventId) as any;
+    const event = db.prepare('SELECT id, team_id, rsvp_deadline FROM events WHERE id = ?').get(eventId) as any;
     
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
@@ -1386,9 +1489,10 @@ router.post('/:id/response', (req: AuthRequest, res) => {
       }
     }
 
-    const membership = db.prepare(
-      'SELECT role FROM team_members WHERE team_id = ? AND user_id = ?'
-    ).get(event.team_id, req.user!.id) as { role: string } | undefined;
+    const eventTeamIds = getEventTeamIds(eventId);
+    const membership = eventTeamIds
+      .map((teamId) => db.prepare('SELECT role FROM team_members WHERE team_id = ? AND user_id = ?').get(teamId, req.user!.id) as { role: string } | undefined)
+      .find(Boolean);
 
     if (!membership) {
       return res.status(403).json({ error: 'Not a team member' });
@@ -1441,7 +1545,7 @@ router.post('/:id/response/:userId', (req: AuthRequest, res) => {
     }
 
     // Check if event exists
-    const event = db.prepare('SELECT team_id, rsvp_deadline FROM events WHERE id = ?').get(eventId) as any;
+    const event = db.prepare('SELECT id, team_id, rsvp_deadline, created_by FROM events WHERE id = ?').get(eventId) as any;
     
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
@@ -1458,20 +1562,12 @@ router.post('/:id/response/:userId', (req: AuthRequest, res) => {
     }
 
     // Check if user is trainer in this team
-    const membership = db.prepare(
-      'SELECT role FROM team_members WHERE team_id = ? AND user_id = ?'
-    ).get(event.team_id, req.user!.id) as any;
-
-    if (!membership || membership.role !== 'trainer') {
+    const eventTeamIds = getEventTeamIds(eventId);
+    if (!canManageEvent(req.user!.id, eventId, event.created_by)) {
       return res.status(403).json({ error: 'Only trainers can update player responses' });
     }
 
-    // Verify that the target user is also a member
-    const targetMembership = db.prepare(
-      'SELECT id FROM team_members WHERE team_id = ? AND user_id = ?'
-    ).get(event.team_id, userId);
-
-    if (!targetMembership) {
+    if (!isMemberOfAnyTeam(userId, eventTeamIds)) {
       return res.status(404).json({ error: 'User is not a team member' });
     }
 
@@ -1506,18 +1602,14 @@ router.delete('/:id', async (req: AuthRequest, res) => {
     const deleteSeries = req.query.delete_series === 'true';
 
     // Check if event exists
-    const event = db.prepare('SELECT id, team_id, series_id, title, start_time FROM events WHERE id = ?').get(eventId) as any;
+    const event = db.prepare('SELECT id, team_id, series_id, title, start_time, created_by FROM events WHERE id = ?').get(eventId) as any;
     
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }
 
     // Check if user is trainer
-    const membership = db.prepare(
-      'SELECT role FROM team_members WHERE team_id = ? AND user_id = ?'
-    ).get(event.team_id, req.user!.id) as any;
-
-    if (!membership || membership.role !== 'trainer') {
+    if (!canManageEvent(req.user!.id, eventId, event.created_by)) {
       return res.status(403).json({ error: 'Only trainers can delete events' });
     }
 
