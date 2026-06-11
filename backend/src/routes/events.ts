@@ -1040,7 +1040,7 @@ router.post('/', async (req: AuthRequest, res) => {
         });
       }
 
-      const notifyUserIds = invitedUserIds.filter((userId) => userId !== req.user!.id);
+      const notifyUserIds = invitedUserIds;
       if (notifyUserIds.length > 0) {
         await sendPushToUsers(notifyUserIds, {
           title: 'Neue Terminserie',
@@ -1093,7 +1093,7 @@ router.post('/', async (req: AuthRequest, res) => {
         responseStmt.run(result.lastInsertRowid, userId, defaultResponseStatus);
       }
 
-      const notifyUserIds = invitedUserIds.filter((userId) => userId !== req.user!.id);
+      const notifyUserIds = invitedUserIds;
       if (notifyUserIds.length > 0) {
         await sendPushToUsers(notifyUserIds, {
           title: 'Neuer Termin',
