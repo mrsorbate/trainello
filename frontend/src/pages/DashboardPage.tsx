@@ -109,14 +109,15 @@ export default function DashboardPage() {
           ) : (
             teamsWithPhotos.length >= 2 ? (
               <div className="relative w-full min-h-[14rem] sm:min-h-[24rem]">
-                <div className="absolute inset-0 grid grid-cols-2">
-                  {teamsWithPhotos.slice(0, 2).map((team: any) => (
-                    <img
-                      key={team.id}
-                      src={getTeamPhotoUrl(team)}
-                      alt={team.name}
-                      className="w-full h-full object-cover"
-                    />
+                <div className="absolute inset-0 flex">
+                  {teamsWithPhotos.slice(0, 2).map((team: any, index: number) => (
+                    <div key={team.id} className={`relative w-1/2 h-full ${index === 0 ? 'border-r border-white/30 dark:border-gray-900/40' : ''}`}>
+                      <img
+                        src={getTeamPhotoUrl(team)}
+                        alt={team.name}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    </div>
                   ))}
                 </div>
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-black/25 to-transparent" />
