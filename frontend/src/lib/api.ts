@@ -90,6 +90,9 @@ export const teamsAPI = {
   
   addMember: (id: number, data: { user_id: number; role: string; jersey_number?: number; position?: string }) =>
     api.post(`/teams/${id}/members`, data),
+
+  removeMember: (id: number, userId: number) =>
+    api.delete(`/teams/${id}/members/${userId}`),
   
   createPlayer: (id: number, data: { name: string; birth_date?: string; jersey_number?: number }) =>
     api.post(`/teams/${id}/players`, data),
@@ -101,6 +104,8 @@ export const teamsAPI = {
   },
 
   deleteTeamPicture: (id: number) => api.delete(`/teams/${id}/picture`),
+
+  deleteTeam: (id: number) => api.delete(`/teams/${id}`),
 };
 
 // Events API

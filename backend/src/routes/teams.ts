@@ -1495,6 +1495,45 @@ router.post('/:id/members', (req: AuthRequest, res) => {
   }
 });
 
+// Remove team member (trainers can remove players)
+router.delete('/:id/members/:userId', (req: AuthRequest, res) => {
+  try {
+    const teamId = parseInt(req.params.id, 10);
+    const userId = parseInt(req.params.userId, 10);
+
+    const trainerMembership = db.prepare(
+      'SELECT role FROM team_members WHERE team_id = ? AND user_id = ?'
+    ).get(teamId, req.user!.id) as any;
+
+    if (!trainerMembership || trainerMembership.role !== 'trainer') {
+      return res.status(403).json({ error: 'Only trainers can remove players' });
+    }
+
+    const targetMembership = db.prepare(
+      'SELECT role FROM team_members WHERE team_id = ? AND user_id = ?'
+    ).get(teamId, userId) as any;
+
+    if (!targetMembership) {
+      return res.status(404).json({ error: 'Membership not found' });
+    }
+
+    if (targetMembership.role === 'trainer') {
+      return res.status(400).json({ error: 'Trainer können nur Spieler entfernen' });
+    }
+
+    const result = db.prepare('DELETE FROM team_members WHERE team_id = ? AND user_id = ?').run(teamId, userId);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Membership not found' });
+    }
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Remove player from team error:', error);
+    return res.status(500).json({ error: 'Failed to remove player from team' });
+  }
+});
+
 // Create new player (trainer only)
 router.post('/:id/players', async (req: AuthRequest, res) => {
   try {
@@ -1644,6 +1683,36 @@ router.delete('/:id/imported-games', (req: AuthRequest, res) => {
   } catch (error) {
     console.error('Delete imported games error:', error);
     return res.status(500).json({ error: 'Failed to delete imported games' });
+  }
+});
+
+// Delete team (trainers only)
+router.delete('/:id', (req: AuthRequest, res) => {
+  try {
+    const teamId = parseInt(req.params.id, 10);
+
+    const membership = db.prepare(
+      'SELECT role FROM team_members WHERE team_id = ? AND user_id = ?'
+    ).get(teamId, req.user!.id) as any;
+
+    if (!membership || membership.role !== 'trainer') {
+      return res.status(403).json({ error: 'Only trainers can delete teams' });
+    }
+
+    const team = db.prepare('SELECT id, name FROM teams WHERE id = ?').get(teamId) as any;
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+
+    const result = db.prepare('DELETE FROM teams WHERE id = ?').run(teamId);
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+
+    return res.json({ success: true, id: teamId, name: team.name });
+  } catch (error) {
+    console.error('Delete team by trainer error:', error);
+    return res.status(500).json({ error: 'Failed to delete team' });
   }
 });
 

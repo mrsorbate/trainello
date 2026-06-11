@@ -64,6 +64,18 @@ export default function TeamRosterPage() {
     },
   });
 
+  const removePlayerMutation = useMutation({
+    mutationFn: (userId: number) => teamsAPI.removeMember(teamId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team-members', teamId] });
+      setSelectedMember(null);
+      showToast('Spieler wurde aus dem Team entfernt', 'success');
+    },
+    onError: (mutationError: any) => {
+      showToast(mutationError?.response?.data?.error || 'Spieler konnte nicht entfernt werden', 'error');
+    },
+  });
+
   const copyTextToClipboard = async (value: string): Promise<boolean> => {
     // Prefer modern clipboard API when available (requires secure context).
     if (navigator.clipboard && window.isSecureContext) {
@@ -433,6 +445,21 @@ export default function TeamRosterPage() {
               >
                 Schließen
               </button>
+
+              {user?.role === 'trainer' && selectedMember.role !== 'trainer' && (
+                <button
+                  type="button"
+                  disabled={removePlayerMutation.isPending}
+                  onClick={() => {
+                    const confirmed = window.confirm(`Spieler ${selectedMember.name} wirklich aus dem Team entfernen?`);
+                    if (!confirmed) return;
+                    removePlayerMutation.mutate(selectedMember.id);
+                  }}
+                  className="btn btn-danger w-full disabled:opacity-50"
+                >
+                  {removePlayerMutation.isPending ? 'Entfernt...' : 'Spieler aus Team entfernen'}
+                </button>
+              )}
             </div>
           </div>
         </div>

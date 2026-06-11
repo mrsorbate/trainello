@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Camera, Settings, SlidersHorizontal, ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
 import { teamsAPI, settingsAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
@@ -12,6 +12,7 @@ export default function TeamSettingsPage() {
   const { id } = useParams<{ id: string }>();
   const teamId = parseInt(id || '', 10);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const goBack = useSmartBack();
   const { showToast } = useToast();
@@ -30,6 +31,7 @@ export default function TeamSettingsPage() {
   const [defaultHomeVenueName, setDefaultHomeVenueName] = useState('');
   const [expandedHomeVenueIndex, setExpandedHomeVenueIndex] = useState<number | null>(null);
   const [customTeamName, setCustomTeamName] = useState('');
+  const [showDeleteTeamConfirm, setShowDeleteTeamConfirm] = useState(false);
 
   const pitchTypeOptions: Array<{ value: string; label: string }> = [
     { value: 'Rasen', label: 'Rasen' },
@@ -261,6 +263,18 @@ export default function TeamSettingsPage() {
     },
     onError: (mutationError: any) => {
       showToast(mutationError?.response?.data?.error || 'Teamname konnte nicht gespeichert werden', 'error');
+    },
+  });
+
+  const deleteTeamMutation = useMutation({
+    mutationFn: () => teamsAPI.deleteTeam(teamId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      showToast('Team wurde gelöscht', 'success');
+      navigate('/teams', { replace: true });
+    },
+    onError: (mutationError: any) => {
+      showToast(mutationError?.response?.data?.error || 'Team konnte nicht gelöscht werden', 'error');
     },
   });
 
@@ -1164,6 +1178,50 @@ export default function TeamSettingsPage() {
               )}
             </div>
           </div>
+
+          <div className="card border-2 border-red-200 dark:border-red-900 space-y-4">
+            <h2 className="text-lg sm:text-xl font-semibold text-red-700 dark:text-red-400">
+              Gefahrenzone
+            </h2>
+            <p className="text-sm text-red-700 dark:text-red-300">
+              Das Löschen entfernt das Team und alle zugehörigen Termine endgültig.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowDeleteTeamConfirm(true)}
+              disabled={deleteTeamMutation.isPending}
+              className="btn btn-danger w-full sm:w-auto disabled:opacity-50"
+            >
+              {deleteTeamMutation.isPending ? 'Löscht...' : 'Team löschen'}
+            </button>
+          </div>
+
+          {showDeleteTeamConfirm && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Team wirklich löschen?</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  Diese Aktion kann nicht rückgängig gemacht werden.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteTeamConfirm(false)}
+                    className="btn btn-secondary flex-1"
+                    disabled={deleteTeamMutation.isPending}
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    onClick={() => deleteTeamMutation.mutate()}
+                    disabled={deleteTeamMutation.isPending}
+                    className="btn btn-danger flex-1 disabled:opacity-50"
+                  >
+                    Löschen
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
