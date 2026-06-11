@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Navigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Camera, Settings, SlidersHorizontal, ChevronDown, ChevronUp, Link as LinkIcon, Copy, RotateCcw } from 'lucide-react';
-import { teamsAPI, invitesAPI } from '../lib/api';
+import { ArrowLeft, Camera, Settings, SlidersHorizontal, ChevronDown, ChevronUp, Link as LinkIcon, Copy, RotateCcw, Edit2 } from 'lucide-react';
+import { teamsAPI, invitesAPI, settingsAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { useToast } from '../lib/useToast';
 import { resolveAssetUrl } from '../lib/utils';
@@ -30,6 +30,7 @@ export default function TeamSettingsPage() {
   const [defaultHomeVenueName, setDefaultHomeVenueName] = useState('');
   const [expandedHomeVenueIndex, setExpandedHomeVenueIndex] = useState<number | null>(null);
   const [joinLinkCopied, setJoinLinkCopied] = useState(false);
+  const [customTeamName, setCustomTeamName] = useState('');
 
   const pitchTypeOptions: Array<{ value: string; label: string }> = [
     { value: 'Rasen', label: 'Rasen' },
@@ -73,6 +74,24 @@ export default function TeamSettingsPage() {
     enabled: Number.isFinite(teamId),
     retry: false,
   });
+
+  const { data: trainerTeams } = useQuery({
+    queryKey: ['trainer-team-names'],
+    queryFn: async () => {
+      const response = await settingsAPI.getTrainerTeamNames();
+      return response.data;
+    },
+    enabled: Number.isFinite(teamId),
+  });
+
+  useEffect(() => {
+    if (!Array.isArray(trainerTeams)) {
+      return;
+    }
+
+    const currentTeam = trainerTeams.find((entry: any) => Number(entry.id) === teamId);
+    setCustomTeamName(String(currentTeam?.trainer_custom_team_name || ''));
+  }, [trainerTeams, teamId]);
 
   useEffect(() => {
     if (!settings) return;
@@ -258,6 +277,17 @@ export default function TeamSettingsPage() {
     },
     onError: (mutationError: any) => {
       showToast(mutationError?.response?.data?.error || 'Fehler beim Generieren des Links', 'error');
+    },
+  });
+
+  const updateTrainerTeamNameMutation = useMutation({
+    mutationFn: (value: string | null) => settingsAPI.updateTrainerTeamName(teamId, value),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['trainer-team-names'] });
+      showToast('Teamname gespeichert', 'success');
+    },
+    onError: (mutationError: any) => {
+      showToast(mutationError?.response?.data?.error || 'Teamname konnte nicht gespeichert werden', 'error');
     },
   });
 
@@ -608,6 +638,36 @@ export default function TeamSettingsPage() {
                 </button>
               )}
               <p className="text-xs text-gray-500 dark:text-gray-400">JPEG, PNG, GIF oder WEBP (max. 5MB)</p>
+            </div>
+          </div>
+
+          <div className="card space-y-4">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <Edit2 className="w-5 h-5 text-primary-600" />
+              Dein individueller Teamname
+            </h2>
+
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Dieser Name hilft dir, das Team in deiner Ansicht leichter zu unterscheiden.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+              <input
+                type="text"
+                value={customTeamName}
+                onChange={(event) => setCustomTeamName(event.target.value)}
+                className="input w-full"
+                placeholder="z.B. Mein U19 Team"
+                maxLength={80}
+              />
+              <button
+                type="button"
+                onClick={() => updateTrainerTeamNameMutation.mutate(customTeamName.trim() || null)}
+                disabled={updateTrainerTeamNameMutation.isPending}
+                className="btn btn-primary w-full sm:w-auto disabled:opacity-50"
+              >
+                {updateTrainerTeamNameMutation.isPending ? 'Speichert...' : 'Speichern'}
+              </button>
             </div>
           </div>
 
