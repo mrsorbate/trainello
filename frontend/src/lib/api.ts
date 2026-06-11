@@ -2,6 +2,12 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
+export const badgeProxyUrl = (imgUrl: string | null | undefined): string | null => {
+  if (!imgUrl) return null;
+  const full = imgUrl.startsWith('//') ? `https:${imgUrl}` : imgUrl;
+  return `${API_URL}/api/badge-proxy?url=${encodeURIComponent(full)}`;
+};
+
 const api = axios.create({
   baseURL: `${API_URL}/api`,
   timeout: 10000,

@@ -154,6 +154,32 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api', invitesRoutes);
+app.use('/api', invitesRoutes);
+
+// Image proxy for fussball.de team badges (CORS workaround)
+app.get('/api/badge-proxy', async (req, res) => {
+  const url = String(req.query.url || '');
+  if (!url || !/^https?:\/\/(?:www\.)?fussball\.de\//i.test(url)) {
+    return res.status(400).end();
+  }
+  try {
+    const axios = require('axios');
+    const response = await axios.get(url, {
+      responseType: 'arraybuffer',
+      timeout: 8000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Referer': 'https://www.fussball.de/',
+      },
+    });
+    const contentType = response.headers['content-type'] || 'image/png';
+    res.set('Content-Type', contentType);
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send(response.data);
+  } catch {
+    res.status(502).end();
+  }
+});
 
 // File upload endpoint
 app.post('/api/admin/upload/logo', upload.single('logo'), (req, res) => {

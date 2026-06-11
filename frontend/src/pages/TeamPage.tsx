@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
-import { teamsAPI } from '../lib/api';
+import { teamsAPI, badgeProxyUrl } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { Calendar, Users, BarChart, ArrowLeft, Settings } from 'lucide-react';
 import { resolveAssetUrl } from '../lib/utils';
@@ -276,11 +276,11 @@ export default function TeamPage() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-sm font-semibold text-gray-900 dark:text-white w-6">{row.place}</span>
-                      {row.img ? (
+                      {badgeProxyUrl(row.img) ? (
                         <img
-                          src={row.img}
+                          src={badgeProxyUrl(row.img)!}
                           alt={`${row.team} Wappen`}
-                          className="w-6 h-6 rounded-full object-contain bg-white"
+                          className="w-6 h-6 object-contain bg-white rounded"
                           loading="lazy"
                         />
                       ) : (
@@ -324,11 +324,11 @@ export default function TeamPage() {
                       <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{row.place}</td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         <div className="flex items-center gap-2">
-                          {row.img ? (
+                          {badgeProxyUrl(row.img) ? (
                             <img
-                              src={row.img}
+                              src={badgeProxyUrl(row.img)!}
                               alt={`${row.team} Wappen`}
-                              className="w-6 h-6 rounded-full object-contain bg-white"
+                              className="w-6 h-6 object-contain bg-white rounded"
                               loading="lazy"
                             />
                           ) : (

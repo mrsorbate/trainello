@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3 } from 'lucide-react';
-import { teamsAPI } from '../lib/api';
+import { teamsAPI, badgeProxyUrl } from '../lib/api';
 
 export default function MyTablePage() {
   const { data: teams, isLoading: teamsLoading, error: teamsError } = useQuery({
