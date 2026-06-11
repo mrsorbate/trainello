@@ -19,6 +19,16 @@ const hasTeamsCalendarTokenColumn = (() => {
   }
 })();
 
+const hasEventScoreColumns = (() => {
+  try {
+    const columns = db.prepare("PRAGMA table_info('events')").all() as Array<{ name: string }>;
+    const names = new Set(columns.map((column) => column.name));
+    return names.has('home_goals') && names.has('away_goals');
+  } catch {
+    return false;
+  }
+})();
+
 const calendarTokenSelectExpression = hasTeamsCalendarTokenColumn
   ? 'calendar_token'
   : 'NULL AS calendar_token';
@@ -1462,20 +1472,26 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
     }
 
     const client = new FussballDeClient({ timeoutMs: 15000 });
-    const eventResultLookupStmt = db.prepare(
-      `SELECT home_goals, away_goals
-       FROM events
-       WHERE team_id = ?
-         AND type = 'match'
-         AND home_goals IS NOT NULL
-         AND away_goals IS NOT NULL
-         AND abs(strftime('%s', start_time) - strftime('%s', ?)) < 172800
-         AND (title LIKE ? OR title LIKE ?)
-       ORDER BY abs(strftime('%s', start_time) - strftime('%s', ?)) ASC
-       LIMIT 1`
-    );
+    const eventResultLookupStmt = hasEventScoreColumns
+      ? db.prepare(
+          `SELECT home_goals, away_goals
+           FROM events
+           WHERE team_id = ?
+             AND type = 'match'
+             AND home_goals IS NOT NULL
+             AND away_goals IS NOT NULL
+             AND abs(strftime('%s', start_time) - strftime('%s', ?)) < 172800
+             AND (title LIKE ? OR title LIKE ?)
+           ORDER BY abs(strftime('%s', start_time) - strftime('%s', ?)) ASC
+           LIMIT 1`
+        )
+      : null;
 
     const resolveResultFromInternalEvents = (match: any, parsedDate: Date | null): { home: number; away: number } | null => {
+      if (!eventResultLookupStmt) {
+        return null;
+      }
+
       if (!parsedDate) {
         return null;
       }
