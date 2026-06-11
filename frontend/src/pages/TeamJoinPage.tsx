@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { invitesAPI } from '../lib/api';
+import { invitesAPI, settingsAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { useToast } from '../lib/useToast';
 import { ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
+import { resolveAssetUrl } from '../lib/utils';
 
 export default function TeamJoinPage() {
   const { token } = useParams<{ token: string }>();
@@ -28,6 +29,15 @@ export default function TeamJoinPage() {
       return response.data;
     },
     enabled: !!token,
+  });
+
+  const { data: organization } = useQuery({
+    queryKey: ['organization'],
+    queryFn: async () => {
+      const response = await settingsAPI.getOrganization();
+      return response.data;
+    },
+    retry: false,
   });
 
   useEffect(() => {
@@ -187,6 +197,29 @@ export default function TeamJoinPage() {
   return (
     <div className="flex items-center justify-center min-h-screen p-4">
       <div className="max-w-md w-full">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-4 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            {resolveAssetUrl(organization?.logo) ? (
+              <img
+                src={resolveAssetUrl(organization?.logo)}
+                alt={organization?.name || 'Vereinswappen'}
+                className="w-12 h-12 rounded-full object-cover border border-gray-200 dark:border-gray-600"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center border border-primary-200 dark:border-primary-700">
+                <span className="text-primary-700 dark:text-primary-200 font-bold text-lg">T</span>
+              </div>
+            )}
+            <div>
+              <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">trainello</p>
+              <p className="text-base font-semibold text-gray-900 dark:text-white">
+                {organization?.name || 'Dein Verein'}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Offizieller Team-Beitritt</p>
+            </div>
+          </div>
+        </div>
+
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-primary-600 hover:text-primary-700 mb-6"
