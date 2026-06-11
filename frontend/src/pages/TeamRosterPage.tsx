@@ -64,6 +64,36 @@ export default function TeamRosterPage() {
     },
   });
 
+  const copyTextToClipboard = async (value: string): Promise<boolean> => {
+    // Prefer modern clipboard API when available (requires secure context).
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(value);
+        return true;
+      } catch {
+        // Fall through to legacy copy approach.
+      }
+    }
+
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = value;
+      textArea.setAttribute('readonly', '');
+      textArea.style.position = 'fixed';
+      textArea.style.top = '-9999px';
+      textArea.style.left = '-9999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return successful;
+    } catch {
+      return false;
+    }
+  };
+
   const copyJoinLink = async () => {
     if (!joinLink?.join_url) {
       showToast('Kein Beitrittslink verfügbar', 'warning');
@@ -71,7 +101,10 @@ export default function TeamRosterPage() {
     }
 
     try {
-      await navigator.clipboard.writeText(joinLink.join_url);
+      const copied = await copyTextToClipboard(joinLink.join_url);
+      if (!copied) {
+        throw new Error('copy failed');
+      }
       showToast('Beitrittslink kopiert', 'success');
       setJoinLinkCopied(true);
       setTimeout(() => setJoinLinkCopied(false), 2000);
@@ -222,9 +255,9 @@ export default function TeamRosterPage() {
                   <button
                     type="button"
                     onClick={copyJoinLink}
-                    className="btn btn-secondary w-full sm:w-auto whitespace-nowrap"
+                    className="btn btn-secondary w-full sm:w-auto whitespace-nowrap inline-flex items-center justify-center gap-2"
                   >
-                    <Copy className="w-4 h-4 mr-1" />
+                    <Copy className="w-4 h-4" />
                     {joinLinkCopied ? 'Kopiert!' : 'Kopieren'}
                   </button>
                 </div>
@@ -237,9 +270,9 @@ export default function TeamRosterPage() {
                     type="button"
                     onClick={() => createTeamJoinLinkMutation.mutate()}
                     disabled={createTeamJoinLinkMutation.isPending}
-                    className="btn btn-secondary w-full sm:w-auto disabled:opacity-50"
+                    className="btn btn-secondary w-full sm:w-auto disabled:opacity-50 inline-flex items-center justify-center gap-2"
                   >
-                    <RotateCcw className="w-4 h-4 mr-1" />
+                    <RotateCcw className="w-4 h-4" />
                     {createTeamJoinLinkMutation.isPending ? 'Generiert...' : 'Link neu generieren'}
                   </button>
                 </div>
