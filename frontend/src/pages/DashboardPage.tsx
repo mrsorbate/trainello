@@ -112,44 +112,27 @@ export default function DashboardPage() {
               </div>
             )
           ) : (
-            teamsWithPhotos.length === 1 ? (
-              // Multiple teams but only one photo - show a simple single-photo fallback
-              <div className="flex flex-col items-center">
-                <div className="relative">
+            <div className="space-y-4">
+              {teamsWithPhotos.slice(0, 2).map((team: any) => (
+                <div key={team.id} className="relative w-full min-h-[14rem] sm:min-h-[24rem] rounded-xl overflow-hidden">
                   <img
-                    src={getTeamPhotoUrl(teamsWithPhotos[0])!}
-                    alt={teamsWithPhotos[0].name}
-                    className="w-[60vw] sm:w-[44vw] max-w-[24rem] h-72 sm:h-96 object-cover rounded-xl shadow-md border-2 border-white dark:border-gray-800"
+                    src={getTeamPhotoUrl(team)!}
+                    alt={team.name}
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
-                </div>
-                <div className="mt-3 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200">
-                  {teamsWithPhotos[0].name}
-                </div>
-              </div>
-            ) : (
-              // Multiple teams - overlapping layout
-              <div className="flex flex-col items-center">
-                <div className="flex items-center justify-center">
-                  {teamsWithPhotos.slice(0, 2).map((team: any, index: number) => (
-                    <div key={team.id} className={`${index > 0 ? '-ml-10' : ''} relative`}>
-                      <img
-                        src={getTeamPhotoUrl(team)!}
-                        alt={team.name}
-                        className="w-[46vw] sm:w-[42vw] max-w-[24rem] h-72 sm:h-96 object-cover rounded-xl shadow-md border-2 border-white dark:border-gray-800"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200">
-                  {teamsWithPhotos.slice(0, 2).map((team: any, index: number) => (
-                    <span key={`team-name-${team.id}`} className="flex items-center gap-2">
-                      {team.name}
-                      {index === 0 && <span className="text-gray-400 dark:text-gray-500">•</span>}
+                  <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-black/25 to-transparent" />
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 px-4 text-center">
+                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-black/55 text-white text-sm sm:text-base font-semibold backdrop-blur-sm">
+                      <Users className="w-4 h-4" />
+                      Mein Team
                     </span>
-                  ))}
+                    <h3 className="inline-block px-3 py-1 rounded-md bg-black/55 text-white text-base sm:text-xl font-bold backdrop-blur-sm">
+                      {team.name}
+                    </h3>
+                  </div>
                 </div>
-              </div>
-            )
+              ))}
+            </div>
           )}
         </div>
       )}
