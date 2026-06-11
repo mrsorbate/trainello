@@ -80,6 +80,20 @@ cd /opt/trainello
 sudo bash ./update-server.sh
 ```
 
+Wenn du mehrere Vereins-Instanzen hast (z. B. `/opt/app.svhochweisel.de`, `/opt/app.verein2.de`) und alle nacheinander updaten möchtest:
+
+```bash
+cd /opt/trainello
+sudo bash ./update-all-instances.sh
+```
+
+Optional nur ein Namensmuster updaten:
+
+```bash
+cd /opt/trainello
+sudo BASE_DIR=/opt INSTANCE_FILTER='app.*' bash ./update-all-instances.sh
+```
+
 Das Update-Skript macht automatisch:
 
 - `.env` sichern

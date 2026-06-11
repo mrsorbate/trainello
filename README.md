@@ -62,6 +62,7 @@ Kurzfassung:
 - Docker + Docker Compose installieren
 - `bash ./setup-server.sh` ausführen
 - Für spätere Änderungen `bash ./update-server.sh` ausführen
+- Für mehrere Vereins-Instanzen nacheinander: `bash ./update-all-instances.sh`
 
 ---
 
