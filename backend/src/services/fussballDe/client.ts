@@ -11,6 +11,18 @@ export type FussballDeClientOptions = {
   timeoutMs?: number;
 };
 
+export type StandingsSourceAttempt = {
+  url: string;
+  ok: boolean;
+  rowCount: number;
+  error?: string;
+};
+
+export type StandingsFetchResult = {
+  standings: TeamStanding[];
+  attempts: StandingsSourceAttempt[];
+};
+
 /**
  * Builds a fussball.de team page URL from a team-id.
  * Example: buildTeamPageUrl('014MNGMQ0A000000VS5489B4VSEV8ON0')
@@ -37,9 +49,49 @@ export class FussballDeClient {
   }
 
   public async getTabelle(input: TeamSourceInput): Promise<TeamStanding[]> {
+    const result = await this.getTabelleWithDiagnostics(input);
+    return result.standings;
+  }
+
+  public async getTabelleWithDiagnostics(input: TeamSourceInput): Promise<StandingsFetchResult> {
     const validated = sourceInputSchema.parse(input);
-    const html = await this.fetchHtml(validated.teamPageUrl);
-    return parseStandings(html, validated.teamPageUrl);
+    const teamId = this.extractTeamId(validated.teamPageUrl);
+    const attempts: StandingsSourceAttempt[] = [];
+
+    const candidateUrls = teamId
+      ? [
+          `https://www.fussball.de/ajax.team.standing/-/mode/PAGE/team-id/${teamId}`,
+          `https://www.fussball.de/ajax.team.standings/-/mode/PAGE/team-id/${teamId}`,
+          `https://www.fussball.de/ajax.team.tabelle/-/mode/PAGE/team-id/${teamId}`,
+          validated.teamPageUrl,
+        ]
+      : [validated.teamPageUrl];
+
+    for (const url of candidateUrls) {
+      try {
+        const html = await this.fetchHtml(url);
+        const standings = parseStandings(html, url);
+        attempts.push({
+          url,
+          ok: true,
+          rowCount: standings.length,
+        });
+
+        if (standings.length > 0) {
+          return { standings, attempts };
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        attempts.push({
+          url,
+          ok: false,
+          rowCount: 0,
+          error: message,
+        });
+      }
+    }
+
+    return { standings: [], attempts };
   }
 
   private async fetchHtml(url: string): Promise<string> {

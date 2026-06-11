@@ -159,16 +159,21 @@ export const parseStandings = (html: string, source: string): TeamStanding[] => 
 
     if (cells.length < 3) return;
 
-    const hasLikelyRank = /^\d+\.?$/.test(cells[0]);
-    const hasLikelyPoints = /\d+/.test(cells[cells.length - 1]);
+    const rankCandidate = toNumber(cells[0]);
+    const pointsCandidate = toNumber(cells[cells.length - 1]);
+    const hasLikelyRank = rankCandidate !== undefined;
+    const hasLikelyPoints = pointsCandidate !== undefined;
     if (!hasLikelyRank || !hasLikelyPoints) return;
 
+    const teamCell = cells[1] || '';
+    if (!teamCell || /^platz|rang$/i.test(teamCell)) return;
+
     standings.push({
-      rank: toNumber(cells[0]),
-      team: cells[1],
+      rank: rankCandidate,
+      team: teamCell,
       played: toNumber(cells[2]),
       goalDiff: toNumber(cells[cells.length - 2]),
-      points: toNumber(cells[cells.length - 1]),
+      points: pointsCandidate,
       source,
     });
   });

@@ -43,6 +43,8 @@ export default function TeamPage() {
       ? externalTable
       : [];
   const externalLeagueName = typeof externalTable?.leagueName === 'string' ? externalTable.leagueName : '';
+  const externalSourceLabel = externalTable?.source === 'fussball.de' ? 'fussball.de' : 'Interner Fallback';
+  const externalFallbackReason = String(externalTable?.diagnostics?.fallback_reason || '').trim();
 
   const normalizeTeamName = (name: unknown): string => {
     return String(name ?? '')
@@ -256,6 +258,10 @@ export default function TeamPage() {
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">
           Tabelle: {externalLeagueName || 'Unbekannte Liga'}
         </h2>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+          Quelle: {externalSourceLabel}
+          {externalFallbackReason ? ` (${externalFallbackReason})` : ''}
+        </p>
 
         {externalTableLoading ? (
           <div className="text-sm text-gray-500 dark:text-gray-400 py-4">Lädt Tabelle...</div>

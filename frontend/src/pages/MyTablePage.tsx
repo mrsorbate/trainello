@@ -25,6 +25,8 @@ export default function MyTablePage() {
               teamName: String(team.name || ''),
               leagueName: String(response.data?.leagueName || ''),
               rows: Array.isArray(response.data?.table) ? response.data.table : [],
+              source: String(response.data?.source || ''),
+              fallbackReason: String(response.data?.diagnostics?.fallback_reason || ''),
             };
           } catch {
             return {
@@ -32,6 +34,8 @@ export default function MyTablePage() {
               teamName: String(team.name || ''),
               leagueName: '',
               rows: [],
+              source: '',
+              fallbackReason: '',
             };
           }
         })
@@ -76,6 +80,10 @@ export default function MyTablePage() {
               <div>
                 <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{section.teamName}</h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{section.leagueName || 'Unbekannte Liga'}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Quelle: {section.source === 'fussball.de' ? 'fussball.de' : 'Interner Fallback'}
+                  {section.fallbackReason ? ` (${section.fallbackReason})` : ''}
+                </p>
               </div>
 
               {Array.isArray(section.rows) && section.rows.length > 0 ? (

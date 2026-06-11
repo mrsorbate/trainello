@@ -1330,6 +1330,13 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
 
     // Try to fetch live standings from fussball.de if a team ID is configured
     const externalTableIds = parseFussballDeIds(team.fussballde_id);
+    const externalAttempts: Array<{
+      requested_id: string;
+      source_url: string;
+      ok: boolean;
+      row_count: number;
+      error?: string;
+    }> = [];
 
     if (externalTableIds.length > 0) {
       const client = new FussballDeClient({ timeoutMs: 15000 });
@@ -1337,7 +1344,18 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
       for (const tableId of externalTableIds) {
         try {
           const teamPageUrl = buildTeamPageUrl(tableId);
-          const standings = await client.getTabelle({ teamPageUrl });
+          const externalResult = await client.getTabelleWithDiagnostics({ teamPageUrl });
+          const standings = externalResult.standings;
+
+          externalAttempts.push(
+            ...externalResult.attempts.map((attempt) => ({
+              requested_id: tableId,
+              source_url: attempt.url,
+              ok: attempt.ok,
+              row_count: attempt.rowCount,
+              error: attempt.error,
+            }))
+          );
 
           if (standings.length === 0) {
             continue;
@@ -1363,8 +1381,28 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
           ).all(teamId) as any[];
           const leagueName = parseInternalLeagueName(recentMatches) || 'fussball.de Tabelle';
 
-          return res.json({ table, leagueName, source: 'fussball.de', source_id: tableId });
+          return res.json({
+            table,
+            leagueName,
+            source: 'fussball.de',
+            source_id: tableId,
+            diagnostics: {
+              configured_ids: externalTableIds,
+              selected_source: 'fussball.de',
+              selected_source_id: tableId,
+              attempts: externalAttempts,
+              fallback_reason: null,
+            },
+          });
         } catch (externalError) {
+          const errorMessage = externalError instanceof Error ? externalError.message : String(externalError);
+          externalAttempts.push({
+            requested_id: tableId,
+            source_url: buildTeamPageUrl(tableId),
+            ok: false,
+            row_count: 0,
+            error: errorMessage,
+          });
           console.warn(`fussball.de table fetch failed for ID ${tableId}:`, externalError);
         }
       }
@@ -1383,7 +1421,20 @@ router.get('/:id/external-table', async (req: AuthRequest, res) => {
     const table = buildInternalTableRows(team, internalMatches);
     const internalLeagueName = parseInternalLeagueName(internalMatches) || 'Interne Tabelle';
 
-    return res.json({ table, leagueName: internalLeagueName, source: 'internal' });
+    return res.json({
+      table,
+      leagueName: internalLeagueName,
+      source: 'internal',
+      diagnostics: {
+        configured_ids: externalTableIds,
+        selected_source: 'internal',
+        selected_source_id: null,
+        attempts: externalAttempts,
+        fallback_reason: externalTableIds.length === 0
+          ? 'no_fussballde_id_configured'
+          : 'no_external_rows_returned',
+      },
+    });
   } catch (error) {
     console.error('Get external team table error:', error);
     return res.status(500).json({ error: 'Failed to fetch external team table' });
