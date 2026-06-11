@@ -9,6 +9,9 @@ services:
       DATABASE_PATH: ${DATABASE_PATH:-/app/data/database.sqlite}
       FRONTEND_URL: https://${DOMAIN}
       CORS_ORIGIN: https://${DOMAIN}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@trainello.app}
     volumes:
       - ${BACKEND_DATA_DIR:-./data/backend}:/app/data
       - ${BACKEND_UPLOADS_DIR:-./data/uploads}:/app/uploads
