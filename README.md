@@ -145,8 +145,8 @@ Voraussetzungen:
 - Ports `80` und `443` sind erreichbar
 
 In `.env` setzen:
-- `DOMAIN=app.meinverein.de`
-- `ACME_EMAIL=admin@meinverein.de`
+- `DOMAIN=trainello.de`
+- `ACME_EMAIL=admin@trainello.de`
 - `JWT_SECRET=<starkes-secret>`
 
 Start:
@@ -155,10 +155,10 @@ docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 Danach läuft die App unter:
-- `https://<DOMAIN>`
+- `https://trainello.de`
 
 Hinweise:
-- `FRONTEND_URL` und `CORS_ORIGIN` werden im Prod-Stack automatisch auf `https://<DOMAIN>` gesetzt.
+- `FRONTEND_URL` und `CORS_ORIGIN` sind im Prod-Stack auf `https://trainello.de` gesetzt.
 - Invite-Links werden damit ebenfalls korrekt als HTTPS-Domain erzeugt.
 - Backend nutzt Security-Header (`helmet`) und Rate-Limits für API/Auth.
 

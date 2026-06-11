@@ -2,7 +2,11 @@
   email {$ACME_EMAIL}
 }
 
-{$DOMAIN} {
+www.trainello.de {
+  redir https://trainello.de{uri} permanent
+}
+
+trainello.de {
   encode zstd gzip
 
   header {

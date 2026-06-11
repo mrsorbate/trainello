@@ -43,8 +43,8 @@ sudo nano .env
 Setze mindestens:
 
 ```bash
-DOMAIN=app.deine-domain.tld
-ACME_EMAIL=admin@deine-domain.tld
+DOMAIN=trainello.de
+ACME_EMAIL=admin@trainello.de
 JWT_SECRET=ein-langes-zufaelliges-secret
 ```
 
@@ -54,7 +54,7 @@ JWT_SECRET=ein-langes-zufaelliges-secret
 sudo COMPOSE_FILE=docker-compose.prod.yml bash ./setup-server.sh
 ```
 
-Danach läuft die App über HTTPS an deiner Domain.
+Danach läuft die App über HTTPS an `https://trainello.de`.
 
 ## Updates
 

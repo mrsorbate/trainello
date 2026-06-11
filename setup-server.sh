@@ -96,11 +96,12 @@ else
 fi
 
 if [ "$COMPOSE_FILE" = "docker-compose.prod.yml" ]; then
-    DOMAIN_VALUE="$(get_env_value "DOMAIN" ".env" || true)"
     ACME_EMAIL_VALUE="$(get_env_value "ACME_EMAIL" ".env" || true)"
+    ensure_env_key "DOMAIN" "trainello.de" ".env"
+    ensure_env_key "FRONTEND_URL" "https://trainello.de" ".env"
 
-    if [ -z "$DOMAIN_VALUE" ] || [ -z "$ACME_EMAIL_VALUE" ] || [ "$DOMAIN_VALUE" = "app.deine-domain.tld" ]; then
-        error_exit "Für docker-compose.prod.yml müssen DOMAIN und ACME_EMAIL in .env gesetzt sein. Bitte .env anpassen und dann erneut starten."
+    if [ -z "$ACME_EMAIL_VALUE" ] || [ "$ACME_EMAIL_VALUE" = "admin@deine-domain.tld" ]; then
+        error_exit "Für docker-compose.prod.yml muss ACME_EMAIL in .env gesetzt sein. DOMAIN ist fest auf trainello.de konfiguriert."
     fi
 fi
 
