@@ -1,42 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 160" width="420" height="160">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1D6BF3"/>
-      <stop offset="100%" style="stop-color:#0ECBA1"/>
-    </linearGradient>
-    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#1D6BF3"/>
-      <stop offset="100%" style="stop-color:#0ECBA1"/>
+    <linearGradient id="trainelloGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb"/>
+      <stop offset="100%" style="stop-color:#1e40af"/>
     </linearGradient>
   </defs>
 
-  <!-- Icon background: rounded square -->
-  <rect x="10" y="18" width="116" height="116" rx="24" fill="url(#iconGrad)"/>
+  <!-- Main circle background -->
+  <circle cx="256" cy="256" r="240" fill="url(#trainelloGrad)"/>
 
-  <!-- Two people silhouettes -->
-  <!-- Left person -->
-  <circle cx="46" cy="56" r="12" fill="white"/>
-  <path d="M22 102 Q22 78 46 78 Q70 78 70 102" fill="white"/>
-  <!-- Right person -->
-  <circle cx="90" cy="56" r="12" fill="white"/>
-  <path d="M66 102 Q66 78 90 78 Q114 78 114 102" fill="white"/>
+  <!-- Icon: Two people silhouettes -->
+  <!-- Left person head -->
+  <circle cx="180" cy="160" r="35" fill="white"/>
+  <!-- Left person body -->
+  <path d="M 130 220 Q 130 260 180 260 Q 230 260 230 220" fill="white"/>
 
-  <!-- Checkmark / vote bar at bottom of icon -->
-  <rect x="26" y="109" width="84" height="9" rx="4.5" fill="white" opacity="0.25"/>
-  <polyline points="35,114 50,122 101,106" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Right person head -->
+  <circle cx="332" cy="160" r="35" fill="white"/>
+  <!-- Right person body -->
+  <path d="M 282 220 Q 282 260 332 260 Q 382 260 382 220" fill="white"/>
 
-  <!-- Wordmark: "train" dark + "ello" gradient -->
-  <text font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="58" letter-spacing="-1.5" y="100">
-    <tspan x="148" fill="#12183A">train</tspan><tspan fill="url(#textGrad)">ello</tspan>
+  <!-- Connecting checkmark/vote element at bottom -->
+  <g stroke="white" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <polyline points="120,340 200,420 392,280"/>
+  </g>
+
+  <!-- Title text: "trainello" -->
+  <text x="256" y="470" font-family="'Helvetica Neue', Arial, sans-serif" font-size="72" font-weight="800" text-anchor="middle" fill="white" letter-spacing="-2">
+    trainello
   </text>
-
-  <!-- Tagline -->
-  <text
-    x="150" y="124"
-    font-family="'Helvetica Neue', Arial, sans-serif"
-    font-weight="500"
-    font-size="13"
-    letter-spacing="3.5"
-    fill="#8892B0"
-  >TEAM · TRAINING · VOTE</text>
 </svg>
