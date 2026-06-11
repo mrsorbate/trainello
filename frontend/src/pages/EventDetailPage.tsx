@@ -26,6 +26,7 @@ export default function EventDetailPage() {
   const [expandedResponseUserId, setExpandedResponseUserId] = useState<number | null>(null);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteNote, setDeleteNote] = useState('');
 
   const { data: event, isLoading, isError } = useQuery({
     queryKey: ['event', eventId],
@@ -68,7 +69,7 @@ export default function EventDetailPage() {
   });
 
   const deleteEventMutation = useMutation({
-    mutationFn: (deleteSeries: boolean) => eventsAPI.delete(eventId, deleteSeries),
+    mutationFn: (deleteSeries: boolean) => eventsAPI.delete(eventId, deleteSeries, deleteNote),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       navigate(`/teams/${event?.team_id}/events`);
@@ -78,6 +79,7 @@ export default function EventDetailPage() {
   const handleDeleteEvent = (deleteSeries: boolean = false) => {
     deleteEventMutation.mutate(deleteSeries);
     setDeleteModalOpen(false);
+    setDeleteNote('');
   };
 
   const myResponse = event?.responses?.find((r: any) => r.user_id === user?.id);
@@ -842,6 +844,17 @@ export default function EventDetailPage() {
               </div>
             </div>
 
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bemerkung für Benachrichtigung (optional)</label>
+              <textarea
+                value={deleteNote}
+                onChange={(e) => setDeleteNote(e.target.value)}
+                className="input"
+                rows={3}
+                placeholder="z.B. Platz gesperrt wegen Wetter"
+              />
+            </div>
+
             <div className="space-y-3">
               <button
                 onClick={() => handleDeleteEvent(false)}
@@ -858,7 +871,10 @@ export default function EventDetailPage() {
                 Gesamte Serie löschen ({event?.series_id ? '?' : '?'})
               </button>
               <button
-                onClick={() => setDeleteModalOpen(false)}
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setDeleteNote('');
+                }}
                 disabled={deleteEventMutation.isPending}
                 className="w-full btn btn-secondary"
               >
@@ -883,6 +899,17 @@ export default function EventDetailPage() {
               </div>
             </div>
 
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bemerkung für Benachrichtigung (optional)</label>
+              <textarea
+                value={deleteNote}
+                onChange={(e) => setDeleteNote(e.target.value)}
+                className="input"
+                rows={3}
+                placeholder="z.B. Platz gesperrt wegen Wetter"
+              />
+            </div>
+
             <div className="space-y-3">
               <button
                 onClick={() => handleDeleteEvent(false)}
@@ -892,7 +919,10 @@ export default function EventDetailPage() {
                 Löschen
               </button>
               <button
-                onClick={() => setDeleteModalOpen(false)}
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setDeleteNote('');
+                }}
                 disabled={deleteEventMutation.isPending}
                 className="w-full btn btn-secondary"
               >

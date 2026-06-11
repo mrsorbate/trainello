@@ -1630,6 +1630,7 @@ router.delete('/:id', async (req: AuthRequest, res) => {
   try {
     const eventId = parseInt(req.params.id);
     const deleteSeries = req.query.delete_series === 'true';
+    const deleteNote = typeof req.body?.delete_note === 'string' ? req.body.delete_note.trim() : '';
 
     // Check if event exists
     const event = db.prepare('SELECT id, team_id, series_id, title, start_time, created_by FROM events WHERE id = ?').get(eventId) as any;
@@ -1680,9 +1681,10 @@ router.delete('/:id', async (req: AuthRequest, res) => {
       const result = deleteSeriesTx();
 
       if (notifyUserIds.length > 0) {
+        const noteSuffix = deleteNote ? ` Hinweis: ${deleteNote}` : '';
         await sendPushToUsers(notifyUserIds, {
           title: 'Terminserie abgesagt',
-          body: `${seriesTeamLabel ? `${seriesTeamLabel}: ` : ''}${event.title || 'Eine Terminserie'} wurde abgesagt.`,
+          body: `${seriesTeamLabel ? `${seriesTeamLabel}: ` : ''}${event.title || 'Eine Terminserie'} wurde abgesagt.${noteSuffix}`,
           url: `/teams/${event.team_id}/events`,
         });
       }
@@ -1716,9 +1718,10 @@ router.delete('/:id', async (req: AuthRequest, res) => {
       deleteSingleTx();
 
       if (notifyUserIds.length > 0) {
+        const noteSuffix = deleteNote ? ` Hinweis: ${deleteNote}` : '';
         await sendPushToUsers(notifyUserIds, {
           title: 'Termin abgesagt',
-          body: `${singleEventTeamLabel ? `${singleEventTeamLabel}: ` : ''}${eventToDelete.title || 'Ein Termin'} am ${formatEventDateTime(eventToDelete.start_time)} wurde abgesagt.`,
+          body: `${singleEventTeamLabel ? `${singleEventTeamLabel}: ` : ''}${eventToDelete.title || 'Ein Termin'} am ${formatEventDateTime(eventToDelete.start_time)} wurde abgesagt.${noteSuffix}`,
           url: `/teams/${eventToDelete.team_id}/events`,
         });
       }

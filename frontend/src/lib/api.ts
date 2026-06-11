@@ -185,8 +185,12 @@ export const eventsAPI = {
 
   releaseMatchSquad: (id: number) => api.post(`/events/${id}/squad/release`),
   
-  delete: (id: number, deleteSeries: boolean = false) => 
-    api.delete(`/events/${id}${deleteSeries ? '?delete_series=true' : ''}`),
+  delete: (id: number, deleteSeries: boolean = false, deleteNote?: string) =>
+    api.delete(`/events/${id}${deleteSeries ? '?delete_series=true' : ''}`, {
+      data: deleteNote && deleteNote.trim().length > 0
+        ? { delete_note: deleteNote.trim() }
+        : undefined,
+    }),
 };
 
 // Stats API
