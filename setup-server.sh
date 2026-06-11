@@ -84,7 +84,9 @@ ensure_prod_env_values() {
     local acme_email
     acme_email="$(get_env_value "ACME_EMAIL" "$env_file" || true)"
     if is_env_value_empty "$acme_email" || [ "$acme_email" = "admin@deine-domain.tld" ]; then
-        error_exit "Für docker-compose.prod.yml muss ACME_EMAIL in .env gesetzt sein (z. B. admin@trainello.de)."
+        acme_email="admin@trainello.de"
+        ensure_env_key "ACME_EMAIL" "$acme_email" "$env_file"
+        echo -e "${YELLOW}⚠️  ACME_EMAIL war nicht gesetzt und wurde automatisch auf ${acme_email} gesetzt${NC}"
     fi
 
     local vapid_public

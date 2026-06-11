@@ -117,7 +117,7 @@ Hinweis: Eine Root-Vorlage liegt in [.env.example](.env.example). Für Produktio
 - `JWT_SECRET` wird erzeugt, wenn leer oder unsicher.
 - `VAPID_PUBLIC_KEY` und `VAPID_PRIVATE_KEY` werden erzeugt, wenn leer.
 - `VAPID_SUBJECT` wird auf `mailto:<ACME_EMAIL>` gesetzt, wenn leer.
-- `ACME_EMAIL` bleibt Pflicht und muss manuell gesetzt sein.
+- `ACME_EMAIL` wird bei leerem Wert automatisch auf `admin@trainello.de` gesetzt.
 
 ### Starten
 ```bash

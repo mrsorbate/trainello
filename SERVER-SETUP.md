@@ -60,8 +60,7 @@ Beim Start mit `docker-compose.prod.yml` ergänzt `setup-server.sh` fehlende Wer
 - `JWT_SECRET` (falls leer/unsicher)
 - `VAPID_PUBLIC_KEY` und `VAPID_PRIVATE_KEY` (falls leer)
 - `VAPID_SUBJECT` (falls leer)
-
-`ACME_EMAIL` bleibt Pflicht und muss gesetzt sein.
+- `ACME_EMAIL` (falls leer, auf `admin@trainello.de`)
 
 ### 2. Produktions-Compose starten
 
