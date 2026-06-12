@@ -245,7 +245,12 @@ export default function EventCreatePage() {
 
   useEffect(() => {
     if (initialTeamId) {
-      setSelectedTeamIds([initialTeamId]);
+      setSelectedTeamIds((prev) => {
+        if (prev.length === 1 && prev[0] === initialTeamId) {
+          return prev;
+        }
+        return [initialTeamId];
+      });
       return;
     }
     if (teamsForCreate?.length && selectedTeamIds.length === 0) {
