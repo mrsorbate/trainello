@@ -1127,12 +1127,18 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
     fussballdeSources.map(async (sourceEntry) => {
       const teamPageUrl = buildFussballDeTeamPageUrl(sourceEntry);
       try {
-        const [nextMatches, printableMatches] = await Promise.all([
+        const [nextMatchesResult, printableMatchesResult] = await Promise.allSettled([
           client.getSpielplan({ teamPageUrl }),
           client.getPrintableSeasonMatches({ teamPageUrl }, printableRange),
         ]);
 
+        const nextMatches = nextMatchesResult.status === 'fulfilled' ? nextMatchesResult.value : [];
+        const printableMatches = printableMatchesResult.status === 'fulfilled' ? printableMatchesResult.value : [];
+
         const sourceMatches = [...nextMatches, ...printableMatches];
+        if (sourceMatches.length === 0) {
+          console.warn(`fussball.de Import: keine Spiele für Quelle ${sourceEntry} gefunden`);
+        }
         return sourceMatches.map((match) => ({ ...match, __sourceId: sourceEntry }));
       } catch (error) {
         console.warn(`fussball.de Import fehlgeschlagen für Quelle ${sourceEntry}:`, error);
@@ -1260,9 +1266,11 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
         : awayNorm === ownTeamNorm
     ));
 
-    if (!isHome && !isAway && enforceOwnTeamDetection) {
-      skipped.push(`${match.homeTeam} - ${match.awayTeam}: Team nicht identifiziert`);
-      continue;
+    const hasIdentifiedOwnTeam = isHome || isAway;
+    if (!hasIdentifiedOwnTeam && enforceOwnTeamDetection) {
+      // Keep the match instead of dropping it completely when configured team names
+      // do not exactly match fussball.de naming (e.g. suffixes/variants).
+      skipped.push(`${match.homeTeam} - ${match.awayTeam}: Teamname nicht eindeutig, trotzdem importiert`);
     }
 
     const title = `${match.homeTeam} - ${match.awayTeam}`;
@@ -1394,7 +1402,7 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
       1, // invite_all
       createdByUserId,
       null, // external_game_id
-      isHome ? 1 : 0,
+      hasIdentifiedOwnTeam ? (isHome ? 1 : 0) : null,
       null, // opponent_crest_url
     );
 
