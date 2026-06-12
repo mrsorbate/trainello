@@ -1431,11 +1431,23 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
       ? new Date(gameDate.getTime() - defaultRsvpHours * 3600000).toISOString()
       : null;
 
-    const locationVenue = match.venue || (defaultHomeVenue ? defaultHomeVenue.name : null) || null;
-    const locationStreet = defaultHomeVenue ? defaultHomeVenue.street || null : null;
-    const locationZipCity = defaultHomeVenue ? defaultHomeVenue.zip_city || null : null;
-    const pitchType = defaultHomeVenue ? defaultHomeVenue.pitch_type || null : null;
+    const locationVenue = match.venue || (isHome && defaultHomeVenue ? defaultHomeVenue.name : null) || null;
+    const locationStreet = isHome && defaultHomeVenue ? defaultHomeVenue.street || null : null;
+    const locationZipCity = isHome && defaultHomeVenue ? defaultHomeVenue.zip_city || null : null;
+    const pitchType = isHome && defaultHomeVenue ? defaultHomeVenue.pitch_type || null : null;
     const location = [locationVenue, locationStreet, locationZipCity].filter(Boolean).join(', ') || null;
+
+    const normalizeBadgeUrl = (url: string | undefined): string | null => {
+      if (!url) return null;
+      const s = String(url).trim();
+      if (!s) return null;
+      return s.startsWith('//') ? `https:${s}` : s;
+    };
+
+    // Opponent crest = away team badge when home, home team badge when away
+    const opponentCrestUrl = hasIdentifiedOwnTeam
+      ? (isHome ? normalizeBadgeUrl(match.awayBadge) : normalizeBadgeUrl(match.homeBadge))
+      : normalizeBadgeUrl(match.awayBadge) || normalizeBadgeUrl(match.homeBadge);
 
     const insertResult = insertEventStmt.run(
       teamId,
@@ -1458,7 +1470,7 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
       createdByUserId,
       null, // external_game_id
       hasIdentifiedOwnTeam ? (isHome ? 1 : 0) : null,
-      null, // opponent_crest_url
+      opponentCrestUrl,
     );
 
     const eventId = insertResult.lastInsertRowid as number;
