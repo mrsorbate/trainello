@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
-import { LogOut, User as UserIcon, Menu, X, Users, Shield, Home, Calendar, BarChart3 } from 'lucide-react';
+import { LogOut, User as UserIcon, Menu, X, Users, Shield, Home, Calendar, BarChart3, Clock } from 'lucide-react';
 import { resolveAssetUrl } from '../lib/utils';
 import { profileAPI, teamsAPI } from '../lib/api';
 import PushInstallPrompt from './PushInstallPrompt';
@@ -170,6 +170,15 @@ export default function Layout({ organization }: LayoutProps) {
                 )}
                 {user?.role !== 'admin' && (
                   <Link
+                    to="/events"
+                    className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    <Clock className="w-4 h-4" />
+                    <span>Meine Termine</span>
+                  </Link>
+                )}
+                {user?.role !== 'admin' && (
+                  <Link
                     to="/meine-tabelle"
                     className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                   >
@@ -278,6 +287,16 @@ export default function Layout({ organization }: LayoutProps) {
                 >
                   <Calendar className="w-4 h-4" />
                   <span>Mein Spielplan</span>
+                </Link>
+              )}
+              {user?.role !== 'admin' && (
+                <Link
+                  to="/events"
+                  className="flex items-center space-x-2 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Clock className="w-4 h-4" />
+                  <span>Meine Termine</span>
                 </Link>
               )}
               {user?.role !== 'admin' && (
