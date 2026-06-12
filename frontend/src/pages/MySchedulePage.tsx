@@ -63,23 +63,44 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
   const homeBadge = typeof match?.homeBadge === 'string' ? match.homeBadge.trim() : '';
   const awayBadge = typeof match?.awayBadge === 'string' ? match.awayBadge.trim() : '';
 
-  const isOurTeam = (teamName: string, sectionTeamName: string) => {
-    // Verwende die gleiche Logik wie Backend für Team-Matching
-    const normalized = normalizeTeamName(teamName);
-    const sectionNormalized = normalizeTeamName(sectionTeamName);
-    
-    // Wenn Name lang genug ist, nutze substring-matching wie im Backend
-    if (sectionNormalized.length >= 4) {
-      return normalized.includes(sectionNormalized) || sectionNormalized.includes(normalized);
-    }
-    
-    // Kurze Namen: exakter Match
-    return normalized === sectionNormalized;
+  const getSectionTeamCandidates = (value: any): string[] => {
+    const names = [String(value?.matchedTeamName || '').trim(), String(value?.teamName || '').trim()]
+      .filter(Boolean);
+    return Array.from(new Set(names.map((name) => normalizeTeamName(name)).filter(Boolean)));
   };
 
-  const isHomeMatch = isOurTeam(homeTeam, section.teamName);
+  const hasReserveMarker = (name: string): boolean => {
+    return /(?:ii|2)$/.test(name);
+  };
+
+  const isOurTeam = (teamName: string, sectionValue: any) => {
+    const normalized = normalizeTeamName(teamName);
+    if (!normalized) return false;
+
+    const candidates = getSectionTeamCandidates(sectionValue);
+    if (candidates.length === 0) return false;
+
+    // Exakte Übereinstimmung zuerst, um Reserve-Teams sauber zu trennen.
+    if (candidates.some((candidate) => candidate === normalized)) {
+      return true;
+    }
+
+    const normalizedHasReserve = hasReserveMarker(normalized);
+    return candidates.some((candidate) => {
+      if (hasReserveMarker(candidate) !== normalizedHasReserve) {
+        return false;
+      }
+      if (candidate.length < 6 || normalized.length < 6) {
+        return false;
+      }
+      return normalized.includes(candidate) || candidate.includes(normalized);
+    });
+  };
+
+  const isHomeMatch = isOurTeam(homeTeam, section);
   const opponent = isHomeMatch ? awayTeam : homeTeam;
   const opponentBadge = isHomeMatch ? awayBadge : homeBadge;
+  const teamDisplayName = String(section?.matchedTeamName || section?.teamName || '').trim();
 
   return (
     <div
@@ -134,16 +155,10 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
             </div>
           )}
 
-          {section.matchedTeamName && normalizeTeamName(section.matchedTeamName) !== normalizeTeamName(section.teamName) && (
-            <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-              {section.matchedTeamName}
-            </div>
-          )}
-
-          {section.teamName && (
+          {teamDisplayName && (
             <div className="mt-1 flex items-center gap-2">
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200 whitespace-nowrap">
-                {section.teamName}
+                {teamDisplayName}
               </span>
             </div>
           )}
