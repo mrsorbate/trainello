@@ -167,7 +167,7 @@ export default function TeamPostsPage() {
 
       {isTrainer && (
         <div className="card space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Neue Einträgee Einträge erstellen</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Neue Einträge erstellen</h2>
 
           <div className="flex flex-wrap gap-2">
             <button
@@ -201,7 +201,7 @@ export default function TeamPostsPage() {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               className="input"
-              placeholder="Kurze Ueberschrift"
+              placeholder="Kurze Überschrift"
             />
           </div>
 
@@ -212,7 +212,7 @@ export default function TeamPostsPage() {
                 value={content}
                 onChange={(event) => setContent(event.target.value)}
                 className="input min-h-[120px]"
-                placeholder="Nachricht fuer das Team"
+                placeholder="Nachricht für das Team"
               />
             </div>
           ) : (
@@ -236,14 +236,14 @@ export default function TeamPostsPage() {
             disabled={createPostMutation.isPending}
             className="btn btn-primary"
           >
-            {createPostMutation.isPending ? 'Speichere...' : 'Veroeffentlichen'}
+            {createPostMutation.isPending ? 'Speichere...' : 'Veröffentlichen'}
           </button>
         </div>
       )}
 
       <div className="card space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Einträge</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Offene Einträge</h2>
           <div className="flex items-center gap-2">
             <button
               type="button"
