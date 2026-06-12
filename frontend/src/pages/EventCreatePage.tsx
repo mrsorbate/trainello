@@ -442,14 +442,21 @@ export default function EventCreatePage() {
       return;
     }
 
+    if (eventData.invited_user_ids.length === 0) {
+      showToast('Bitte waehle mindestens ein Teammitglied aus.', 'warning');
+      return;
+    }
+
     const isSeriesEnabled = eventData.repeat_type !== 'none';
     if (isSeriesEnabled) {
       if (!eventData.repeat_until) {
         setSeriesValidationMessage('Bitte wähle, bis wann die Serie erstellt werden soll.');
+        showToast('Bitte Wiederholungsende für den Serientermin auswählen.', 'warning');
         return;
       }
       if (eventData.repeat_days.length === 0) {
         setSeriesValidationMessage('Bitte wähle mindestens einen Wochentag für die Serie.');
+        showToast('Bitte mindestens einen Wochentag für die Serie auswählen.', 'warning');
         return;
       }
     }
@@ -1048,7 +1055,6 @@ export default function EventCreatePage() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Wiederholung endet am *</label>
                       <input
                         type="date"
-                        required
                         value={eventData.repeat_until}
                         onChange={(e) => {
                           setSeriesValidationMessage('');
@@ -1075,8 +1081,7 @@ export default function EventCreatePage() {
               className="btn btn-primary w-full sm:w-auto"
               disabled={
                 createEventMutation.isPending ||
-                !effectiveTeamId ||
-                eventData.invited_user_ids.length === 0
+                !effectiveTeamId
               }
             >
               {createEventMutation.isPending ? 'Erstellt...' : 'Termin erstellen'}
