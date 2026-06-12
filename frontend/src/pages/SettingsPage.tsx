@@ -831,14 +831,32 @@ export default function SettingsPage() {
           </p>
         ) : (
           <div className="space-y-4">
-            <div className="text-sm text-gray-700 dark:text-gray-200 space-y-1">
+            <div className="text-sm text-gray-700 dark:text-gray-200 space-y-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <p>
-                Status: <span className={isPushSubscribed ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-700 dark:text-gray-300'}>{isPushSubscribed ? 'Aktiv' : 'Inaktiv'}</span>
+                Status: <span className={isPushSubscribed ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium'}>{isPushSubscribed ? 'Aktiv' : 'Inaktiv'}</span>
               </p>
               <p>
-                Berechtigung: <span className="font-medium">{pushPermission === 'granted' ? 'Erlaubt' : pushPermission === 'denied' ? 'Blockiert' : 'Noch nicht gefragt'}</span>
+                Berechtigung: <span className={`font-medium ${
+                  pushPermission === 'granted' ? 'text-green-600 dark:text-green-400' :
+                  pushPermission === 'denied' ? 'text-red-600 dark:text-red-400' :
+                  'text-amber-600 dark:text-amber-400'
+                }`}>
+                  {pushPermission === 'granted' ? '✓ Erlaubt' : pushPermission === 'denied' ? '✗ Blockiert' : '⚠ Noch nicht gefragt'}
+                </span>
               </p>
             </div>
+
+            {pushPermission === 'denied' && (
+              <p className="text-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg">
+                Benachrichtigungen sind im Browser blockiert. Bitte überprüfe die Browser-Einstellungen und erteile die Berechtigung für diese Website.
+              </p>
+            )}
+
+            {!isPushSubscribed && pushPermission !== 'granted' && (
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Klicke auf den Button unten, um Benachrichtigungen zu aktivieren. Der Browser wird nach Erlaubnis fragen.
+              </p>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               {!isPushSubscribed ? (

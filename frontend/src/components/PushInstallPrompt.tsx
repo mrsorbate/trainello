@@ -185,11 +185,18 @@ export default function PushInstallPrompt({ userId }: PushInstallPromptProps) {
     setDismissed(true);
   };
 
-  if (!userId || !isStandalone || !isPushSupported()) {
+  // Early exit: not logged in or push not supported
+  if (!userId || !isPushSupported()) {
     return null;
   }
 
-  if (!pushStatus?.configured || pushStatus?.subscribed || permission === 'denied' || dismissed || autoSyncPushMutation.isPending) {
+  // Standalone mode only for UI prompt, but still sync/check in background
+  const shouldShowPrompt = isStandalone;
+
+  // Hide if: push not configured on server, already subscribed, permission denied, dismissed, or pending
+  const shouldHide = !pushStatus?.configured || pushStatus?.subscribed || permission === 'denied' || dismissed || autoSyncPushMutation.isPending;
+
+  if (!shouldShowPrompt || shouldHide) {
     return null;
   }
 
