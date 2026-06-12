@@ -64,7 +64,17 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
   const awayBadge = typeof match?.awayBadge === 'string' ? match.awayBadge.trim() : '';
 
   const isOurTeam = (teamName: string, sectionTeamName: string) => {
-    return normalizeTeamName(teamName) === normalizeTeamName(sectionTeamName);
+    // Verwende die gleiche Logik wie Backend für Team-Matching
+    const normalized = normalizeTeamName(teamName);
+    const sectionNormalized = normalizeTeamName(sectionTeamName);
+    
+    // Wenn Name lang genug ist, nutze substring-matching wie im Backend
+    if (sectionNormalized.length >= 4) {
+      return normalized.includes(sectionNormalized) || sectionNormalized.includes(normalized);
+    }
+    
+    // Kurze Namen: exakter Match
+    return normalized === sectionNormalized;
   };
 
   const isHomeMatch = isOurTeam(homeTeam, section.teamName);
