@@ -370,6 +370,12 @@ export default function DashboardPage() {
                 .replace(/^spiel\s+gegen\s+/i, '')
                 .trim();
               const squadIndicator = getSquadIndicator();
+              const squadBadgeText = squadIndicator || event.team_name;
+              const squadBadgeClass = squadIndicator === 'II'
+                ? 'bg-black text-white dark:bg-black dark:text-white'
+                : squadIndicator === 'I'
+                  ? 'bg-yellow-300 text-yellow-900 dark:bg-yellow-300 dark:text-yellow-900'
+                  : 'bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200';
               const weekdayLabel = startDate.toLocaleDateString('de-DE', { weekday: 'short' });
               const dayLabel = String(startDate.getDate()).padStart(2, '0');
               const monthLabel = String(startDate.getMonth() + 1).padStart(2, '0');
@@ -411,8 +417,8 @@ export default function DashboardPage() {
                     <div className="w-px bg-gray-200 dark:bg-gray-700 shrink-0 self-stretch" />
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                        <div className="flex items-center gap-1.5 min-w-0">
+                      <div className="flex items-start justify-between gap-2 min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
                           {event.type === 'match' && opponentCrestUrl ? (
                             <img
                               src={opponentCrestUrl}
@@ -429,17 +435,11 @@ export default function DashboardPage() {
                           )}
                           <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">{displayTitle || opponent || event.title}</h3>
                         </div>
-                        {(squadIndicator || event.team_name) && (
+                        {squadBadgeText && (
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${
-                              squadIndicator === 'II'
-                                ? 'bg-black text-white dark:bg-black dark:text-white'
-                                : squadIndicator === 'I'
-                                  ? 'bg-yellow-300 text-yellow-900 dark:bg-yellow-300 dark:text-yellow-900'
-                                  : 'bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200'
-                            }`}
+                            className={`inline-flex items-center justify-center min-w-7 px-2 h-7 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 ${squadBadgeClass}`}
                           >
-                            {squadIndicator || event.team_name}
+                            {squadBadgeText}
                           </span>
                         )}
                       </div>
