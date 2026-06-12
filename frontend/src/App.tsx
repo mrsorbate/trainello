@@ -20,7 +20,6 @@ import AdminPage from './pages/AdminPage';
 import SettingsPage from './pages/SettingsPage';
 import SetupWizardPage from './pages/SetupWizardPage';
 import FirstTimeSetupPage from './pages/FirstTimeSetupPage';
-import MySchedulePage from './pages/MySchedulePage';
 import MyTablePage from './pages/MyTablePage';
 import { settingsAPI } from './lib/api';
 import { useDarkMode } from './hooks/useDarkMode';
@@ -121,7 +120,7 @@ function App() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/teams" element={<TeamsPage />} />
             <Route path="/events" element={<EventsPage />} />
-            <Route path="/mein-spielplan" element={<MySchedulePage />} />
+            <Route path="/mein-spielplan" element={<Navigate to="/events" replace />} />
             <Route path="/meine-tabelle" element={<MyTablePage />} />
             <Route path="/events/new" element={<EventCreatePage />} />
             <Route path="/teams/:id" element={<TeamPage />} />
