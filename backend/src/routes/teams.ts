@@ -1508,6 +1508,16 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
 
   const notifyUserIds = memberIds.filter((userId) => userId !== createdByUserId);
   if (notifyUserIds.length > 0) {
+    if (created.length > 0) {
+      await sendPushToUsers(notifyUserIds, {
+        title: 'Neues Spiel',
+        body: created.length === 1
+          ? `Neues Spiel: ${created[0]}`
+          : `${created.length} neue Spiele wurden hinzugefügt.`,
+        url: `/teams/${teamId}/events`,
+      });
+    }
+
     if (cancelled.length > 0) {
       await sendPushToUsers(notifyUserIds, {
         title: 'Spiel abgesagt',
