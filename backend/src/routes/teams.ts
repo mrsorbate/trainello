@@ -1514,7 +1514,7 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
     created.push(title);
   }
 
-  const notifyUserIds = memberIds.filter((userId) => userId !== createdByUserId);
+  const notifyUserIds = [...new Set(memberIds)];
   if (notifyUserIds.length > 0) {
     if (created.length > 0) {
       await sendPushToUsers(notifyUserIds, {
