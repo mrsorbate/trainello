@@ -203,6 +203,36 @@ export default function EventCreatePage() {
     return parseMinutes(settings?.default_arrival_minutes);
   };
 
+  const getCategoryDefaultDurationMinutes = (
+    settings: any,
+    type: 'training' | 'match' | 'other'
+  ): number | null => {
+    const parseMinutes = (value: unknown): number | null => {
+      if (value === null || value === undefined || String(value).trim() === '') {
+        return null;
+      }
+      const parsed = parseInt(String(value), 10);
+      if (!Number.isFinite(parsed) || parsed < 5 || parsed > 480) {
+        return null;
+      }
+      return parsed;
+    };
+
+    const typeValue =
+      type === 'training'
+        ? settings?.default_duration_minutes_training
+        : type === 'match'
+          ? settings?.default_duration_minutes_match
+          : settings?.default_duration_minutes_other;
+
+    const fromType = parseMinutes(typeValue);
+    if (fromType !== null) {
+      return fromType;
+    }
+
+    return parseMinutes(settings?.default_duration_minutes);
+  };
+
   const { data: teamsForCreate } = useQuery({
     queryKey: ['teams'],
     queryFn: async () => {
@@ -387,6 +417,34 @@ export default function EventCreatePage() {
     teamSettings?.default_arrival_minutes_training,
     teamSettings?.default_arrival_minutes_match,
     teamSettings?.default_arrival_minutes_other,
+    eventData.type,
+  ]);
+
+  useEffect(() => {
+    if (!teamSettings) {
+      return;
+    }
+
+    setEventData((prev) => {
+      if (String(prev.duration_minutes || '').trim() !== '') {
+        return prev;
+      }
+
+      const categoryDefaultDuration = getCategoryDefaultDurationMinutes(teamSettings, prev.type);
+      if (categoryDefaultDuration === null) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        duration_minutes: String(categoryDefaultDuration),
+      };
+    });
+  }, [
+    teamSettings?.default_duration_minutes,
+    teamSettings?.default_duration_minutes_training,
+    teamSettings?.default_duration_minutes_match,
+    teamSettings?.default_duration_minutes_other,
     eventData.type,
   ]);
 

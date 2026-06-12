@@ -875,15 +875,6 @@ router.post('/', async (req: AuthRequest, res) => {
     }
 
     let resolvedEndTime = end_time;
-    if (duration_minutes && start_time) {
-      const startDate = new Date(start_time);
-      const computedEnd = new Date(startDate.getTime() + duration_minutes * 60000);
-      resolvedEndTime = computedEnd.toISOString();
-    }
-
-    if (!resolvedEndTime) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
 
     const resolvedLocation = location_venue || location || null;
 
@@ -898,6 +889,7 @@ router.post('/', async (req: AuthRequest, res) => {
       `SELECT default_response, default_rsvp_deadline_hours,
               default_rsvp_deadline_hours_training, default_rsvp_deadline_hours_match, default_rsvp_deadline_hours_other,
               default_arrival_minutes, default_arrival_minutes_training, default_arrival_minutes_match, default_arrival_minutes_other,
+              default_duration_minutes, default_duration_minutes_training, default_duration_minutes_match, default_duration_minutes_other,
               home_venues
        FROM teams WHERE id = ?`
     ).get(team_id) as any;
@@ -936,6 +928,40 @@ router.post('/', async (req: AuthRequest, res) => {
       defaultArrivalMinutesByType[(type as 'training' | 'match' | 'other') || 'other'] ?? legacyDefaultArrivalMinutes;
 
     const resolvedArrivalMinutes = arrival_minutes ?? selectedDefaultArrivalMinutes ?? null;
+
+    const parseDurationMinutes = (value: unknown): number | null => {
+      if (value === null || value === undefined || String(value).trim() === '') {
+        return null;
+      }
+      const parsed = parseInt(String(value), 10);
+      if (!Number.isFinite(parsed) || parsed < 5 || parsed > 480) {
+        return null;
+      }
+      return parsed;
+    };
+
+    const defaultDurationMinutesByType: Record<'training' | 'match' | 'other', number | null> = {
+      training: parseDurationMinutes(teamSettings?.default_duration_minutes_training),
+      match: parseDurationMinutes(teamSettings?.default_duration_minutes_match),
+      other: parseDurationMinutes(teamSettings?.default_duration_minutes_other),
+    };
+
+    const legacyDefaultDurationMinutes = parseDurationMinutes(teamSettings?.default_duration_minutes);
+
+    const selectedDefaultDurationMinutes =
+      defaultDurationMinutesByType[(type as 'training' | 'match' | 'other') || 'other'] ?? legacyDefaultDurationMinutes;
+
+    const resolvedDurationMinutes = parseDurationMinutes(duration_minutes) ?? selectedDefaultDurationMinutes;
+
+    if (resolvedDurationMinutes && start_time) {
+      const startDate = new Date(start_time);
+      const computedEnd = new Date(startDate.getTime() + resolvedDurationMinutes * 60000);
+      resolvedEndTime = computedEnd.toISOString();
+    }
+
+    if (!resolvedEndTime) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
 
     const parseRsvpHours = (value: unknown): number | null => {
       if (value === null || value === undefined || String(value).trim() === '') {
@@ -1049,7 +1075,7 @@ router.post('/', async (req: AuthRequest, res) => {
           start.toISOString(), 
           end.toISOString(), 
           getDefaultRsvpDeadline(start.toISOString()),
-          duration_minutes ?? null,
+          resolvedDurationMinutes,
           visibility_all ? 1 : 0,
           invite_all ? 1 : 0,
           req.user!.id,
@@ -1104,7 +1130,7 @@ router.post('/', async (req: AuthRequest, res) => {
         start_time,
         resolvedEndTime,
         getDefaultRsvpDeadline(start_time),
-        duration_minutes ?? null,
+        resolvedDurationMinutes,
         visibility_all ? 1 : 0,
         invite_all ? 1 : 0,
         req.user!.id

@@ -62,6 +62,10 @@ db.exec(`
     default_arrival_minutes_training INTEGER,
     default_arrival_minutes_match INTEGER,
     default_arrival_minutes_other INTEGER,
+    default_duration_minutes INTEGER,
+    default_duration_minutes_training INTEGER,
+    default_duration_minutes_match INTEGER,
+    default_duration_minutes_other INTEGER,
     home_venues TEXT,
     default_home_venue_name TEXT,
     created_by INTEGER NOT NULL,
@@ -525,6 +529,33 @@ try {
     db.exec('ALTER TABLE teams ADD COLUMN default_arrival_minutes_other INTEGER');
     db.exec('UPDATE teams SET default_arrival_minutes_other = default_arrival_minutes WHERE default_arrival_minutes_other IS NULL');
     console.log('✅ Added default_arrival_minutes_other column to teams table');
+  }
+
+  const hasDefaultDurationMinutes = teamColumns.some((col) => col.name === 'default_duration_minutes');
+  if (!hasDefaultDurationMinutes) {
+    db.exec('ALTER TABLE teams ADD COLUMN default_duration_minutes INTEGER');
+    console.log('✅ Added default_duration_minutes column to teams table');
+  }
+
+  const hasDefaultDurationMinutesTraining = teamColumns.some((col) => col.name === 'default_duration_minutes_training');
+  if (!hasDefaultDurationMinutesTraining) {
+    db.exec('ALTER TABLE teams ADD COLUMN default_duration_minutes_training INTEGER');
+    db.exec('UPDATE teams SET default_duration_minutes_training = default_duration_minutes WHERE default_duration_minutes_training IS NULL');
+    console.log('✅ Added default_duration_minutes_training column to teams table');
+  }
+
+  const hasDefaultDurationMinutesMatch = teamColumns.some((col) => col.name === 'default_duration_minutes_match');
+  if (!hasDefaultDurationMinutesMatch) {
+    db.exec('ALTER TABLE teams ADD COLUMN default_duration_minutes_match INTEGER');
+    db.exec('UPDATE teams SET default_duration_minutes_match = default_duration_minutes WHERE default_duration_minutes_match IS NULL');
+    console.log('✅ Added default_duration_minutes_match column to teams table');
+  }
+
+  const hasDefaultDurationMinutesOther = teamColumns.some((col) => col.name === 'default_duration_minutes_other');
+  if (!hasDefaultDurationMinutesOther) {
+    db.exec('ALTER TABLE teams ADD COLUMN default_duration_minutes_other INTEGER');
+    db.exec('UPDATE teams SET default_duration_minutes_other = default_duration_minutes WHERE default_duration_minutes_other IS NULL');
+    console.log('✅ Added default_duration_minutes_other column to teams table');
   }
 
   const hasHomeVenues = teamColumns.some((col) => col.name === 'home_venues');

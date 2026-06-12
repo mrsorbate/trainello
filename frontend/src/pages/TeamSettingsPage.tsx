@@ -27,6 +27,9 @@ export default function TeamSettingsPage() {
   const [defaultRsvpDeadlineHoursOther, setDefaultRsvpDeadlineHoursOther] = useState('');
   const [defaultArrivalMinutesTraining, setDefaultArrivalMinutesTraining] = useState('');
   const [defaultArrivalMinutesMatch, setDefaultArrivalMinutesMatch] = useState('');
+  const [defaultDurationMinutesTraining, setDefaultDurationMinutesTraining] = useState('');
+  const [defaultDurationMinutesMatch, setDefaultDurationMinutesMatch] = useState('');
+  const [defaultDurationMinutesOther, setDefaultDurationMinutesOther] = useState('');
   const [homeVenues, setHomeVenues] = useState<Array<{ name: string; street: string; zip_city: string; pitch_type: string }>>([]);
   const [defaultHomeVenueName, setDefaultHomeVenueName] = useState('');
   const [expandedHomeVenueIndex, setExpandedHomeVenueIndex] = useState<number | null>(null);
@@ -121,6 +124,25 @@ export default function TeamSettingsPage() {
         ? ''
         : String(settings.default_arrival_minutes_match)
     );
+    const legacyDurationDefault =
+      settings.default_duration_minutes === null || settings.default_duration_minutes === undefined
+        ? null
+        : String(settings.default_duration_minutes);
+    setDefaultDurationMinutesTraining(
+      settings.default_duration_minutes_training === null || settings.default_duration_minutes_training === undefined
+        ? (legacyDurationDefault ?? '')
+        : String(settings.default_duration_minutes_training)
+    );
+    setDefaultDurationMinutesMatch(
+      settings.default_duration_minutes_match === null || settings.default_duration_minutes_match === undefined
+        ? (legacyDurationDefault ?? '')
+        : String(settings.default_duration_minutes_match)
+    );
+    setDefaultDurationMinutesOther(
+      settings.default_duration_minutes_other === null || settings.default_duration_minutes_other === undefined
+        ? (legacyDurationDefault ?? '')
+        : String(settings.default_duration_minutes_other)
+    );
     setHomeVenues(
       Array.isArray(settings.home_venues)
         ? settings.home_venues.map((venue: any) => ({
@@ -150,6 +172,10 @@ export default function TeamSettingsPage() {
       default_arrival_minutes_training?: number | null;
       default_arrival_minutes_match?: number | null;
       default_arrival_minutes_other?: number | null;
+      default_duration_minutes?: number | null;
+      default_duration_minutes_training?: number | null;
+      default_duration_minutes_match?: number | null;
+      default_duration_minutes_other?: number | null;
     }) => teamsAPI.updateSettings(teamId, payload),
     onSuccess: () => {
       invalidateSettingsQueries();
@@ -205,6 +231,10 @@ export default function TeamSettingsPage() {
       default_arrival_minutes_training?: number | null;
       default_arrival_minutes_match?: number | null;
       default_arrival_minutes_other?: number | null;
+      default_duration_minutes?: number | null;
+      default_duration_minutes_training?: number | null;
+      default_duration_minutes_match?: number | null;
+      default_duration_minutes_other?: number | null;
     }) => teamsAPI.updateSettings(teamId, payload),
     onSuccess: () => {
       invalidateSettingsQueries();
@@ -345,6 +375,27 @@ export default function TeamSettingsPage() {
     const parsedArrivalMinutesMatch = parseArrivalMinutes(defaultArrivalMinutesMatch, 'Standard-Treffpunkt Spiel');
     if (parsedArrivalMinutesMatch === 'invalid') return;
 
+    const parseDurationMinutes = (value: string, label: string): number | null | 'invalid' => {
+      if (value.trim() === '') {
+        return null;
+      }
+      const parsed = parseInt(value, 10);
+      if (!Number.isFinite(parsed) || parsed < 5 || parsed > 480) {
+        showToast(`${label} muss zwischen 5 und 480 Minuten liegen`, 'warning');
+        return 'invalid';
+      }
+      return parsed;
+    };
+
+    const parsedDurationMinutesTraining = parseDurationMinutes(defaultDurationMinutesTraining, 'Standard-Dauer Training');
+    if (parsedDurationMinutesTraining === 'invalid') return;
+
+    const parsedDurationMinutesMatch = parseDurationMinutes(defaultDurationMinutesMatch, 'Standard-Dauer Spiel');
+    if (parsedDurationMinutesMatch === 'invalid') return;
+
+    const parsedDurationMinutesOther = parseDurationMinutes(defaultDurationMinutesOther, 'Standard-Dauer Sonstiges');
+    if (parsedDurationMinutesOther === 'invalid') return;
+
     const parseCategoryRsvpHours = (value: string, label: string): number | null | 'invalid' => {
       if (value.trim() === '') {
         return null;
@@ -383,6 +434,10 @@ export default function TeamSettingsPage() {
       default_arrival_minutes_training: parsedArrivalMinutesTraining,
       default_arrival_minutes_match: parsedArrivalMinutesMatch,
       default_arrival_minutes_other: parsedArrivalMinutesTraining,
+      default_duration_minutes: parsedDurationMinutesTraining,
+      default_duration_minutes_training: parsedDurationMinutesTraining,
+      default_duration_minutes_match: parsedDurationMinutesMatch,
+      default_duration_minutes_other: parsedDurationMinutesOther,
     });
   };
 
@@ -458,6 +513,30 @@ export default function TeamSettingsPage() {
     setDefaultArrivalMinutesMatch(String(nextValue));
   };
 
+  const stepDefaultDurationMinutes = (field: 'training' | 'match' | 'other', delta: number) => {
+    const currentValue =
+      field === 'training'
+        ? defaultDurationMinutesTraining
+        : field === 'match'
+          ? defaultDurationMinutesMatch
+          : defaultDurationMinutesOther;
+    const current = parseInt(currentValue, 10);
+    const baseValue = Number.isFinite(current) ? current : 60;
+    const nextValue = Math.min(480, Math.max(5, baseValue + delta));
+
+    if (field === 'training') {
+      setDefaultDurationMinutesTraining(String(nextValue));
+      return;
+    }
+
+    if (field === 'match') {
+      setDefaultDurationMinutesMatch(String(nextValue));
+      return;
+    }
+
+    setDefaultDurationMinutesOther(String(nextValue));
+  };
+
   const stepCategoryRsvpDeadlineHours = (field: 'training' | 'other', delta: number) => {
     const currentValue =
       field === 'training'
@@ -480,7 +559,7 @@ export default function TeamSettingsPage() {
     setDefaultRsvpDeadlineDaysMatch(String(nextValue));
   };
 
-  const handleDefaultNumberWheel = (event: React.WheelEvent<HTMLInputElement>, field: 'rsvp-training' | 'rsvp-match-days' | 'rsvp-other' | 'arrival-training' | 'arrival-match') => {
+  const handleDefaultNumberWheel = (event: React.WheelEvent<HTMLInputElement>, field: 'rsvp-training' | 'rsvp-match-days' | 'rsvp-other' | 'arrival-training' | 'arrival-match' | 'duration-training' | 'duration-match' | 'duration-other') => {
     event.preventDefault();
     const delta = event.deltaY < 0 ? 1 : -1;
     if (field === 'rsvp-training') {
@@ -497,6 +576,18 @@ export default function TeamSettingsPage() {
     }
     if (field === 'arrival-training') {
       stepDefaultArrivalMinutes('training', delta * 5);
+      return;
+    }
+    if (field === 'duration-training') {
+      stepDefaultDurationMinutes('training', delta * 5);
+      return;
+    }
+    if (field === 'duration-match') {
+      stepDefaultDurationMinutes('match', delta * 5);
+      return;
+    }
+    if (field === 'duration-other') {
+      stepDefaultDurationMinutes('other', delta * 5);
       return;
     }
     stepDefaultArrivalMinutes('match', delta * 5);
@@ -985,6 +1076,114 @@ export default function TeamSettingsPage() {
                     onClick={() => stepDefaultArrivalMinutes('match', 5)}
                     className="btn btn-secondary px-3"
                     aria-label="Standard-Treffpunkt Minuten Spiel erhöhen"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Standard-Dauer je Kategorie (Minuten)
+              </label>
+
+              <div>
+                <label htmlFor="default-duration-minutes-training" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Training</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => stepDefaultDurationMinutes('training', -5)}
+                    className="btn btn-secondary px-3"
+                    aria-label="Standard-Dauer Training verringern"
+                  >
+                    −
+                  </button>
+                  <input
+                    id="default-duration-minutes-training"
+                    type="number"
+                    min={5}
+                    max={480}
+                    step={5}
+                    value={defaultDurationMinutesTraining}
+                    onChange={(e) => setDefaultDurationMinutesTraining(e.target.value)}
+                    onWheel={(e) => handleDefaultNumberWheel(e, 'duration-training')}
+                    className="input w-full text-center"
+                    placeholder="z. B. 90"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => stepDefaultDurationMinutes('training', 5)}
+                    className="btn btn-secondary px-3"
+                    aria-label="Standard-Dauer Training erhöhen"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="default-duration-minutes-match" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Spiel</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => stepDefaultDurationMinutes('match', -5)}
+                    className="btn btn-secondary px-3"
+                    aria-label="Standard-Dauer Spiel verringern"
+                  >
+                    −
+                  </button>
+                  <input
+                    id="default-duration-minutes-match"
+                    type="number"
+                    min={5}
+                    max={480}
+                    step={5}
+                    value={defaultDurationMinutesMatch}
+                    onChange={(e) => setDefaultDurationMinutesMatch(e.target.value)}
+                    onWheel={(e) => handleDefaultNumberWheel(e, 'duration-match')}
+                    className="input w-full text-center"
+                    placeholder="z. B. 90"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => stepDefaultDurationMinutes('match', 5)}
+                    className="btn btn-secondary px-3"
+                    aria-label="Standard-Dauer Spiel erhöhen"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="default-duration-minutes-other" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Sonstiges</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => stepDefaultDurationMinutes('other', -5)}
+                    className="btn btn-secondary px-3"
+                    aria-label="Standard-Dauer Sonstiges verringern"
+                  >
+                    −
+                  </button>
+                  <input
+                    id="default-duration-minutes-other"
+                    type="number"
+                    min={5}
+                    max={480}
+                    step={5}
+                    value={defaultDurationMinutesOther}
+                    onChange={(e) => setDefaultDurationMinutesOther(e.target.value)}
+                    onWheel={(e) => handleDefaultNumberWheel(e, 'duration-other')}
+                    className="input w-full text-center"
+                    placeholder="z. B. 60"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => stepDefaultDurationMinutes('other', 5)}
+                    className="btn btn-secondary px-3"
+                    aria-label="Standard-Dauer Sonstiges erhöhen"
                   >
                     +
                   </button>

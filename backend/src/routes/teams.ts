@@ -710,6 +710,7 @@ router.get('/:id/settings', (req: AuthRequest, res) => {
       `SELECT id, fussballde_id, fussballde_team_name, default_response, default_rsvp_deadline_hours,
               default_rsvp_deadline_hours_training, default_rsvp_deadline_hours_match, default_rsvp_deadline_hours_other,
               default_arrival_minutes, default_arrival_minutes_training, default_arrival_minutes_match, default_arrival_minutes_other,
+              default_duration_minutes, default_duration_minutes_training, default_duration_minutes_match, default_duration_minutes_other,
               home_venues, default_home_venue_name, ${calendarTokenSelectExpression}
        FROM teams WHERE id = ?`
     ).get(teamId) as any;
@@ -752,6 +753,10 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
     const hasDefaultArrivalMinutesTraining = Object.prototype.hasOwnProperty.call(req.body, 'default_arrival_minutes_training');
     const hasDefaultArrivalMinutesMatch = Object.prototype.hasOwnProperty.call(req.body, 'default_arrival_minutes_match');
     const hasDefaultArrivalMinutesOther = Object.prototype.hasOwnProperty.call(req.body, 'default_arrival_minutes_other');
+    const hasDefaultDurationMinutes = Object.prototype.hasOwnProperty.call(req.body, 'default_duration_minutes');
+    const hasDefaultDurationMinutesTraining = Object.prototype.hasOwnProperty.call(req.body, 'default_duration_minutes_training');
+    const hasDefaultDurationMinutesMatch = Object.prototype.hasOwnProperty.call(req.body, 'default_duration_minutes_match');
+    const hasDefaultDurationMinutesOther = Object.prototype.hasOwnProperty.call(req.body, 'default_duration_minutes_other');
     const hasHomeVenues = Object.prototype.hasOwnProperty.call(req.body, 'home_venues');
     const hasDefaultHomeVenueName = Object.prototype.hasOwnProperty.call(req.body, 'default_home_venue_name');
 
@@ -769,6 +774,10 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
       default_arrival_minutes_training,
       default_arrival_minutes_match,
       default_arrival_minutes_other,
+      default_duration_minutes,
+      default_duration_minutes_training,
+      default_duration_minutes_match,
+      default_duration_minutes_other,
       home_venues,
       default_home_venue_name,
     } = req.body as {
@@ -785,6 +794,10 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
       default_arrival_minutes_training?: number | string | null;
       default_arrival_minutes_match?: number | string | null;
       default_arrival_minutes_other?: number | string | null;
+      default_duration_minutes?: number | string | null;
+      default_duration_minutes_training?: number | string | null;
+      default_duration_minutes_match?: number | string | null;
+      default_duration_minutes_other?: number | string | null;
       home_venues?: Array<{ name: string; street?: string; zip_city?: string; pitch_type?: string }>;
       default_home_venue_name?: string | null;
     };
@@ -801,6 +814,7 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
             `SELECT id, fussballde_id, fussballde_team_name, default_response, default_rsvp_deadline_hours,
               default_rsvp_deadline_hours_training, default_rsvp_deadline_hours_match, default_rsvp_deadline_hours_other,
               default_arrival_minutes, default_arrival_minutes_training, default_arrival_minutes_match, default_arrival_minutes_other,
+              default_duration_minutes, default_duration_minutes_training, default_duration_minutes_match, default_duration_minutes_other,
               home_venues, default_home_venue_name
        FROM teams WHERE id = ?`
     ).get(teamId) as any;
@@ -941,6 +955,56 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
       nextDefaultArrivalMinutesOther = normalized;
     }
 
+    let nextDefaultDurationMinutes = team.default_duration_minutes as number | null;
+    if (hasDefaultDurationMinutes) {
+      let normalizedDurationMinutes: number | null = null;
+      if (default_duration_minutes !== null && default_duration_minutes !== undefined && String(default_duration_minutes).trim() !== '') {
+        normalizedDurationMinutes = parseInt(String(default_duration_minutes), 10);
+        if (!Number.isFinite(normalizedDurationMinutes) || normalizedDurationMinutes < 5 || normalizedDurationMinutes > 480) {
+          return res.status(400).json({ error: 'Standard-Dauer muss zwischen 5 und 480 Minuten liegen' });
+        }
+      }
+      nextDefaultDurationMinutes = normalizedDurationMinutes;
+    }
+
+    const normalizeDurationMinutes = (value: number | string | null | undefined): number | null | 'invalid' => {
+      if (value === null || value === undefined || String(value).trim() === '') {
+        return null;
+      }
+      const parsed = parseInt(String(value), 10);
+      if (!Number.isFinite(parsed) || parsed < 5 || parsed > 480) {
+        return 'invalid';
+      }
+      return parsed;
+    };
+
+    let nextDefaultDurationMinutesTraining = team.default_duration_minutes_training as number | null;
+    if (hasDefaultDurationMinutesTraining) {
+      const normalized = normalizeDurationMinutes(default_duration_minutes_training);
+      if (normalized === 'invalid') {
+        return res.status(400).json({ error: 'Standard-Dauer Training muss zwischen 5 und 480 Minuten liegen' });
+      }
+      nextDefaultDurationMinutesTraining = normalized;
+    }
+
+    let nextDefaultDurationMinutesMatch = team.default_duration_minutes_match as number | null;
+    if (hasDefaultDurationMinutesMatch) {
+      const normalized = normalizeDurationMinutes(default_duration_minutes_match);
+      if (normalized === 'invalid') {
+        return res.status(400).json({ error: 'Standard-Dauer Spiel muss zwischen 5 und 480 Minuten liegen' });
+      }
+      nextDefaultDurationMinutesMatch = normalized;
+    }
+
+    let nextDefaultDurationMinutesOther = team.default_duration_minutes_other as number | null;
+    if (hasDefaultDurationMinutesOther) {
+      const normalized = normalizeDurationMinutes(default_duration_minutes_other);
+      if (normalized === 'invalid') {
+        return res.status(400).json({ error: 'Standard-Dauer Sonstiges muss zwischen 5 und 480 Minuten liegen' });
+      }
+      nextDefaultDurationMinutesOther = normalized;
+    }
+
     let nextHomeVenues = parseHomeVenuesFromDb(team.home_venues);
     if (hasHomeVenues) {
       nextHomeVenues = normalizeHomeVenues(home_venues);
@@ -973,6 +1037,10 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
              default_arrival_minutes_training = ?,
              default_arrival_minutes_match = ?,
              default_arrival_minutes_other = ?,
+           default_duration_minutes = ?,
+             default_duration_minutes_training = ?,
+             default_duration_minutes_match = ?,
+             default_duration_minutes_other = ?,
            home_venues = ?,
            default_home_venue_name = ?,
            updated_at = CURRENT_TIMESTAMP
@@ -989,6 +1057,10 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
       nextDefaultArrivalMinutesTraining,
       nextDefaultArrivalMinutesMatch,
       nextDefaultArrivalMinutesOther,
+      nextDefaultDurationMinutes,
+      nextDefaultDurationMinutesTraining,
+      nextDefaultDurationMinutesMatch,
+      nextDefaultDurationMinutesOther,
       JSON.stringify(nextHomeVenues),
       nextDefaultHomeVenueName,
       teamId
@@ -998,6 +1070,7 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
       `SELECT id, fussballde_id, fussballde_team_name, default_response, default_rsvp_deadline_hours,
               default_rsvp_deadline_hours_training, default_rsvp_deadline_hours_match, default_rsvp_deadline_hours_other,
               default_arrival_minutes, default_arrival_minutes_training, default_arrival_minutes_match, default_arrival_minutes_other,
+              default_duration_minutes, default_duration_minutes_training, default_duration_minutes_match, default_duration_minutes_other,
               home_venues, default_home_venue_name, ${calendarTokenSelectExpression}
        FROM teams WHERE id = ?`
     ).get(teamId) as any;
