@@ -233,22 +233,29 @@ export default function EventsPage() {
           <div className="w-px bg-gray-200 dark:bg-gray-700 shrink-0 self-stretch" />
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 min-w-0">
-              {event.type === 'match' && opponentCrestUrl ? (
-                <img
-                  src={opponentCrestUrl}
-                  alt={`${displayTitle || 'Gegner'} Wappen`}
-                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-contain bg-white"
-                  loading="lazy"
-                />
-              ) : event.type === 'training' ? (
-                <Cone className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 shrink-0" />
-              ) : event.type === 'match' ? (
-                <Swords className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 shrink-0" />
-              ) : (
-                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 shrink-0" />
+            <div className="flex items-center gap-2 min-w-0 flex-wrap">
+              <div className="flex items-center gap-1.5 min-w-0">
+                {event.type === 'match' && opponentCrestUrl ? (
+                  <img
+                    src={opponentCrestUrl}
+                    alt={`${displayTitle || 'Gegner'} Wappen`}
+                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-contain bg-white"
+                    loading="lazy"
+                  />
+                ) : event.type === 'training' ? (
+                  <Cone className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 shrink-0" />
+                ) : event.type === 'match' ? (
+                  <Swords className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 shrink-0" />
+                ) : (
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 shrink-0" />
+                )}
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">{displayTitle || opponent || event.title}</h3>
+              </div>
+              {!teamId && event.team_name && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200 whitespace-nowrap">
+                  {event.team_name}
+                </span>
               )}
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">{displayTitle || opponent || event.title}</h3>
             </div>
 
             <div className="mt-1 flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
