@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { teamsAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { Calendar, Users, BarChart, ArrowLeft, Settings, MessageSquare } from 'lucide-react';
-import { resolveAssetUrl } from '../lib/utils';
 import { useSmartBack } from '../hooks/useSmartBack';
 
 export default function TeamPage() {
@@ -29,10 +28,6 @@ export default function TeamPage() {
   });
 
   const isTrainer = members?.find((m: any) => m.id === user?.id)?.role === 'trainer';
-
-  const getTeamPhotoUrl = (): string | undefined => {
-    return resolveAssetUrl(team?.team_picture);
-  };
 
   if (teamLoading || membersLoading) {
     return <div className="text-center py-12">Lädt...</div>;
@@ -62,25 +57,6 @@ export default function TeamPage() {
           </div>
         </div>
       </div>
-
-      {/* Team Photo */}
-      {getTeamPhotoUrl() && (
-        <div className="card p-0 overflow-hidden">
-          <div className="relative w-full min-h-[14rem] sm:min-h-[20rem] lg:min-h-[24rem]">
-            <img
-              src={getTeamPhotoUrl()}
-              alt={team?.name}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-black/25 to-transparent" />
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 px-4 text-center">
-              <h3 className="inline-block px-3 py-1 rounded-md bg-black/55 text-white text-xl font-bold backdrop-blur-sm">
-                {team?.name}
-              </h3>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Quick Actions */}
       <div className="space-y-3 sm:space-y-4">
