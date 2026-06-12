@@ -129,6 +129,14 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
               {section.matchedTeamName}
             </div>
           )}
+
+          {section.teamName && (
+            <div className="mt-1 flex items-center gap-2">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200 whitespace-nowrap">
+                {section.teamName}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -138,34 +146,49 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
 const renderScheduleSections = (
   sections: any[],
   mode: 'next' | 'last'
-) => (
-  <div className="space-y-4">
-    {sections.map((section) => {
-      const matches = mode === 'next' ? section.nextGames : section.lastGames;
-      if (!Array.isArray(matches) || matches.length === 0) return null;
+) => {
+  // Flatten alle Spiele mit ihren Team-Informationen
+  const allMatches: Array<{ match: any; section: any; cardKey: string }> = [];
+  
+  sections.forEach((section) => {
+    const matches = mode === 'next' ? section.nextGames : section.lastGames;
+    if (Array.isArray(matches)) {
+      matches.forEach((match: any, index: number) => {
+        allMatches.push({
+          match,
+          section,
+          cardKey: `${section.key}-${mode}-${index}`,
+        });
+      });
+    }
+  });
 
-      return (
-        <div key={`${section.key}-${mode}`} className="space-y-3">
-          <div className="px-3 sm:px-4">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-              {section.teamName}
-              {section.leagueName && (
-                <span className="ml-2 text-xs sm:text-sm font-normal text-gray-500 dark:text-gray-400">
-                  {section.leagueName}
-                </span>
-              )}
-            </h2>
-          </div>
-          <div className="space-y-3">
-            {matches.map((match: any, index: number) =>
-              renderMatchCard(match, section, `${section.key}-${mode}-${index}`)
-            )}
-          </div>
-        </div>
-      );
-    })}
-  </div>
-);
+  if (allMatches.length === 0) return null;
+
+  // Sortiere nach Datum
+  allMatches.sort((a, b) => {
+    const dateA = parseMatchDate(a.match?.date);
+    const dateB = parseMatchDate(b.match?.date);
+    
+    if (dateA && dateB) {
+      // Bei "next": aufsteigend (nächste zuerst), bei "last": absteigend (neueste zuerst)
+      return mode === 'next' ? dateA.getTime() - dateB.getTime() : dateB.getTime() - dateA.getTime();
+    }
+    
+    // Fallback bei nicht geparstem Datum
+    const rawA = String(a.match?.date || '');
+    const rawB = String(b.match?.date || '');
+    return mode === 'next' ? rawA.localeCompare(rawB) : rawB.localeCompare(rawA);
+  });
+
+  return (
+    <div className="space-y-3">
+      {allMatches.map(({ match, section, cardKey }) =>
+        renderMatchCard(match, section, cardKey)
+      )}
+    </div>
+  );
+};
 
 export default function MySchedulePage() {
   const { data: scheduleSections, isLoading, error } = useQuery({
