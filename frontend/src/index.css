@@ -4,21 +4,10 @@
 
 @layer base {
   html, body {
-    width: 100vw;
-    height: 100dvh;
-    height: 100vh;
-    overflow: hidden;
-    overflow-x: hidden;
-    overflow-y: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    -webkit-user-select: none;
-    user-select: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: auto;
     -webkit-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
     text-size-adjust: 100%;
@@ -34,21 +23,47 @@
     @apply bg-gray-900 text-gray-100;
     -webkit-user-select: none;
     -webkit-user-drag: none;
-    margin: 0;
-    padding: 0;
+    overflow-x: hidden;
   }
 
   #root {
-    width: 100vw;
-    height: 100dvh;
-    height: 100vh;
-    overflow: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
+    width: 100%;
+    height: auto;
+    overflow-x: hidden;
   }
 
-  @media (orientation: landscape) {
+  /* Mobile-only: Orientierungssperre */
+  @media (max-width: 1024px) {
+    html, body {
+      width: 100vw;
+      height: 100dvh;
+      height: 100vh;
+      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: hidden;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    #root {
+      width: 100vw;
+      height: 100dvh;
+      height: 100vh;
+      overflow: hidden;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
     html, body, #root {
       max-height: 100dvh;
       height: 100dvh;
