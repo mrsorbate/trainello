@@ -1267,6 +1267,7 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
       visibility_all, invite_all, created_by, external_game_id, is_home_match, opponent_crest_url
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
+  const insertEventTeamLinkStmt = db.prepare('INSERT OR IGNORE INTO event_teams (event_id, team_id) VALUES (?, ?)');
   const insertResponseStmt = db.prepare('INSERT INTO event_responses (event_id, user_id, status) VALUES (?, ?, ?)');
   const upsertDeletedEventStmt = db.prepare(
     `INSERT INTO deleted_events (event_id, team_id, title, start_time, end_time, deleted_at)
@@ -1286,6 +1287,12 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
   let skippedPastNoResult = 0;
   const cancelled: string[] = [];
   const rescheduled: string[] = [];
+
+  // Keep event-team links in sync so imported matches are visible in queries that use event_teams.
+  db.prepare(
+    `INSERT OR IGNORE INTO event_teams (event_id, team_id)
+     SELECT id, team_id FROM events WHERE team_id = ?`
+  ).run(teamId);
 
   const normalizeStatusText = (value: unknown): string => String(value || '').trim().toLowerCase();
   const hasAnyKeyword = (haystack: string, keywords: string[]): boolean => keywords.some((keyword) => haystack.includes(keyword));
@@ -1455,6 +1462,7 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
     );
 
     const eventId = insertResult.lastInsertRowid as number;
+    insertEventTeamLinkStmt.run(eventId, teamId);
     for (const memberId of memberIds) {
       try {
         insertResponseStmt.run(eventId, memberId, defaultResponseStatus);
