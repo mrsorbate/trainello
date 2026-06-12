@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
-import { eventsAPI, teamsAPI } from '../lib/api';
+import { eventsAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
-import { useToast } from '../lib/useToast';
 import { Calendar, Plus, ArrowLeft, MapPin, Check, X, HelpCircle, Home, Plane, Cone, Swords } from 'lucide-react';
 import { useSmartBack } from '../hooks/useSmartBack';
 
@@ -12,7 +11,6 @@ export default function EventsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const teamId = id ? parseInt(id) : null;
   const { user } = useAuthStore();
-  const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const goBack = useSmartBack();
@@ -61,69 +59,6 @@ export default function EventsPage() {
       }
     },
   });
-
-  const { data: teamSettings } = useQuery({
-    queryKey: ['team-settings-calendar', teamId],
-    queryFn: async () => {
-      if (!teamId) {
-        return null;
-      }
-      const response = await teamsAPI.getSettings(teamId);
-      return response.data;
-    },
-    enabled: Boolean(teamId),
-    retry: 1,
-  });
-
-  const calendarWebcalUrl = String(teamSettings?.calendar_webcal_url || '').trim();
-  const calendarFeedUrl = String(teamSettings?.calendar_feed_url || '').trim();
-  const calendarSubscribeUrl = calendarWebcalUrl || calendarFeedUrl;
-
-  const handleCalendarSubscribeClick = async (event: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!calendarSubscribeUrl) {
-      return;
-    }
-
-    if (!calendarWebcalUrl || !calendarFeedUrl) {
-      return;
-    }
-
-    event.preventDefault();
-
-    let fallbackTimer: number | null = null;
-
-    const cleanup = () => {
-      if (fallbackTimer !== null) {
-        window.clearTimeout(fallbackTimer);
-        fallbackTimer = null;
-      }
-      window.removeEventListener('pagehide', cleanup);
-      window.removeEventListener('blur', cleanup);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        cleanup();
-      }
-    };
-
-    window.addEventListener('pagehide', cleanup);
-    window.addEventListener('blur', cleanup);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    fallbackTimer = window.setTimeout(async () => {
-      cleanup();
-      try {
-        await navigator.clipboard.writeText(calendarFeedUrl);
-        showToast('Kalender-Link kopiert. Wenn sich nichts geöffnet hat, den Link manuell im Kalender abonnieren.', 'success');
-      } catch {
-        showToast('Falls sich nichts geöffnet hat, bitte den Kalender-Link manuell abonnieren.', 'warning');
-      }
-    }, 1600);
-
-    window.location.href = calendarWebcalUrl;
-  };
 
   const eventItems = Array.isArray(events) ? events : [];
 
@@ -459,18 +394,6 @@ export default function EventsPage() {
           </Link>
         )}
 
-        {teamId && calendarSubscribeUrl && (
-          <a
-            href={calendarSubscribeUrl}
-            onClick={handleCalendarSubscribeClick}
-            className="btn btn-secondary self-start inline-flex items-center gap-2 px-3 py-2 text-sm"
-            title="Kalender abonnieren"
-          >
-            <Calendar className="w-4 h-4" />
-            <span className="sm:hidden">Kalender</span>
-            <span className="hidden sm:inline">Kalender abonnieren</span>
-          </a>
-        )}
       </div>
 
       {createdSuccess && (
