@@ -35,7 +35,7 @@ export default function DashboardPage() {
     },
   });
 
-  const { data: openPosts, isLoading: openPostsLoading } = useQuery({
+  const { data: openPosts } = useQuery({
     queryKey: ['open-posts'],
     queryFn: async () => {
       const response = await postsAPI.getOpen();
@@ -171,7 +171,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {user?.role !== 'admin' && (
+      {user?.role !== 'admin' && openPosts && openPosts.length > 0 && (
         <div className="card">
           <div className="mb-4 flex items-center justify-center">
             <h2 className="text-xl font-semibold flex items-center text-center">
@@ -180,32 +180,26 @@ export default function DashboardPage() {
             </h2>
           </div>
 
-          {openPostsLoading ? (
-            <p className="text-center py-4 text-gray-500 dark:text-gray-400">Lädt...</p>
-          ) : openPosts && openPosts.length > 0 ? (
-            <div className="space-y-2">
-              {openPosts.slice(0, 6).map((post) => (
-                <Link
-                  key={post.id}
-                  to={`/teams/${post.team_id}/posts`}
-                  className="block rounded-lg border border-amber-200 bg-amber-50 p-3 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-900/20 dark:hover:bg-amber-900/30"
-                >
-                  <p className="text-xs uppercase tracking-wide text-amber-700 dark:text-amber-300">
-                    {post.type === 'poll' ? 'Umfrage' : 'Nachricht'}
-                  </p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{post.title}</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">{post.team_name}</p>
-                </Link>
-              ))}
-              {openPosts.length > 6 && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 text-center pt-1">
-                  {openPosts.length - 6} weitere Einträge offen
+          <div className="space-y-2">
+            {openPosts.slice(0, 6).map((post) => (
+              <Link
+                key={post.id}
+                to={`/teams/${post.team_id}/posts`}
+                className="block rounded-lg border border-amber-200 bg-amber-50 p-3 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-900/20 dark:hover:bg-amber-900/30"
+              >
+                <p className="text-xs uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                  {post.type === 'poll' ? 'Umfrage' : 'Nachricht'}
                 </p>
-              )}
-            </div>
-          ) : (
-            <p className="text-center py-4 text-gray-500 dark:text-gray-400">Keine offenen Nachrichten oder Umfragen.</p>
-          )}
+                <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{post.title}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">{post.team_name}</p>
+              </Link>
+            ))}
+            {openPosts.length > 6 && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center pt-1">
+                {openPosts.length - 6} weitere Einträge offen
+              </p>
+            )}
+          </div>
         </div>
       )}
 
