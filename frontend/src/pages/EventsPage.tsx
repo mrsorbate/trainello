@@ -117,8 +117,25 @@ export default function EventsPage() {
       return event.title;
     };
 
+    const getSquadIndicator = (): 'I' | 'II' | null => {
+      const title = String(event?.title || '').trim();
+      const teamName = String(event?.team_name || '').trim();
+      if (/^\[(?:II|2)\]\s*/i.test(title) || /^\((?:II|2)\)\s*/i.test(title) || /\bII\b/i.test(teamName)) {
+        return 'II';
+      }
+      if (/^\[(?:I|1)\]\s*/i.test(title) || /^\((?:I|1)\)\s*/i.test(title) || /\bI\b/i.test(teamName)) {
+        return 'I';
+      }
+      return null;
+    };
+
     const opponent = getOpponentName();
-    const displayTitle = String(opponent || event.title || '').replace(/^spiel\s+gegen\s+/i, '').trim();
+    const displayTitle = String(opponent || event.title || '')
+      .replace(/^\[(?:I{1,3}|\d+)\]\s*/i, '')
+      .replace(/^\((?:I{1,3}|\d+)\)\s*/i, '')
+      .replace(/^spiel\s+gegen\s+/i, '')
+      .trim();
+    const squadIndicator = getSquadIndicator();
     const startDate = new Date(event.start_time);
     const canChooseTentative = (() => {
       if (!event?.rsvp_deadline) return true;
@@ -186,9 +203,17 @@ export default function EventsPage() {
                 )}
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">{displayTitle || opponent || event.title}</h3>
               </div>
-              {!teamId && event.team_name && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200 whitespace-nowrap">
-                  {event.team_name}
+              {!teamId && (squadIndicator || event.team_name) && (
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${
+                    squadIndicator === 'II'
+                      ? 'bg-black text-white dark:bg-black dark:text-white'
+                      : squadIndicator === 'I'
+                        ? 'bg-yellow-300 text-yellow-900 dark:bg-yellow-300 dark:text-yellow-900'
+                        : 'bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200'
+                  }`}
+                >
+                  {squadIndicator || event.team_name}
                 </span>
               )}
             </div>
