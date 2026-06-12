@@ -77,12 +77,12 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
       className="p-3 sm:p-4 rounded-xl border transition-all hover:shadow-md bg-white border-gray-200 hover:border-primary-300 dark:bg-gray-800 dark:border-gray-700 dark:hover:border-primary-600"
     >
       <div className="flex items-center gap-3 sm:gap-4">
-        <div className="w-20 sm:w-24 shrink-0 flex items-center justify-center">
+        <div className="w-16 sm:w-20 shrink-0 flex items-center justify-center">
           <div className="flex flex-col items-center justify-center text-center">
             {weekdayLabel && (
-              <p className="text-[11px] sm:text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-300 leading-none">{weekdayLabel}</p>
+              <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-300 leading-none">{weekdayLabel}</p>
             )}
-            <p className="mt-1 text-3xl sm:text-4xl font-semibold tabular-nums text-gray-900 dark:text-gray-100 leading-none tracking-tight">{dateLabel}</p>
+            <p className="mt-0.5 text-2xl sm:text-3xl font-semibold tabular-nums text-gray-900 dark:text-gray-100 leading-none tracking-tight">{dateLabel}</p>
           </div>
         </div>
 
@@ -95,18 +95,18 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
                 <img
                   src={opponentBadge}
                   alt={`${opponent} Wappen`}
-                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-contain bg-white flex-shrink-0"
+                  className="w-4 h-4 sm:w-5 sm:h-5 rounded-full object-contain bg-white flex-shrink-0"
                   loading="lazy"
                 />
               ) : (
-                <Swords className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 shrink-0" />
+                <Swords className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 dark:text-gray-300 shrink-0" />
               )}
-              <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate">{opponent}</h3>
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{opponent}</h3>
             </div>
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
-            <span className="text-lg sm:text-xl font-semibold tracking-tight">{timeLabel} <span className="text-sm sm:text-base font-normal">Uhr</span></span>
+          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
+            <span className="text-sm sm:text-base font-semibold tracking-tight">{timeLabel} <span className="text-xs sm:text-sm font-normal">Uhr</span></span>
           </div>
 
           <div className="mt-0.5 flex items-center gap-1.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
