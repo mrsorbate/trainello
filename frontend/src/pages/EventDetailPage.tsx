@@ -323,17 +323,6 @@ export default function EventDetailPage() {
 
   const eventDateLabel = safeFormatDate(event?.start_time, 'PPP');
   const eventTimeRangeLabel = `${safeFormatDate(event?.start_time, 'p')} - ${safeFormatDate(event?.end_time, 'p')}`;
-  const homeGoals = Number.isInteger(Number(event?.home_goals)) ? Number(event?.home_goals) : null;
-  const awayGoals = Number.isInteger(Number(event?.away_goals)) ? Number(event?.away_goals) : null;
-  const hasMatchResult = event?.type === 'match' && homeGoals !== null && awayGoals !== null;
-  const resultToneClass =
-    hasMatchResult && homeGoals !== null && awayGoals !== null
-      ? homeGoals > awayGoals
-        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-        : homeGoals < awayGoals
-          ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-      : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
   const locationParts = [
     normalizeLocationValue(event?.location_venue),
     normalizeLocationValue(event?.location_street),
