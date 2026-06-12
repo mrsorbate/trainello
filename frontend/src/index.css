@@ -7,10 +7,26 @@
     width: 100%;
     height: 100%;
     overflow-x: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   body {
     @apply bg-gray-900 text-gray-100;
+  }
+
+  @media (orientation: landscape) {
+    html, body {
+      max-height: 100vh;
+      height: 100vh;
+      width: 100vw;
+      max-width: 100vw;
+    }
   }
 }
 

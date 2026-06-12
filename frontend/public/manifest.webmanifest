@@ -3,7 +3,7 @@
   "short_name": "teamvote+",
   "description": "teamvote+ - Team-Management Software für Sportvereine",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "start_url": "/",
   "scope": "/",
   "background_color": "#071535",

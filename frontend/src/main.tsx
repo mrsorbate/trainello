@@ -6,7 +6,7 @@ import App from './App'
 import { ToastProvider } from './lib/useToast'
 import './index.css'
 
-type OrientationLockType = 'portrait'
+type OrientationLockType = 'portrait' | 'portrait-primary'
 
 interface ScreenOrientationWithLock {
   lock?: (orientation: OrientationLockType) => Promise<void>
@@ -28,8 +28,14 @@ const lockMobileOrientation = async () => {
   }
 
   try {
-    await orientation!.lock!('portrait')
+    await orientation!.lock!('portrait-primary')
   } catch {
+    // Fallback für iOS – versuche trotzdem 'portrait'
+    try {
+      await orientation!.lock!('portrait')
+    } catch {
+      // Orientierungssperre wird nicht unterstützt
+    }
   }
 }
 
@@ -37,6 +43,16 @@ void lockMobileOrientation()
 window.addEventListener('orientationchange', () => {
   void lockMobileOrientation()
 })
+
+// Zusätzliche iPhone-spezifische Maßnahmen
+if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+  document.documentElement.style.width = '100vw'
+  document.documentElement.style.height = '100vh'
+  document.documentElement.style.position = 'fixed'
+  document.body.style.width = '100vw'
+  document.body.style.height = '100vh'
+  document.body.style.position = 'fixed'
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
