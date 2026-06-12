@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { eventsAPI } from '../lib/api';
+import { eventsAPI, badgeProxyUrl } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { resolveAssetUrl } from '../lib/utils';
 import { format } from 'date-fns';
@@ -271,7 +271,7 @@ export default function EventDetailPage() {
 
   const opponent = getOpponentName();
   const displayTitle = String(opponent || event?.title || '').replace(/^spiel\s+gegen\s+/i, '').trim();
-  const opponentCrestUrl = typeof event?.opponent_crest_url === 'string' ? event.opponent_crest_url.trim() : '';
+  const opponentCrestUrl = badgeProxyUrl(typeof event?.opponent_crest_url === 'string' ? event.opponent_crest_url.trim() : '') || '';
 
   const getInitials = (name: string) => {
     return String(name || '')

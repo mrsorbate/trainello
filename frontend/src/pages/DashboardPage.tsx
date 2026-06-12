@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { eventsAPI, postsAPI, teamsAPI } from '../lib/api';
+import { eventsAPI, postsAPI, teamsAPI, badgeProxyUrl } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { Calendar, MapPin, CheckCircle, XCircle, HelpCircle, AlertCircle, Users, RotateCw, Check, X, Home, Plane, Cone, Swords, MessageSquare } from 'lucide-react';
 import { resolveAssetUrl } from '../lib/utils';
@@ -352,7 +352,7 @@ export default function DashboardPage() {
               const monthLabel = String(startDate.getMonth() + 1).padStart(2, '0');
               const dateLabel = `${dayLabel}.${monthLabel}`;
               const timeLabel = startDate.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-              const opponentCrestUrl = typeof event?.opponent_crest_url === 'string' ? event.opponent_crest_url.trim() : '';
+              const opponentCrestUrl = badgeProxyUrl(typeof event?.opponent_crest_url === 'string' ? event.opponent_crest_url.trim() : '') || '';
               
               // Calculate meeting time if arrival_minutes is set
               const arrivalMinutes = typeof event?.arrival_minutes === 'number' ? event.arrival_minutes : 0;

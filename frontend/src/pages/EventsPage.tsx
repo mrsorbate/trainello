@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
-import { eventsAPI } from '../lib/api';
+import { eventsAPI, badgeProxyUrl } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { Calendar, Plus, ArrowLeft, MapPin, Check, X, HelpCircle, Home, Plane, Cone, Swords } from 'lucide-react';
 import { useSmartBack } from '../hooks/useSmartBack';
@@ -132,7 +132,7 @@ export default function EventsPage() {
     const monthLabel = String(startDate.getMonth() + 1).padStart(2, '0');
     const dateLabel = `${dayLabel}.${monthLabel}`;
     const timeLabel = startDate.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-    const opponentCrestUrl = typeof event?.opponent_crest_url === 'string' ? event.opponent_crest_url.trim() : '';
+    const opponentCrestUrl = badgeProxyUrl(typeof event?.opponent_crest_url === 'string' ? event.opponent_crest_url.trim() : '') || '';
 
     const arrivalMinutes = typeof event?.arrival_minutes === 'number' ? event.arrival_minutes : 0;
     let meetingTimeLabel = '';
