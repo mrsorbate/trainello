@@ -590,6 +590,9 @@ export default function EventCreatePage() {
     return <Navigate to="/events" replace />;
   }
 
+  const categoryDefaultDurationMinutes = getCategoryDefaultDurationMinutes(teamSettings, eventData.type);
+  const categoryDefaultArrivalMinutes = getCategoryDefaultArrivalMinutes(teamSettings, eventData.type);
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
@@ -710,7 +713,20 @@ export default function EventCreatePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Dauer (Minuten) *</label>
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Dauer (Minuten) *</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (categoryDefaultDurationMinutes !== null) {
+                      setEventData((prev) => ({ ...prev, duration_minutes: String(categoryDefaultDurationMinutes) }));
+                    }
+                  }}
+                  className="text-xs text-primary-600 hover:text-primary-500"
+                >
+                  Team-Default
+                </button>
+              </div>
               <div className="mt-1 flex items-center gap-2 min-w-0">
                 <button
                   type="button"
@@ -740,6 +756,11 @@ export default function EventCreatePage() {
                   +
                 </button>
               </div>
+              {String(eventData.duration_minutes || '').trim() === '' && categoryDefaultDurationMinutes !== null && (
+                <p className="text-xs text-primary-600 dark:text-primary-300 mt-1">
+                  Team-Default: {categoryDefaultDurationMinutes} Minuten
+                </p>
+              )}
               {eventData.end_time && (
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Ende: {eventData.end_time.replace('T', ' ')}</p>
               )}
@@ -884,6 +905,11 @@ export default function EventCreatePage() {
                   +
                 </button>
               </div>
+              {String(eventData.arrival_minutes || '').trim() === '' && categoryDefaultArrivalMinutes !== null && (
+                <p className="text-xs text-primary-600 dark:text-primary-300 mt-1">
+                  Team-Default: {categoryDefaultArrivalMinutes} Minuten
+                </p>
+              )}
             </div>
 
             <div className="md:col-span-2">
