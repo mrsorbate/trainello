@@ -132,7 +132,7 @@ export default function TeamPage() {
           </div>
           <div className="min-w-0">
             <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Nachrichten &amp; Umfragen</h3>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 break-words">Offene Eintraege ansehen</p>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 break-words">Offene Einträge ansehen</p>
           </div>
         </Link>
 

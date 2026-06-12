@@ -151,8 +151,8 @@ export default function TeamPostsPage() {
             type="button"
             onClick={() => goBack(`/teams/${teamId}`)}
             className="mt-0.5 sm:mt-0 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-            aria-label="Zurueck"
-            title="Zurueck"
+            aria-label="Zurück"
+            title="Zurück"
           >
             <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
@@ -167,7 +167,7 @@ export default function TeamPostsPage() {
 
       {isTrainer && (
         <div className="card space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Neu erstellen</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Neue Einträgee Einträge erstellen</h2>
 
           <div className="flex flex-wrap gap-2">
             <button
@@ -243,7 +243,7 @@ export default function TeamPostsPage() {
 
       <div className="card space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Eintraege</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Einträge</h2>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -277,7 +277,7 @@ export default function TeamPostsPage() {
         )}
 
         {isLoading ? (
-          <p className="text-gray-500 dark:text-gray-400">Lade Eintraege...</p>
+          <p className="text-gray-500 dark:text-gray-400">Lade Einträge...</p>
         ) : posts && posts.length > 0 ? (
           <div className="space-y-3">
             {posts.map((post) => {
@@ -349,13 +349,13 @@ export default function TeamPostsPage() {
         ) : (
           <div className="text-center py-8">
             <MessageSquare className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-            <p className="text-gray-600 dark:text-gray-300">Keine Eintraege gefunden.</p>
+            <p className="text-gray-600 dark:text-gray-300">Keine Einträge gefunden.</p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {scope === 'open' ? 'Aktuell ist nichts offen.' : 'Noch keine Nachrichten oder Umfragen erstellt.'}
             </p>
             <div className="mt-4">
               <Link to={`/teams/${teamId}`} className="text-primary-600 hover:underline">
-                Zurueck zur Teamseite
+                Zurück zur Teamseite
               </Link>
             </div>
           </div>
