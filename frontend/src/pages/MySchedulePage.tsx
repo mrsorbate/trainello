@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar } from 'lucide-react';
+import { Calendar, Swords, Home, Plane } from 'lucide-react';
 import { teamsAPI, badgeProxyUrl } from '../lib/api';
 
 const normalizeTeamName = (value: unknown): string => {
@@ -34,71 +34,88 @@ const parseMatchDate = (input: unknown): Date | null => {
   return Number.isNaN(isoDate.getTime()) ? null : isoDate;
 };
 
-const formatMatchDate = (input: unknown): string => {
-  const parsed = parseMatchDate(input);
-  if (!parsed) {
-    const raw = String(input || '').split('|')[0]?.trim();
-    return raw || '-';
-  }
+const renderMatchCard = (match: any, section: any, cardKey: string) => {
+  const parsed = parseMatchDate(match?.date);
+  if (!parsed) return null;
 
-  return parsed.toLocaleDateString('de-DE', {
-    weekday: 'short',
-    day: '2-digit',
-    month: '2-digit',
-  });
-};
+  const weekdayLabel = parsed.toLocaleDateString('de-DE', { weekday: 'short' });
+  const dayLabel = String(parsed.getDate()).padStart(2, '0');
+  const monthLabel = String(parsed.getMonth() + 1).padStart(2, '0');
+  const dateLabel = `${dayLabel}.${monthLabel}`;
+  const timeLabel = parsed.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 
-const formatMatchTime = (input: unknown): string => {
-  const parsed = parseMatchDate(input);
-  if (!parsed) {
-    const raw = String(input || '');
-    const fromPipe = raw.includes('|') ? raw.split('|')[1]?.trim() : '';
-    if (fromPipe) return fromPipe.replace(/\s*uhr$/i, '');
-    const explicitTime = raw.match(/(\d{1,2}:\d{2})/);
-    return explicitTime?.[1] || '-';
-  }
-
-  return parsed.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-};
-
-const renderScore = (match: any): string => {
-  if (match?.result && (match.result.home !== undefined || match.result.away !== undefined)) {
-    return `${match.result.home ?? '-'}:${match.result.away ?? '-'}`;
-  }
-  return '-';
-};
-
-const renderMatchRow = (match: any, rowKey: string) => {
-  const dateLabel = formatMatchDate(match?.date);
-  const timeLabel = formatMatchTime(match?.date);
   const homeTeam = String(match?.homeTeam || '-');
   const awayTeam = String(match?.awayTeam || '-');
   const homeBadge = badgeProxyUrl(typeof match?.homeBadge === 'string' ? match.homeBadge : null);
   const awayBadge = badgeProxyUrl(typeof match?.awayBadge === 'string' ? match.awayBadge : null);
-  const scoreLabel = renderScore(match);
+
+  const isOurTeam = (teamName: string, sectionTeamName: string) => {
+    return normalizeTeamName(teamName) === normalizeTeamName(sectionTeamName);
+  };
+
+  const isHomeMatch = isOurTeam(homeTeam, section.teamName);
+  const opponent = isHomeMatch ? awayTeam : homeTeam;
+  const opponentBadge = isHomeMatch ? awayBadge : homeBadge;
 
   return (
-    <tr key={rowKey} className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white whitespace-nowrap">{dateLabel}</td>
-      <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{timeLabel}</td>
-      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white min-w-[180px]">
-        <span className="inline-flex items-center gap-1.5">
-          {homeBadge ? (
-            <img src={homeBadge} alt={`${homeTeam} Wappen`} className="w-5 h-5 object-contain bg-white rounded" loading="lazy" />
-          ) : null}
-          <span>{homeTeam}</span>
-        </span>
-      </td>
-      <td className="px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap text-center">{scoreLabel}</td>
-      <td className="px-3 py-2 text-sm text-gray-900 dark:text-white min-w-[180px]">
-        <span className="inline-flex items-center gap-1.5">
-          {awayBadge ? (
-            <img src={awayBadge} alt={`${awayTeam} Wappen`} className="w-5 h-5 object-contain bg-white rounded" loading="lazy" />
-          ) : null}
-          <span>{awayTeam}</span>
-        </span>
-      </td>
-    </tr>
+    <div
+      key={cardKey}
+      className="p-3 sm:p-4 rounded-xl border transition-all hover:shadow-md bg-white border-gray-200 hover:border-primary-300 dark:bg-gray-800 dark:border-gray-700 dark:hover:border-primary-600"
+    >
+      <div className="flex items-center gap-3 sm:gap-4">
+        <div className="w-20 sm:w-24 shrink-0 flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center text-center">
+            <p className="text-[11px] sm:text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-300 leading-none">{weekdayLabel}</p>
+            <p className="mt-1 text-3xl sm:text-4xl font-semibold tabular-nums text-gray-900 dark:text-gray-100 leading-none tracking-tight">{dateLabel}</p>
+          </div>
+        </div>
+
+        <div className="w-px bg-gray-200 dark:bg-gray-700 shrink-0 self-stretch" />
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+            <div className="flex items-center gap-1.5 min-w-0">
+              {opponentBadge ? (
+                <img
+                  src={opponentBadge}
+                  alt={`${opponent} Wappen`}
+                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-contain bg-white"
+                  loading="lazy"
+                />
+              ) : (
+                <Swords className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 shrink-0" />
+              )}
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">{opponent}</h3>
+            </div>
+          </div>
+
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
+            <span className="text-xl sm:text-2xl font-semibold tracking-tight">{timeLabel} <span className="text-base sm:text-lg font-normal">Uhr</span></span>
+          </div>
+
+          <div className="mt-0.5 flex items-center gap-1.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+            {isHomeMatch ? (
+              <Home className="w-3.5 h-3.5" />
+            ) : (
+              <Plane className="w-3.5 h-3.5" />
+            )}
+            <span>{isHomeMatch ? 'Heimspiel' : 'Auswärtsspiel'}</span>
+          </div>
+
+          {section.leagueName && (
+            <div className="mt-0.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+              {section.leagueName}
+            </div>
+          )}
+
+          {section.matchedTeamName && normalizeTeamName(section.matchedTeamName) !== normalizeTeamName(section.teamName) && (
+            <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+              {section.matchedTeamName}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -112,33 +129,23 @@ const renderScheduleSections = (
       if (!Array.isArray(matches) || matches.length === 0) return null;
 
       return (
-      <div key={`${section.key}-${mode}`} className="card space-y-3">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-          {section.teamName}
-          <span className="ml-2 text-xs sm:text-sm font-normal text-gray-500 dark:text-gray-400">
-            {section.leagueName || 'Unbekannte Liga'}
-          </span>
-        </h2>
-        {section.matchedTeamName && normalizeTeamName(section.matchedTeamName) !== normalizeTeamName(section.teamName) ? (
-          <p className="text-xs text-gray-500 dark:text-gray-400">{section.matchedTeamName}</p>
-        ) : null}
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Datum</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Uhrzeit</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Heim</th>
-                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tore</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gast</th>
-              </tr>
-            </thead>
-            <tbody>
-              {matches.map((match: any, index: number) => renderMatchRow(match, `${section.key}-${mode}-${index}`))}
-            </tbody>
-          </table>
+        <div key={`${section.key}-${mode}`} className="space-y-3">
+          <div className="px-3 sm:px-4">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+              {section.teamName}
+              {section.leagueName && (
+                <span className="ml-2 text-xs sm:text-sm font-normal text-gray-500 dark:text-gray-400">
+                  {section.leagueName}
+                </span>
+              )}
+            </h2>
+          </div>
+          <div className="space-y-3">
+            {matches.map((match: any, index: number) =>
+              renderMatchCard(match, section, `${section.key}-${mode}-${index}`)
+            )}
+          </div>
         </div>
-      </div>
       );
     })}
   </div>
