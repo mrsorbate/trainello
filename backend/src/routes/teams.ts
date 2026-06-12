@@ -1539,11 +1539,14 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
       const raw = String(value || '').replace(/\s+/g, ' ').trim();
       if (!raw) return null;
 
-      const germanMatch = raw.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[^0-9]*(\d{1,2}):(\d{2}))?/);
+      const germanMatch = raw.match(/(\d{1,2})\.(\d{1,2})\.(\d{2,4})(?:[^0-9]*(\d{1,2}):(\d{2}))?/);
       if (germanMatch) {
         const day = parseInt(germanMatch[1], 10);
         const month = parseInt(germanMatch[2], 10) - 1;
-        const year = parseInt(germanMatch[3], 10);
+        const yearRaw = parseInt(germanMatch[3], 10);
+        const year = germanMatch[3].length === 2
+          ? (yearRaw >= 70 ? 1900 + yearRaw : 2000 + yearRaw)
+          : yearRaw;
         const hour = germanMatch[4] ? parseInt(germanMatch[4], 10) : 19;
         const minute = germanMatch[5] ? parseInt(germanMatch[5], 10) : 0;
         const date = new Date(year, month, day, hour, minute, 0);
@@ -1613,22 +1616,35 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
           });
         };
 
-        const mergedRaw = dedupeMatches([...nextGamesRaw, ...lastGamesRaw, ...seasonGamesRaw]);
-        const seasonMatches = mergedRaw.filter((match) => {
+        const withOrigin = [
+          ...nextGamesRaw.map((match) => ({ ...match, __origin: 'next' as const })),
+          ...lastGamesRaw.map((match) => ({ ...match, __origin: 'last' as const })),
+          ...seasonGamesRaw.map((match) => ({ ...match, __origin: 'season' as const })),
+        ];
+
+        const mergedRaw = dedupeMatches(withOrigin);
+        const seasonMatches = mergedRaw.filter((match: any) => {
           const parsedDate = parseScheduleDate(match?.date);
           if (!parsedDate) {
-            return true;
+            // Nicht geparste Saison-Print-Zeilen nicht blind einsortieren.
+            return match?.__origin === 'next' || match?.__origin === 'last';
           }
           return parsedDate >= seasonStartDate && parsedDate <= seasonEndDate;
         });
 
-        const nextGames = seasonMatches.filter((match) => {
+        const nextGames = seasonMatches.filter((match: any) => {
           const parsedDate = parseScheduleDate(match?.date);
-          return !parsedDate || parsedDate.getTime() > now.getTime();
+          if (!parsedDate) {
+            return match?.__origin === 'next';
+          }
+          return parsedDate.getTime() > now.getTime();
         });
-        const lastGames = seasonMatches.filter((match) => {
+        const lastGames = seasonMatches.filter((match: any) => {
           const parsedDate = parseScheduleDate(match?.date);
-          return Boolean(parsedDate && parsedDate.getTime() <= now.getTime());
+          if (!parsedDate) {
+            return match?.__origin === 'last';
+          }
+          return parsedDate.getTime() <= now.getTime();
         });
         const combinedGames = [...nextGames, ...lastGames];
 
