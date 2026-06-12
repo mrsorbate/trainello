@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Calendar, Swords, Home, Plane } from 'lucide-react';
-import { teamsAPI, badgeProxyUrl } from '../lib/api';
+import { teamsAPI } from '../lib/api';
 
 const normalizeTeamName = (value: unknown): string => {
   return String(value ?? '')
@@ -58,8 +58,10 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
 
   const homeTeam = String(match?.homeTeam || '-');
   const awayTeam = String(match?.awayTeam || '-');
-  const homeBadge = badgeProxyUrl(typeof match?.homeBadge === 'string' ? match.homeBadge : null);
-  const awayBadge = badgeProxyUrl(typeof match?.awayBadge === 'string' ? match.awayBadge : null);
+  
+  // Wappen direkt ohne badgeProxyUrl verwenden
+  const homeBadge = typeof match?.homeBadge === 'string' ? match.homeBadge.trim() : '';
+  const awayBadge = typeof match?.awayBadge === 'string' ? match.awayBadge.trim() : '';
 
   const isOurTeam = (teamName: string, sectionTeamName: string) => {
     return normalizeTeamName(teamName) === normalizeTeamName(sectionTeamName);
@@ -93,18 +95,18 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
                 <img
                   src={opponentBadge}
                   alt={`${opponent} Wappen`}
-                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-contain bg-white"
+                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-contain bg-white flex-shrink-0"
                   loading="lazy"
                 />
               ) : (
                 <Swords className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 shrink-0" />
               )}
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">{opponent}</h3>
+              <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate">{opponent}</h3>
             </div>
           </div>
 
           <div className="mt-1 flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
-            <span className="text-xl sm:text-2xl font-semibold tracking-tight">{timeLabel} <span className="text-base sm:text-lg font-normal">Uhr</span></span>
+            <span className="text-lg sm:text-xl font-semibold tracking-tight">{timeLabel} <span className="text-sm sm:text-base font-normal">Uhr</span></span>
           </div>
 
           <div className="mt-0.5 flex items-center gap-1.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
