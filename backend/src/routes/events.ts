@@ -1696,7 +1696,9 @@ router.delete('/:id', async (req: AuthRequest, res) => {
       const teamIds = [...new Set(eventsInSeries.map((e) => e.team_id))];
       const allTeamMembers = getMemberIdsForTeams(Array.from(teamIds));
       const notifyUserIds = allTeamMembers.filter((userId) => userId !== req.user!.id);
-
+      
+      console.log(`Delete series ${event.series_id}: found ${eventsInSeries.length} events, ${teamIds.length} teams, ${allTeamMembers.length} members, notifying ${notifyUserIds.length}`);
+      
       const deleteSeriesTx = db.transaction(() => {
         for (const eventRow of eventsInSeries) {
           upsertDeletedEventStmt.run(
@@ -1715,6 +1717,7 @@ router.delete('/:id', async (req: AuthRequest, res) => {
 
       if (notifyUserIds.length > 0) {
         const noteSuffix = deleteNote ? ` Hinweis: ${deleteNote}` : '';
+        console.log(`Sending delete series push to ${notifyUserIds.length} users`);
         await sendPushToUsers(notifyUserIds, {
           title: 'Terminserie abgesagt',
           body: `${seriesTeamLabel ? `${seriesTeamLabel}: ` : ''}${event.title || 'Eine Terminserie'} wurde abgesagt.${noteSuffix}`,
@@ -1738,6 +1741,8 @@ router.delete('/:id', async (req: AuthRequest, res) => {
       const teamIds = getEventTeamIds(eventId);
       const allTeamMembers = getMemberIdsForTeams(teamIds);
       const notifyUserIds = allTeamMembers.filter((userId) => userId !== req.user!.id);
+      
+      console.log(`Delete event ${eventId}: ${teamIds.length} teams, ${allTeamMembers.length} members, notifying ${notifyUserIds.length}`);
 
       const deleteSingleTx = db.transaction(() => {
         upsertDeletedEventStmt.run(
@@ -1755,6 +1760,7 @@ router.delete('/:id', async (req: AuthRequest, res) => {
 
       if (notifyUserIds.length > 0) {
         const noteSuffix = deleteNote ? ` Hinweis: ${deleteNote}` : '';
+        console.log(`Sending delete event push to ${notifyUserIds.length} users`);
         await sendPushToUsers(notifyUserIds, {
           title: 'Termin abgesagt',
           body: `${singleEventTeamLabel ? `${singleEventTeamLabel}: ` : ''}${eventToDelete.title || 'Ein Termin'} am ${formatEventDateTime(eventToDelete.start_time)} wurde abgesagt.${noteSuffix}`,

@@ -57,6 +57,7 @@ export async function sendPushToSubscriptions(subscriptions: StoredPushSubscript
   }
 
   if (subscriptions.length === 0) {
+    console.warn('sendPushToSubscriptions: no subscriptions provided');
     return 0;
   }
 
@@ -67,6 +68,7 @@ export async function sendPushToSubscriptions(subscriptions: StoredPushSubscript
     try {
       await webpush.sendNotification(toWebPushSubscription(subscription), serializedPayload);
       sent += 1;
+      console.log(`Push sent to ${subscription.endpoint.substring(0, 50)}...`);
     } catch (error: any) {
       const statusCode = Number(error?.statusCode || 0);
       const errorMessage = error?.message || String(error);
@@ -74,17 +76,21 @@ export async function sendPushToSubscriptions(subscriptions: StoredPushSubscript
       if (statusCode === 404 || statusCode === 410) {
         // Subscription expired or invalid
         removeSubscriptionByEndpoint.run(subscription.endpoint);
-        console.warn(`Push: subscription removed (${statusCode}) for endpoint ${subscription.endpoint}`);
+        console.warn(`Push: subscription removed (${statusCode}) for endpoint ${subscription.endpoint.substring(0, 50)}...`);
       } else {
-        console.error(`Push send error (status ${statusCode}): ${errorMessage}`, { endpoint: subscription.endpoint });
+        console.error(`Push send error (status ${statusCode}): ${errorMessage}`, { endpoint: subscription.endpoint.substring(0, 50) });
       }
     }
   }
-
+  
+  console.log(`sendPushToSubscriptions finished: ${sent}/${subscriptions.length} successful`);
   return sent;
 }
 
 export async function sendPushToUsers(userIds: number[], payload: PushPayload): Promise<number> {
   const subscriptions = getStoredSubscriptionsForUsers(userIds);
-  return sendPushToSubscriptions(subscriptions, payload);
+  console.log(`sendPushToUsers: ${userIds.length} users requested, ${subscriptions.length} subscriptions found`);
+  const sent = await sendPushToSubscriptions(subscriptions, payload);
+  console.log(`sendPushToUsers: ${sent}/${subscriptions.length} pushes sent`);
+  return sent;
 }
