@@ -132,13 +132,16 @@ router.post('/unsubscribe', (req: AuthRequest, res) => {
   }
 
   const endpoint = String(req.body?.endpoint || '').trim();
+
+  // Fallback cleanup: if no endpoint is provided, remove all subscriptions for this user.
   if (!endpoint) {
-    return res.status(400).json({ error: 'Endpoint is required' });
+    db.prepare('DELETE FROM push_subscriptions WHERE user_id = ?').run(userId);
+    return res.json({ success: true, removedAll: true });
   }
 
   db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ? AND user_id = ?').run(endpoint, userId);
 
-  return res.json({ success: true });
+  return res.json({ success: true, removedAll: false });
 });
 
 router.post('/test', async (req: AuthRequest, res) => {

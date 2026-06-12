@@ -216,10 +216,16 @@ export default function SettingsPage() {
   const disablePushMutation = useMutation({
     mutationFn: async () => {
       const existingSubscription = await getBrowserPushSubscription();
-      if (existingSubscription?.endpoint) {
-        await notificationsAPI.unsubscribe(existingSubscription.endpoint);
+      const endpoint = String(existingSubscription?.endpoint || '').trim();
+
+      // Always clean server-side subscriptions, even if local subscription is missing.
+      await notificationsAPI.unsubscribe(endpoint);
+
+      try {
+        await unsubscribeBrowserPush();
+      } catch {
+        // Server-side cleanup is the primary source of truth for push status.
       }
-      await unsubscribeBrowserPush();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['push-status'] });
