@@ -36,13 +36,25 @@ const parseMatchDate = (input: unknown): Date | null => {
 
 const renderMatchCard = (match: any, section: any, cardKey: string) => {
   const parsed = parseMatchDate(match?.date);
-  if (!parsed) return null;
 
-  const weekdayLabel = parsed.toLocaleDateString('de-DE', { weekday: 'short' });
-  const dayLabel = String(parsed.getDate()).padStart(2, '0');
-  const monthLabel = String(parsed.getMonth() + 1).padStart(2, '0');
-  const dateLabel = `${dayLabel}.${monthLabel}`;
-  const timeLabel = parsed.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  let weekdayLabel = '';
+  let dateLabel = '';
+  let timeLabel = '';
+
+  if (parsed) {
+    weekdayLabel = parsed.toLocaleDateString('de-DE', { weekday: 'short' });
+    const dayLabel = String(parsed.getDate()).padStart(2, '0');
+    const monthLabel = String(parsed.getMonth() + 1).padStart(2, '0');
+    dateLabel = `${dayLabel}.${monthLabel}`;
+    timeLabel = parsed.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  } else {
+    // Fallback wenn Datum nicht geparst werden kann
+    const raw = String(match?.date || '-').split('|')[0]?.trim() || '-';
+    dateLabel = raw;
+    const rawTime = String(match?.date || '');
+    const timeMatch = rawTime.match(/(\d{1,2}):(\d{2})/);
+    timeLabel = timeMatch ? `${timeMatch[1]}:${timeMatch[2]}` : '-';
+  }
 
   const homeTeam = String(match?.homeTeam || '-');
   const awayTeam = String(match?.awayTeam || '-');
@@ -65,7 +77,9 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
       <div className="flex items-center gap-3 sm:gap-4">
         <div className="w-20 sm:w-24 shrink-0 flex items-center justify-center">
           <div className="flex flex-col items-center justify-center text-center">
-            <p className="text-[11px] sm:text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-300 leading-none">{weekdayLabel}</p>
+            {weekdayLabel && (
+              <p className="text-[11px] sm:text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-300 leading-none">{weekdayLabel}</p>
+            )}
             <p className="mt-1 text-3xl sm:text-4xl font-semibold tabular-nums text-gray-900 dark:text-gray-100 leading-none tracking-tight">{dateLabel}</p>
           </div>
         </div>
