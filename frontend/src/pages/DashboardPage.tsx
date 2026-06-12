@@ -16,6 +16,14 @@ export default function DashboardPage() {
   const [declineReason, setDeclineReason] = useState('');
   const [declineReasonError, setDeclineReasonError] = useState<string | null>(null);
 
+  const quickDeclineReasons = [
+    'Krankheit',
+    'Arbeit',
+    'Privater Termin',
+    'Urlaub',
+    'Verletzung',
+  ];
+
   // Admin wird zum Admin-Panel weitergeleitet
   if (user?.role === 'admin') {
     return <Navigate to="/admin" replace />;
@@ -545,9 +553,34 @@ export default function DashboardPage() {
             </p>
 
             <form className="mt-4 space-y-3" onSubmit={handleDeclineSubmit}>
+              <div className="flex flex-wrap gap-2">
+                {quickDeclineReasons.map((reason) => (
+                  <button
+                    key={reason}
+                    type="button"
+                    onClick={() => {
+                      setDeclineReason(reason);
+                      setDeclineReasonError(null);
+                    }}
+                    className={`px-3 py-1.5 text-xs sm:text-sm rounded-full border transition-colors ${
+                      declineReason === reason
+                        ? 'bg-primary-100 border-primary-400 text-primary-900 dark:bg-primary-900/40 dark:border-primary-600 dark:text-primary-100'
+                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {reason}
+                  </button>
+                ))}
+              </div>
+
               <textarea
                 value={declineReason}
-                onChange={(event) => setDeclineReason(event.target.value)}
+                onChange={(event) => {
+                  setDeclineReason(event.target.value);
+                  if (declineReasonError) {
+                    setDeclineReasonError(null);
+                  }
+                }}
                 placeholder="Kurz den Grund eingeben..."
                 className="input min-h-[96px]"
                 autoFocus
