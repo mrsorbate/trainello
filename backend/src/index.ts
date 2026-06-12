@@ -145,20 +145,8 @@ app.get('/api/health', (req, res) => {
   }
 });
 
-// Routes
-app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/teams', teamsRoutes);
-app.use('/api/events', eventsRoutes);
-app.use('/api/stats', statsRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/notifications', notificationsRoutes);
-app.use('/api', postsRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api', invitesRoutes);
-app.use('/api', invitesRoutes);
-
 // Image proxy for fussball.de team badges (CORS workaround)
+// Must be registered before generic authenticated /api routers.
 app.get('/api/badge-proxy', async (req, res) => {
   const url = String(req.query.url || '');
   let parsedUrl: URL;
@@ -192,6 +180,19 @@ app.get('/api/badge-proxy', async (req, res) => {
     res.status(502).end();
   }
 });
+
+// Routes
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/teams', teamsRoutes);
+app.use('/api/events', eventsRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api', postsRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api', invitesRoutes);
+app.use('/api', invitesRoutes);
 
 // File upload endpoint
 app.post('/api/admin/upload/logo', upload.single('logo'), (req, res) => {
