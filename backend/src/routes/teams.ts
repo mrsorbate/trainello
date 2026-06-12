@@ -1165,16 +1165,56 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
   const parseFussballDeDate = (dateStr: string | undefined): Date | null => {
     if (!dateStr) return null;
     const cleaned = dateStr.replace(/\s+/g, ' ').trim();
-    const germanMatch = cleaned.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})(?:[^0-9]*(\d{1,2}):(\d{2}))?/);
+
+    // Supports: dd.mm.yyyy, dd.mm.yy and dd.mm. (year optional, time optional)
+    const germanMatch = cleaned.match(/(\d{1,2})\.(\d{1,2})\.(\d{0,4})(?:[^0-9]*(\d{1,2}):(\d{2}))?/);
     if (germanMatch) {
       const d = parseInt(germanMatch[1], 10);
       const m = parseInt(germanMatch[2], 10) - 1;
-      const y = parseInt(germanMatch[3], 10);
+      const yearRaw = String(germanMatch[3] || '').trim();
       const h = germanMatch[4] !== undefined ? parseInt(germanMatch[4], 10) : 19;
       const min = germanMatch[5] !== undefined ? parseInt(germanMatch[5], 10) : 0;
-      const date = new Date(y, m, d, h, min, 0);
-      return isNaN(date.getTime()) ? null : date;
+
+      const tryBuild = (year: number): Date | null => {
+        const candidate = new Date(year, m, d, h, min, 0);
+        return Number.isNaN(candidate.getTime()) ? null : candidate;
+      };
+
+      if (yearRaw.length === 4) {
+        const explicitYear = parseInt(yearRaw, 10);
+        const date = tryBuild(explicitYear);
+        if (date) return date;
+      }
+
+      if (yearRaw.length === 2) {
+        const shortYear = parseInt(yearRaw, 10);
+        const explicitYear = shortYear >= 70 ? 1900 + shortYear : 2000 + shortYear;
+        const date = tryBuild(explicitYear);
+        if (date) return date;
+      }
+
+      // Missing or invalid year: infer from current+next season window.
+      const candidateYears = [seasonStartYear, seasonStartYear + 1, seasonStartYear + 2];
+      const seasonWindowStart = new Date(seasonStartYear, 6, 1, 0, 0, 0);
+      const seasonWindowEnd = new Date(seasonStartYear + 2, 5, 30, 23, 59, 59);
+      const candidates = candidateYears
+        .map((year) => tryBuild(year))
+        .filter((value): value is Date => Boolean(value))
+        .filter((value) => value >= seasonWindowStart && value <= seasonWindowEnd)
+        .sort((left, right) => {
+          const leftFuturePenalty = left < now ? 1 : 0;
+          const rightFuturePenalty = right < now ? 1 : 0;
+          if (leftFuturePenalty !== rightFuturePenalty) {
+            return leftFuturePenalty - rightFuturePenalty;
+          }
+          return Math.abs(left.getTime() - now.getTime()) - Math.abs(right.getTime() - now.getTime());
+        });
+
+      if (candidates.length > 0) {
+        return candidates[0];
+      }
     }
+
     const iso = new Date(cleaned);
     return isNaN(iso.getTime()) ? null : iso;
   };
