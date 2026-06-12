@@ -1691,8 +1691,11 @@ router.delete('/:id', async (req: AuthRequest, res) => {
         'SELECT id, team_id, title, start_time, end_time FROM events WHERE series_id = ?'
       ).all(event.series_id) as Array<{ id: number; team_id: number; title: string; start_time: string; end_time: string }>;
       const seriesTeamLabel = formatTeamLabel(getEventTeams(eventId).map((team) => team.name));
-      const notifyUserIds = getDistinctResponseUserIds(eventsInSeries.map((seriesEvent) => seriesEvent.id))
-        .filter((userId) => userId !== req.user!.id);
+      
+      // Notify all team members in the series, not just those who responded
+      const teamIds = [...new Set(eventsInSeries.map((e) => e.team_id))];
+      const allTeamMembers = getMemberIdsForTeams(Array.from(teamIds));
+      const notifyUserIds = allTeamMembers.filter((userId) => userId !== req.user!.id);
 
       const deleteSeriesTx = db.transaction(() => {
         for (const eventRow of eventsInSeries) {
@@ -1731,7 +1734,10 @@ router.delete('/:id', async (req: AuthRequest, res) => {
 
       const singleEventTeamLabel = formatTeamLabel(getEventTeams(eventId).map((team) => team.name));
 
-      const notifyUserIds = getDistinctResponseUserIds([eventId]).filter((userId) => userId !== req.user!.id);
+      // Notify all team members, not just those who responded
+      const teamIds = getEventTeamIds(eventId);
+      const allTeamMembers = getMemberIdsForTeams(teamIds);
+      const notifyUserIds = allTeamMembers.filter((userId) => userId !== req.user!.id);
 
       const deleteSingleTx = db.transaction(() => {
         upsertDeletedEventStmt.run(
