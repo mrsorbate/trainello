@@ -1004,9 +1004,11 @@ router.post('/', async (req: AuthRequest, res) => {
 
     // Get all team members for responses
     const memberIds = getMemberIdsForTeams(targetTeamIds);
+    console.log(`Create event: targetTeamIds=${JSON.stringify(targetTeamIds)}, memberIds=${memberIds.length}`);
 
     let invitedUserIds = invited_user_ids?.length ? invited_user_ids : (invite_all ? memberIds : []);
     invitedUserIds = invitedUserIds.filter((id) => memberIds.includes(id));
+    console.log(`Create event: invite_all=${invite_all}, invited_user_ids input length=${invited_user_ids?.length || 0}, final invitedUserIds=${invitedUserIds.length}`);
 
     if (invitedUserIds.length === 0) {
       return res.status(400).json({ error: 'At least one invited user is required' });
