@@ -1249,6 +1249,20 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
     .filter(Boolean);
   const enforceOwnTeamDetection = fussballdeSources.length === 1 && ownTeamNorms.length > 0;
 
+  // When multiple sources are configured, derive a short label per source from the
+  // configured team names so that imports from different sources stay distinguishable.
+  const sourceLabelMap = new Map<string, string>();
+  if (fussballdeSources.length > 1) {
+    fussballdeSources.forEach((sourceId, idx) => {
+      // Try to use the configured team name for this source index as label.
+      const configuredName = configuredTeamNames[idx] || configuredTeamNames[0] || '';
+      // Extract Roman numeral or simple suffix (II, III, 2, 3 …) from the name, or fall back to "I", "II" etc.
+      const romanMatch = configuredName.match(/\b(IV|III|II|I|VI|V|[0-9]+)\.?\s*$/i);
+      const label = romanMatch ? romanMatch[1].toUpperCase() : String(idx + 1);
+      sourceLabelMap.set(sourceId, label);
+    });
+  }
+
   const defaultRsvpHours = parseRsvpHours(team.default_rsvp_deadline_hours_match) ?? parseRsvpHours(team.default_rsvp_deadline_hours);
   const defaultArrivalMinutes = parseArrivalMinutes(team.default_arrival_minutes_match) ?? parseArrivalMinutes(team.default_arrival_minutes);
   const defaultHomeVenue = resolveDefaultHomeVenue(parseHomeVenuesFromDb(team.home_venues), team.default_home_venue_name);
@@ -1320,13 +1334,16 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
     ));
 
     const hasIdentifiedOwnTeam = isHome || isAway;
+    const sourceLabel = sourceLabelMap.get(String((match as any).__sourceId || '')) || '';
+    const titlePrefix = sourceLabel ? `[${sourceLabel}] ` : '';
+
     if (!hasIdentifiedOwnTeam && enforceOwnTeamDetection) {
       // Keep the match instead of dropping it completely when configured team names
       // do not exactly match fussball.de naming (e.g. suffixes/variants).
-      skipped.push(`${match.homeTeam} - ${match.awayTeam}: Teamname nicht eindeutig, trotzdem importiert`);
+      skipped.push(`${titlePrefix}${match.homeTeam} - ${match.awayTeam}: Teamname nicht eindeutig, trotzdem importiert`);
     }
 
-    const title = `${match.homeTeam} - ${match.awayTeam}`;
+    const title = `${titlePrefix}${match.homeTeam} - ${match.awayTeam}`;
     const startTime = gameDate.toISOString();
     const statusSignals = `${String(match.statusText || '')} ${String(match.competition || '')}`.toLowerCase();
     const isCancelledMatch = hasAnyKeyword(normalizeStatusText(statusSignals), cancelledKeywords);
@@ -1425,7 +1442,10 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
     }
 
     const competition = match.competition || '';
-    const description = competition ? `Wettbewerb: ${competition}` : '';
+    const description = [
+      competition ? `Wettbewerb: ${competition}` : '',
+      sourceLabel ? `Mannschaft: ${sourceLabel}` : '',
+    ].filter(Boolean).join('\n');
     const endTime = new Date(gameDate.getTime() + 105 * 60 * 1000).toISOString();
     const rsvpDeadline = defaultRsvpHours !== null
       ? new Date(gameDate.getTime() - defaultRsvpHours * 3600000).toISOString()
