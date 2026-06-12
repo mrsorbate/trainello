@@ -29,12 +29,6 @@ self.addEventListener('push', (event) => {
       data: {
         url: payload.url,
       },
-      tag: 'teamvote-notification',
-      requireInteraction: true,
-    }).then(() => {
-      console.log('[Push SW] Notification shown successfully');
-    }).catch((err) => {
-      console.error('[Push SW] Failed to show notification:', err);
     })
   );
 });
