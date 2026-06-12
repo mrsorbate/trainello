@@ -11,6 +11,11 @@ export type FussballDeClientOptions = {
   timeoutMs?: number;
 };
 
+export type MatchplanRange = {
+  from: string;
+  to: string;
+};
+
 export type StandingsSourceAttempt = {
   url: string;
   ok: boolean;
@@ -52,6 +57,17 @@ export class FussballDeClient {
       ? `https://www.fussball.de/ajax.team.matchplan/-/mode/PAGE/team-id/${teamId}`
       : validated.teamPageUrl;
     const html = await this.fetchHtml(url);
+    return this.resolveMatchResults(parseMatches(html, validated.teamPageUrl));
+  }
+
+  public async getSpielplanForRange(input: TeamSourceInput, range: MatchplanRange): Promise<TeamMatch[]> {
+    const validated = sourceInputSchema.parse(input);
+    const teamId = this.extractTeamId(validated.teamPageUrl);
+    const url = teamId
+      ? `https://www.fussball.de/ajax.team.matchplan/-/mime-type/JSON/mode/PAGE/prev-season-allowed/false/show-filter/false/datum-von/${range.from}/datum-bis/${range.to}/match-type/-1/team-id/${teamId}`
+      : validated.teamPageUrl;
+    const raw = await this.fetchHtml(url);
+    const html = this.extractHtmlFromAjaxPayload(raw);
     return this.resolveMatchResults(parseMatches(html, validated.teamPageUrl));
   }
 
@@ -235,6 +251,19 @@ export class FussballDeClient {
     const client = createHttpClient(this.timeoutMs);
     const response = await client.get<string>(url);
     return response.data;
+  }
+
+  private extractHtmlFromAjaxPayload(raw: string): string {
+    try {
+      const parsed = JSON.parse(raw) as { html?: unknown };
+      if (parsed && typeof parsed.html === 'string' && parsed.html.trim().length > 0) {
+        return parsed.html;
+      }
+    } catch {
+      // Endpoint can return plain HTML in some modes.
+    }
+
+    return raw;
   }
 
   private async resolveMatchResults(matches: TeamMatch[]): Promise<TeamMatch[]> {

@@ -1128,7 +1128,7 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
       const teamPageUrl = buildFussballDeTeamPageUrl(sourceEntry);
       try {
         const [nextMatchesResult, printableMatchesResult] = await Promise.allSettled([
-          client.getSpielplan({ teamPageUrl }),
+          client.getSpielplanForRange({ teamPageUrl }, printableRange),
           client.getPrintableSeasonMatches({ teamPageUrl }, printableRange),
         ]);
 
