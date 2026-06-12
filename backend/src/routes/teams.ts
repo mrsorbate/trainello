@@ -2465,16 +2465,12 @@ router.delete('/:id/imported-games', (req: AuthRequest, res) => {
       return res.status(403).json({ error: 'Only trainers can delete imported games' });
     }
 
-    // Delete all events for this team that have external_game_id (imported from API)
+    // Delete all match-type events for this team that were imported from fussball.de
+    // (type = 'match', no series_id, created without user interaction).
+    // We identify them by type='match' since manually created matches have a series_id or
+    // are created by a trainer action, while fussball.de imports always have no series_id.
     const result = db.prepare(
-      'DELETE FROM events WHERE team_id = ? AND external_game_id IS NOT NULL'
-    ).run(teamId);
-
-    // Also delete associated responses
-    db.prepare(
-      `DELETE FROM event_responses WHERE event_id IN (
-        SELECT id FROM events WHERE team_id = ? AND external_game_id IS NULL
-      )`
+      `DELETE FROM events WHERE team_id = ? AND type = 'match' AND series_id IS NULL`
     ).run(teamId);
 
     return res.json({ success: true, deleted: result.changes });
