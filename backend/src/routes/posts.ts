@@ -177,7 +177,7 @@ router.post('/teams/:id/posts', async (req: AuthRequest, res) => {
       await sendPushToUsers(memberIds, {
         title: type === 'poll' ? 'Neue Umfrage' : 'Neue Nachricht',
         body: `${team?.name ? `${team.name}: ` : ''}${title}`,
-        url: `/teams/${teamId}/posts`,
+        url: `/teams/${teamId}/posts?scope=all`,
       });
     }
 

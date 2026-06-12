@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, MessageSquare, Vote } from 'lucide-react';
 import { postsAPI, teamsAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
@@ -22,12 +22,13 @@ type PostItem = {
 
 export default function TeamPostsPage() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const teamId = parseInt(id || '0', 10);
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const goBack = useSmartBack();
 
-  const [scope, setScope] = useState<'open' | 'all'>('open');
+  const [scope, setScope] = useState<'open' | 'all'>(searchParams.get('scope') === 'all' ? 'all' : 'open');
   const [postType, setPostType] = useState<'announcement' | 'poll'>('announcement');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -65,6 +66,24 @@ export default function TeamPostsPage() {
     },
     enabled: Number.isInteger(teamId) && teamId > 0,
   });
+
+  useEffect(() => {
+    const queryScope = searchParams.get('scope') === 'all' ? 'all' : 'open';
+    if (queryScope !== scope) {
+      setScope(queryScope);
+    }
+  }, [searchParams, scope]);
+
+  const handleScopeChange = (nextScope: 'open' | 'all') => {
+    setScope(nextScope);
+    const nextParams = new URLSearchParams(searchParams);
+    if (nextScope === 'all') {
+      nextParams.set('scope', 'all');
+    } else {
+      nextParams.delete('scope');
+    }
+    setSearchParams(nextParams, { replace: true });
+  };
 
   const invalidatePostQueries = async () => {
     await queryClient.invalidateQueries({ queryKey: ['team-posts', teamId] });
@@ -247,7 +266,7 @@ export default function TeamPostsPage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setScope('open')}
+              onClick={() => handleScopeChange('open')}
               className={`px-3 py-2 rounded-md text-sm border ${
                 scope === 'open'
                   ? 'bg-primary-100 border-primary-400 text-primary-900 dark:bg-primary-900/40 dark:border-primary-600 dark:text-primary-100'
@@ -258,7 +277,7 @@ export default function TeamPostsPage() {
             </button>
             <button
               type="button"
-              onClick={() => setScope('all')}
+              onClick={() => handleScopeChange('all')}
               className={`px-3 py-2 rounded-md text-sm border ${
                 scope === 'all'
                   ? 'bg-primary-100 border-primary-400 text-primary-900 dark:bg-primary-900/40 dark:border-primary-600 dark:text-primary-100'

@@ -1,5 +1,5 @@
 const PUSH_SW_URL = '/push-sw.js';
-const PUSH_SW_SCOPE = '/push-notify/';
+const PUSH_SW_SCOPE = '/';
 
 const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
