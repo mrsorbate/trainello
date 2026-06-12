@@ -205,6 +205,37 @@ db.exec(`
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
+  -- Team posts (announcements + polls)
+  CREATE TABLE IF NOT EXISTS team_posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team_id INTEGER NOT NULL,
+    type TEXT NOT NULL CHECK(type IN ('announcement', 'poll')),
+    title TEXT NOT NULL,
+    content TEXT,
+    poll_options TEXT,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_by INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id)
+  );
+
+  -- Per-user post state: seen for announcements, answer for polls
+  CREATE TABLE IF NOT EXISTS team_post_reads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    seen_at DATETIME,
+    answer_option INTEGER,
+    answered_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES team_posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(post_id, user_id)
+  );
+
   -- Create indexes for better performance
   CREATE INDEX IF NOT EXISTS idx_team_members_team ON team_members(team_id);
   CREATE INDEX IF NOT EXISTS idx_team_members_user ON team_members(user_id);
@@ -220,6 +251,10 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_team_invites_team ON team_invites(team_id);
   CREATE INDEX IF NOT EXISTS idx_trainer_invites_token ON trainer_invites(token);
   CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON push_subscriptions(user_id);
+  CREATE INDEX IF NOT EXISTS idx_team_posts_team_created ON team_posts(team_id, created_at);
+  CREATE INDEX IF NOT EXISTS idx_team_posts_active ON team_posts(is_active);
+  CREATE INDEX IF NOT EXISTS idx_team_post_reads_post_user ON team_post_reads(post_id, user_id);
+  CREATE INDEX IF NOT EXISTS idx_team_post_reads_user ON team_post_reads(user_id);
 `);
 
 // Migration: Add profile_picture column if it doesn't exist

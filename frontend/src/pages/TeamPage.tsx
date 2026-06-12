@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
 import { teamsAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
-import { Calendar, Users, BarChart, ArrowLeft, Settings } from 'lucide-react';
+import { Calendar, Users, BarChart, ArrowLeft, Settings, MessageSquare } from 'lucide-react';
 import { resolveAssetUrl } from '../lib/utils';
 import { useSmartBack } from '../hooks/useSmartBack';
 
@@ -120,6 +120,19 @@ export default function TeamPage() {
           <div className="min-w-0">
             <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Statistiken</h3>
             <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 break-words">Anwesenheit</p>
+          </div>
+        </Link>
+
+        <Link
+          to={`/teams/${teamId}/posts`}
+          className="card hover:shadow-md transition-shadow flex items-start sm:items-center space-x-2 sm:space-x-4"
+        >
+          <div className="bg-amber-100 p-2.5 sm:p-3 rounded-lg">
+            <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-amber-700" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Nachrichten &amp; Umfragen</h3>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 break-words">Offene Eintraege ansehen</p>
           </div>
         </Link>
 

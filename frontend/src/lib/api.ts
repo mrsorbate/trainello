@@ -352,4 +352,27 @@ export const notificationsAPI = {
     api.post('/notifications/test', data || {}),
 };
 
+export const postsAPI = {
+  getOpen: () => api.get('/posts/open'),
+
+  getTeamPosts: (teamId: number, scope: 'open' | 'all' = 'open') =>
+    api.get(`/teams/${teamId}/posts?scope=${scope}`),
+
+  createTeamPost: (
+    teamId: number,
+    data: {
+      type: 'announcement' | 'poll';
+      title: string;
+      content?: string;
+      options?: string[];
+    }
+  ) => api.post(`/teams/${teamId}/posts`, data),
+
+  markSeen: (teamId: number, postId: number) =>
+    api.post(`/teams/${teamId}/posts/${postId}/seen`),
+
+  answerPoll: (teamId: number, postId: number, optionIndex: number) =>
+    api.post(`/teams/${teamId}/posts/${postId}/answer`, { optionIndex }),
+};
+
 export default api;

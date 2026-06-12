@@ -9,6 +9,7 @@ import TeamsPage from './pages/TeamsPage';
 import TeamPage from './pages/TeamPage';
 import TeamRosterPage from './pages/TeamRosterPage';
 import TeamSettingsPage from './pages/TeamSettingsPage';
+import TeamPostsPage from './pages/TeamPostsPage';
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
 import EventSquadPage from './pages/EventSquadPage';
@@ -126,6 +127,7 @@ function App() {
             <Route path="/teams/:id" element={<TeamPage />} />
             <Route path="/teams/:id/kader" element={<TeamRosterPage />} />
             <Route path="/teams/:id/settings" element={<TeamSettingsPage />} />
+            <Route path="/teams/:id/posts" element={<TeamPostsPage />} />
             <Route path="/teams/:id/events" element={<EventsPage />} />
             <Route path="/teams/:id/events/new" element={<EventCreatePage />} />
             <Route path="/events/:id" element={<EventDetailPage />} />

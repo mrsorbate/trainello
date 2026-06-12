@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { eventsAPI, teamsAPI } from '../lib/api';
+import { eventsAPI, postsAPI, teamsAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
-import { Calendar, MapPin, CheckCircle, XCircle, HelpCircle, AlertCircle, Users, RotateCw, Check, X, Home, Plane, Cone, Swords } from 'lucide-react';
+import { Calendar, MapPin, CheckCircle, XCircle, HelpCircle, AlertCircle, Users, RotateCw, Check, X, Home, Plane, Cone, Swords, MessageSquare } from 'lucide-react';
 import { resolveAssetUrl } from '../lib/utils';
 
 export default function DashboardPage() {
@@ -33,6 +33,21 @@ export default function DashboardPage() {
       const response = await eventsAPI.getMyUpcoming();
       return response.data;
     },
+  });
+
+  const { data: openPosts, isLoading: openPostsLoading } = useQuery({
+    queryKey: ['open-posts'],
+    queryFn: async () => {
+      const response = await postsAPI.getOpen();
+      return response.data as Array<{
+        id: number;
+        team_id: number;
+        type: 'announcement' | 'poll';
+        title: string;
+        team_name: string;
+      }>;
+    },
+    enabled: user?.role !== 'admin',
   });
 
   // Mutation for event response
@@ -152,6 +167,44 @@ export default function DashboardPage() {
                 </div>
               )
             )
+          )}
+        </div>
+      )}
+
+      {user?.role !== 'admin' && (
+        <div className="card">
+          <div className="mb-4 flex items-center justify-center">
+            <h2 className="text-xl font-semibold flex items-center text-center">
+              <MessageSquare className="w-6 h-6 mr-2 text-amber-600" />
+              Offene Nachrichten & Umfragen
+            </h2>
+          </div>
+
+          {openPostsLoading ? (
+            <p className="text-center py-4 text-gray-500 dark:text-gray-400">Lädt...</p>
+          ) : openPosts && openPosts.length > 0 ? (
+            <div className="space-y-2">
+              {openPosts.slice(0, 6).map((post) => (
+                <Link
+                  key={post.id}
+                  to={`/teams/${post.team_id}/posts`}
+                  className="block rounded-lg border border-amber-200 bg-amber-50 p-3 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-900/20 dark:hover:bg-amber-900/30"
+                >
+                  <p className="text-xs uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                    {post.type === 'poll' ? 'Umfrage' : 'Nachricht'}
+                  </p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{post.title}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">{post.team_name}</p>
+                </Link>
+              ))}
+              {openPosts.length > 6 && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center pt-1">
+                  {openPosts.length - 6} weitere Einträge offen
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-center py-4 text-gray-500 dark:text-gray-400">Keine offenen Nachrichten oder Umfragen.</p>
           )}
         </div>
       )}
