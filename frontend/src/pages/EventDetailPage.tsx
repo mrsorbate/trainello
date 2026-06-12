@@ -495,17 +495,6 @@ export default function EventDetailPage() {
                 <p className="mt-1 font-semibold text-gray-900 dark:text-white">{eventTimeRangeLabel}</p>
               </div>
 
-              {event?.type === 'match' && (
-                <div className="rounded-xl bg-gray-50 dark:bg-gray-800 p-3 sm:p-4">
-                  <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Ergebnis</p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-sm font-semibold ${resultToneClass}`}>
-                      {hasMatchResult ? `${homeGoals}:${awayGoals}` : 'Noch offen'}
-                    </span>
-                  </div>
-                </div>
-              )}
-
               {shouldShowAddressBlock && (
                 <div className="rounded-xl bg-gray-50 dark:bg-gray-800 p-3 sm:p-4 sm:col-span-2">
                   <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Ort</p>
