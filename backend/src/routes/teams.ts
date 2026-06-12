@@ -29,6 +29,10 @@ const hasEventScoreColumns = (() => {
   }
 })();
 
+const eventScoreSelectExpression = hasEventScoreColumns
+  ? 'home_goals, away_goals'
+  : 'NULL AS home_goals, NULL AS away_goals';
+
 const calendarTokenSelectExpression = hasTeamsCalendarTokenColumn
   ? 'calendar_token'
   : 'NULL AS calendar_token';
@@ -1321,14 +1325,14 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
 
     // Check if event already exists by date proximity + team names
     const existing = db.prepare(
-      `SELECT id, title, start_time, end_time, home_goals, away_goals FROM events
+      `SELECT id, title, start_time, end_time, ${eventScoreSelectExpression} FROM events
        WHERE team_id = ? AND type = 'match'
          AND abs(strftime('%s', start_time) - strftime('%s', ?)) < 86400
          AND (title LIKE ? OR title LIKE ?)`
     ).get(teamId, startTime, `%${match.homeTeam}%`, `%${match.awayTeam}%`) as any;
 
     const titleCandidates = db.prepare(
-      `SELECT id, title, start_time, end_time, home_goals, away_goals FROM events
+      `SELECT id, title, start_time, end_time, ${eventScoreSelectExpression} FROM events
        WHERE team_id = ?
          AND type = 'match'
          AND title = ?
@@ -1377,7 +1381,7 @@ export const runTeamGameImport = async (teamId: number, createdByUserId: number)
         ? Math.abs(existingStartDate.getTime() - gameDate.getTime()) / 60000
         : 0;
 
-      if (match.result && (existingOrFallback.home_goals === null || existingOrFallback.away_goals === null)) {
+      if (match.result && hasEventScoreColumns && (existingOrFallback.home_goals === null || existingOrFallback.away_goals === null)) {
         db.prepare('UPDATE events SET home_goals = ?, away_goals = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
           .run(match.result.home ?? null, match.result.away ?? null, existingOrFallback.id);
         updated.push(title);
