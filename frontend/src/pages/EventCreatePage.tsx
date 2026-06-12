@@ -115,7 +115,8 @@ export default function EventCreatePage() {
     }
 
     if (!eventData.start_time || !eventData.rsvp_deadline) {
-      return '';
+      const defaultHours = getCategoryDefaultRsvpHours(teamSettings, eventData.type);
+      return defaultHours === null ? '' : String(defaultHours);
     }
 
     const startDate = new Date(eventData.start_time);
