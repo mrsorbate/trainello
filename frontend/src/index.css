@@ -4,26 +4,54 @@
 
 @layer base {
   html, body {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100dvh;
+    height: 100vh;
+    overflow: hidden;
     overflow-x: hidden;
+    overflow-y: hidden;
     position: fixed;
     top: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
     -webkit-user-select: none;
     user-select: none;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  html {
+    --viewport-height: 100dvh;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
     @apply bg-gray-900 text-gray-100;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  #root {
+    width: 100vw;
+    height: 100dvh;
+    height: 100vh;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
   }
 
   @media (orientation: landscape) {
-    html, body {
-      max-height: 100vh;
-      height: 100vh;
+    html, body, #root {
+      max-height: 100dvh;
+      height: 100dvh;
       width: 100vw;
       max-width: 100vw;
     }
