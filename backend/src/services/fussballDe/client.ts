@@ -74,6 +74,46 @@ export class FussballDeClient {
     return [...lastMatches, ...nextMatches];
   }
 
+  public async getPrintableSeasonMatches(
+    input: TeamSourceInput,
+    range: { from: string; to: string },
+  ): Promise<TeamMatch[]> {
+    const validated = sourceInputSchema.parse(input);
+    const teamId = this.extractTeamId(validated.teamPageUrl);
+    if (!teamId) {
+      return [];
+    }
+
+    const competitionId = await this.resolvePrintableCompetitionId(validated.teamPageUrl);
+    const baseUrl = `https://www.fussball.de/vereinsspielplan.druck/-/datum-bis/${range.to}/datum-von/${range.from}/match-type/-1/max/999/mode/PRINT/show-venues/false/team-id/${teamId}`;
+    const candidateUrls = competitionId
+      ? [`https://www.fussball.de/vereinsspielplan.druck/-/datum-bis/${range.to}/datum-von/${range.from}/id/${competitionId}/match-type/-1/max/999/mode/PRINT/show-venues/false/team-id/${teamId}`, baseUrl]
+      : [baseUrl];
+
+    for (const url of candidateUrls) {
+      try {
+        const html = await this.fetchHtml(url);
+        const parsed = parsePrintableMatches(html);
+        if (parsed.length === 0) {
+          continue;
+        }
+
+        return parsed.map((match) => ({
+          date: match.date,
+          homeTeam: match.homeTeam,
+          awayTeam: match.awayTeam,
+          competition: match.competition,
+          matchUrl: match.matchUrl,
+          source: 'print-view',
+        }));
+      } catch {
+        continue;
+      }
+    }
+
+    return [];
+  }
+
   public async getTabelle(input: TeamSourceInput): Promise<TeamStanding[]> {
     const result = await this.getTabelleWithDiagnostics(input);
     return result.standings;
@@ -243,6 +283,25 @@ export class FussballDeClient {
   private extractCompetitionIdFromPrintableUrl(teamPageUrl: string): string | undefined {
     const match = teamPageUrl.match(/\/id\/([^/#!?]+)/i);
     return match?.[1];
+  }
+
+  private async resolvePrintableCompetitionId(teamPageUrl: string): Promise<string | undefined> {
+    const fromUrl = this.extractCompetitionIdFromPrintableUrl(teamPageUrl);
+    if (fromUrl) {
+      return fromUrl;
+    }
+
+    try {
+      const html = await this.fetchHtml(teamPageUrl);
+      const fromPrintableLink = html.match(/vereinsspielplan\.druck\/[^"]*\/id\/([A-Z0-9]{16,40})/i)?.[1];
+      if (fromPrintableLink) {
+        return fromPrintableLink;
+      }
+    } catch {
+      return undefined;
+    }
+
+    return undefined;
   }
 
   private getCurrentDateIso(): string {

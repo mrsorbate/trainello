@@ -1454,7 +1454,7 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
     const attempts: Array<{
       requested_source: string;
       source_url: string;
-      mode: 'next' | 'last';
+      mode: 'next' | 'last' | 'season';
       ok: boolean;
       row_count: number;
       error?: string;
@@ -1554,14 +1554,24 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
       return Number.isNaN(parsed.getTime()) ? null : parsed;
     };
 
+    const now = new Date();
+    const seasonStartYear = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+    const seasonStartDate = new Date(seasonStartYear, 6, 1, 0, 0, 0, 0);
+    const seasonEndDate = new Date(seasonStartYear + 1, 5, 30, 23, 59, 59, 999);
+    const seasonRange = {
+      from: `${seasonStartYear}-07-01`,
+      to: `${seasonStartYear + 1}-06-30`,
+    };
+
     const schedules = await Promise.all(externalScheduleSources.map(async (sourceEntry) => {
       const sourceId = extractFussballDeTeamId(sourceEntry) || sourceEntry;
       const sourceUrl = buildFussballDeTeamPageUrl(sourceEntry);
 
       try {
-        const [nextGamesRaw, lastGamesRaw] = await Promise.all([
+        const [nextGamesRaw, lastGamesRaw, seasonGamesRaw] = await Promise.all([
           client.getSpielplan({ teamPageUrl: sourceUrl }),
           client.getLastMatches({ teamPageUrl: sourceUrl }),
+          client.getPrintableSeasonMatches({ teamPageUrl: sourceUrl }, seasonRange),
         ]);
 
         attempts.push(
@@ -1578,6 +1588,13 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
             mode: 'last',
             ok: true,
             row_count: lastGamesRaw.length,
+          },
+          {
+            requested_source: sourceEntry,
+            source_url: sourceUrl,
+            mode: 'season',
+            ok: true,
+            row_count: seasonGamesRaw.length,
           }
         );
 
@@ -1596,8 +1613,23 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
           });
         };
 
-        const nextGames = dedupeMatches(nextGamesRaw);
-        const lastGames = dedupeMatches(lastGamesRaw);
+        const mergedRaw = dedupeMatches([...nextGamesRaw, ...lastGamesRaw, ...seasonGamesRaw]);
+        const seasonMatches = mergedRaw.filter((match) => {
+          const parsedDate = parseScheduleDate(match?.date);
+          if (!parsedDate) {
+            return true;
+          }
+          return parsedDate >= seasonStartDate && parsedDate <= seasonEndDate;
+        });
+
+        const nextGames = seasonMatches.filter((match) => {
+          const parsedDate = parseScheduleDate(match?.date);
+          return !parsedDate || parsedDate.getTime() > now.getTime();
+        });
+        const lastGames = seasonMatches.filter((match) => {
+          const parsedDate = parseScheduleDate(match?.date);
+          return Boolean(parsedDate && parsedDate.getTime() <= now.getTime());
+        });
         const combinedGames = [...nextGames, ...lastGames];
 
         const leagueName = parseExternalLeagueNameFromMatches(combinedGames) || 'fussball.de Spielplan';
@@ -1664,6 +1696,14 @@ router.get('/:id/external-schedule', async (req: AuthRequest, res) => {
             requested_source: sourceEntry,
             source_url: sourceUrl,
             mode: 'last',
+            ok: false,
+            row_count: 0,
+            error: errorMessage,
+          },
+          {
+            requested_source: sourceEntry,
+            source_url: sourceUrl,
+            mode: 'season',
             ok: false,
             row_count: 0,
             error: errorMessage,
