@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Calendar, Swords, Home, Plane } from 'lucide-react';
 import { teamsAPI } from '../lib/api';
@@ -191,6 +191,8 @@ const renderScheduleSections = (
 };
 
 export default function MySchedulePage() {
+  const [view, setView] = useState<'next' | 'last'>('next');
+
   const { data: scheduleSections, isLoading, error } = useQuery({
     queryKey: ['my-schedule-external'],
     queryFn: async () => {
@@ -243,24 +245,51 @@ export default function MySchedulePage() {
       ) : !hasAnyGames ? (
         <div className="card text-sm text-gray-500 dark:text-gray-400">Keine Spiele gefunden.</div>
       ) : (
-        <div className="space-y-6">
-          <section className="space-y-3">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Nächste Spiele</h2>
-            {hasAnyNextGames ? (
-              renderScheduleSections(sections, 'next')
-            ) : (
-              <div className="card text-sm text-gray-500 dark:text-gray-400">Keine nächsten Spiele gefunden.</div>
-            )}
-          </section>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-800 p-1 rounded-full w-fit">
+            <button
+              onClick={() => setView('next')}
+              className={`px-4 py-2 rounded-full font-medium transition-colors ${
+                view === 'next'
+                  ? 'bg-primary-600 text-white'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              Anstehend
+            </button>
+            <button
+              onClick={() => setView('last')}
+              className={`px-4 py-2 rounded-full font-medium transition-colors ${
+                view === 'last'
+                  ? 'bg-primary-600 text-white'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              Vergangen
+            </button>
+          </div>
 
-          <section className="space-y-3">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Letzte Spiele</h2>
-            {hasAnyLastGames ? (
-              renderScheduleSections(sections, 'last')
-            ) : (
-              <div className="card text-sm text-gray-500 dark:text-gray-400">Keine letzten Spiele gefunden.</div>
+          <div className="space-y-6">
+            {view === 'next' && (
+              <section className="space-y-3">
+                {hasAnyNextGames ? (
+                  renderScheduleSections(sections, 'next')
+                ) : (
+                  <div className="card text-sm text-gray-500 dark:text-gray-400">Keine nächsten Spiele gefunden.</div>
+                )}
+              </section>
             )}
-          </section>
+
+            {view === 'last' && (
+              <section className="space-y-3">
+                {hasAnyLastGames ? (
+                  renderScheduleSections(sections, 'last')
+                ) : (
+                  <div className="card text-sm text-gray-500 dark:text-gray-400">Keine letzten Spiele gefunden.</div>
+                )}
+              </section>
+            )}
+          </div>
         </div>
       )}
     </div>
