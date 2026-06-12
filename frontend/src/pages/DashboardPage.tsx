@@ -52,8 +52,8 @@ export default function DashboardPage() {
 
   // Mutation for event response
   const updateResponseMutation = useMutation({
-    mutationFn: (data: { eventId: number; status: string }) =>
-      eventsAPI.updateResponse(data.eventId, { status: data.status }),
+    mutationFn: (data: { eventId: number; status: string; comment?: string }) =>
+      eventsAPI.updateResponse(data.eventId, { status: data.status, comment: data.comment }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['upcoming-events'] });
     },
@@ -244,7 +244,15 @@ export default function DashboardPage() {
 
               const handleStatusClick = (status: string, e: React.MouseEvent) => {
                 e.stopPropagation();
-                updateResponseMutation.mutate({ eventId: event.id, status });
+                let comment: string | undefined;
+                if (status === 'declined' && user?.role !== 'trainer') {
+                  const reason = window.prompt('Bitte Grund für die Absage eingeben:', 'Absage');
+                  if (reason === null) {
+                    return;
+                  }
+                  comment = reason.trim() || 'Absage';
+                }
+                updateResponseMutation.mutate({ eventId: event.id, status, comment });
               };
 
               const handleCardClick = () => {
