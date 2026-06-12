@@ -339,8 +339,12 @@ export default function DashboardPage() {
                 if (parts.length === 2) {
                   const part1 = parts[0].trim();
                   const part2 = parts[1].trim();
-                  if (event?.type === 'match' && typeof event?.is_home_match === 'boolean') {
-                    return event.is_home_match ? part2 : part1;
+                  if (event?.type === 'match') {
+                    const isHomeMatch = event?.is_home_match === true || event?.is_home_match === 1 || event?.is_home_match === '1';
+                    const isAwayMatch = event?.is_home_match === false || event?.is_home_match === 0 || event?.is_home_match === '0';
+                    if (isHomeMatch || isAwayMatch) {
+                      return isHomeMatch ? part2 : part1;
+                    }
                   }
                   return part1;
                 }
