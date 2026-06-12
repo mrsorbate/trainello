@@ -51,7 +51,12 @@ export const getStoredSubscriptionsForUsers = (userIds: number[]): StoredPushSub
 };
 
 export async function sendPushToSubscriptions(subscriptions: StoredPushSubscription[], payload: PushPayload): Promise<number> {
-  if (!isPushConfigured || subscriptions.length === 0) {
+  if (!isPushConfigured) {
+    console.error('Push delivery skipped: VAPID keys are not configured on server.');
+    return 0;
+  }
+
+  if (subscriptions.length === 0) {
     return 0;
   }
 

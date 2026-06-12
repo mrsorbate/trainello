@@ -83,7 +83,7 @@ export default function PushInstallPrompt({ userId }: PushInstallPromptProps) {
       const response = await notificationsAPI.getStatus();
       return response.data as { configured: boolean; subscribed: boolean };
     },
-    enabled: Boolean(userId && isStandalone && isPushSupported()),
+    enabled: Boolean(userId && isPushSupported()),
     refetchOnWindowFocus: true,
   });
 
@@ -155,7 +155,7 @@ export default function PushInstallPrompt({ userId }: PushInstallPromptProps) {
   });
 
   useEffect(() => {
-    if (!userId || !isStandalone || !isPushSupported()) {
+    if (!userId || !isPushSupported()) {
       return;
     }
 
@@ -171,7 +171,6 @@ export default function PushInstallPrompt({ userId }: PushInstallPromptProps) {
     autoSyncPushMutation.mutate();
   }, [
     userId,
-    isStandalone,
     permission,
     pushStatus?.configured,
     pushStatus?.subscribed,

@@ -40,16 +40,18 @@ const toWebPushSubscription = (entry: StoredPushSubscription): webpush.PushSubsc
 
 const removeSubscriptionByEndpoint = db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?');
 
-async function sendPushToSubscriptions(subscriptions: StoredPushSubscription[], payload: PushPayload): Promise<void> {
+async function sendPushToSubscriptions(subscriptions: StoredPushSubscription[], payload: PushPayload): Promise<number> {
   if (!isPushConfigured || subscriptions.length === 0) {
-    return;
+    return 0;
   }
 
   const serializedPayload = JSON.stringify(payload);
+  let sent = 0;
 
   for (const subscription of subscriptions) {
     try {
       await webpush.sendNotification(toWebPushSubscription(subscription), serializedPayload);
+      sent += 1;
     } catch (error: any) {
       const statusCode = Number(error?.statusCode || 0);
       if (statusCode === 404 || statusCode === 410) {
@@ -59,6 +61,8 @@ async function sendPushToSubscriptions(subscriptions: StoredPushSubscription[], 
       }
     }
   }
+
+  return sent;
 }
 
 router.use(authenticate);
@@ -155,13 +159,13 @@ router.post('/test', async (req: AuthRequest, res) => {
     .prepare('SELECT id, user_id, endpoint, p256dh, auth, expiration_time FROM push_subscriptions WHERE user_id = ?')
     .all(userId) as StoredPushSubscription[];
 
-  await sendPushToSubscriptions(subscriptions, {
+  const sent = await sendPushToSubscriptions(subscriptions, {
     title: title || 'teamvote+',
     body: body || 'Dies ist eine Test-Benachrichtigung.',
     url: url || '/',
   });
 
-  return res.json({ success: true, sent: subscriptions.length });
+  return res.json({ success: true, sent, subscriptions: subscriptions.length });
 });
 
 export default router;
