@@ -1,6 +1,4 @@
 self.addEventListener('push', (event) => {
-  console.log('[Push SW] Received push event');
-  
   let payload = {
     title: 'teamvote+',
     body: 'Neue Benachrichtigung',
@@ -15,10 +13,9 @@ self.addEventListener('push', (event) => {
         body: String(parsed?.body || payload.body),
         url: String(parsed?.url || payload.url),
       };
-      console.log('[Push SW] Parsed payload:', payload);
     }
   } catch (_error) {
-    console.log('[Push SW] Failed to parse payload, using fallback');
+    // Keep fallback payload
   }
 
   event.waitUntil(

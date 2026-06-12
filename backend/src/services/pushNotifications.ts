@@ -57,7 +57,6 @@ export async function sendPushToSubscriptions(subscriptions: StoredPushSubscript
   }
 
   if (subscriptions.length === 0) {
-    console.warn('sendPushToSubscriptions: no subscriptions provided');
     return 0;
   }
 
@@ -82,15 +81,11 @@ export async function sendPushToSubscriptions(subscriptions: StoredPushSubscript
       }
     }
   }
-  
-  console.log(`sendPushToSubscriptions finished: ${sent}/${subscriptions.length} successful`);
+
   return sent;
 }
 
 export async function sendPushToUsers(userIds: number[], payload: PushPayload): Promise<number> {
   const subscriptions = getStoredSubscriptionsForUsers(userIds);
-  console.log(`sendPushToUsers: ${userIds.length} users requested, ${subscriptions.length} subscriptions found`);
-  const sent = await sendPushToSubscriptions(subscriptions, payload);
-  console.log(`sendPushToUsers: ${sent}/${subscriptions.length} pushes sent`);
-  return sent;
+  return sendPushToSubscriptions(subscriptions, payload);
 }

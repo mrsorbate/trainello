@@ -1004,11 +1004,9 @@ router.post('/', async (req: AuthRequest, res) => {
 
     // Get all team members for responses
     const memberIds = getMemberIdsForTeams(targetTeamIds);
-    console.log(`Create event: targetTeamIds=${JSON.stringify(targetTeamIds)}, memberIds=${memberIds.length}`);
 
     let invitedUserIds = invited_user_ids?.length ? invited_user_ids : (invite_all ? memberIds : []);
     invitedUserIds = invitedUserIds.filter((id) => memberIds.includes(id));
-    console.log(`Create event: invite_all=${invite_all}, invited_user_ids input length=${invited_user_ids?.length || 0}, final invitedUserIds=${invitedUserIds.length}`);
 
     if (invitedUserIds.length === 0) {
       return res.status(400).json({ error: 'At least one invited user is required' });
@@ -1104,7 +1102,6 @@ router.post('/', async (req: AuthRequest, res) => {
         const firstStartTime = String(firstCreatedEvent?.start_time || start_time);
         const additionalCount = Math.max(createdEvents.length - 1, 0);
         const seriesSuffix = additionalCount > 0 ? ` (+${additionalCount} weitere Termine)` : '';
-        console.log(`Create recurring event series: ${createdEvents.length} events, notifying ${notifyUserIds.length} users`);
         await sendPushToUsers(notifyUserIds, {
           title: 'Neuer Termin',
           body: `${targetTeamLabel ? `${targetTeamLabel}: ` : ''}${title} am ${formatEventDateTime(firstStartTime)}${seriesSuffix}`,
@@ -1158,7 +1155,6 @@ router.post('/', async (req: AuthRequest, res) => {
 
       const notifyUserIds = invitedUserIds;
       if (notifyUserIds.length > 0) {
-        console.log(`Create single event: notifying ${notifyUserIds.length} users`);
         await sendPushToUsers(notifyUserIds, {
           title: 'Neuer Termin',
           body: `${targetTeamLabel ? `${targetTeamLabel}: ` : ''}${title} am ${formatEventDateTime(start_time)}`,
@@ -1701,8 +1697,6 @@ router.delete('/:id', async (req: AuthRequest, res) => {
       const allTeamMembers = getMemberIdsForTeams(Array.from(teamIds));
       const notifyUserIds = allTeamMembers.filter((userId) => userId !== req.user!.id);
       
-      console.log(`Delete series ${event.series_id}: found ${eventsInSeries.length} events, ${teamIds.length} teams, ${allTeamMembers.length} members, notifying ${notifyUserIds.length}`);
-      
       const deleteSeriesTx = db.transaction(() => {
         for (const eventRow of eventsInSeries) {
           upsertDeletedEventStmt.run(
@@ -1721,7 +1715,6 @@ router.delete('/:id', async (req: AuthRequest, res) => {
 
       if (notifyUserIds.length > 0) {
         const noteSuffix = deleteNote ? ` Hinweis: ${deleteNote}` : '';
-        console.log(`Sending delete series push to ${notifyUserIds.length} users`);
         await sendPushToUsers(notifyUserIds, {
           title: 'Terminserie abgesagt',
           body: `${seriesTeamLabel ? `${seriesTeamLabel}: ` : ''}${event.title || 'Eine Terminserie'} wurde abgesagt.${noteSuffix}`,
@@ -1745,8 +1738,6 @@ router.delete('/:id', async (req: AuthRequest, res) => {
       const teamIds = getEventTeamIds(eventId);
       const allTeamMembers = getMemberIdsForTeams(teamIds);
       const notifyUserIds = allTeamMembers.filter((userId) => userId !== req.user!.id);
-      
-      console.log(`Delete event ${eventId}: ${teamIds.length} teams, ${allTeamMembers.length} members, notifying ${notifyUserIds.length}`);
 
       const deleteSingleTx = db.transaction(() => {
         upsertDeletedEventStmt.run(
@@ -1764,7 +1755,6 @@ router.delete('/:id', async (req: AuthRequest, res) => {
 
       if (notifyUserIds.length > 0) {
         const noteSuffix = deleteNote ? ` Hinweis: ${deleteNote}` : '';
-        console.log(`Sending delete event push to ${notifyUserIds.length} users`);
         await sendPushToUsers(notifyUserIds, {
           title: 'Termin abgesagt',
           body: `${singleEventTeamLabel ? `${singleEventTeamLabel}: ` : ''}${eventToDelete.title || 'Ein Termin'} am ${formatEventDateTime(eventToDelete.start_time)} wurde abgesagt.${noteSuffix}`,
