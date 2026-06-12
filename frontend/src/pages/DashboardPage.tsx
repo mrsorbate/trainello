@@ -12,6 +12,9 @@ export default function DashboardPage() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const [openQuickActionsEventId, setOpenQuickActionsEventId] = useState<number | null>(null);
+  const [pendingDecline, setPendingDecline] = useState<{ eventId: number; title: string } | null>(null);
+  const [declineReason, setDeclineReason] = useState('');
+  const [declineReasonError, setDeclineReasonError] = useState<string | null>(null);
 
   // Admin wird zum Admin-Panel weitergeleitet
   if (user?.role === 'admin') {
@@ -58,6 +61,48 @@ export default function DashboardPage() {
       queryClient.invalidateQueries({ queryKey: ['upcoming-events'] });
     },
   });
+
+  const closeDeclineModal = () => {
+    if (updateResponseMutation.isPending) {
+      return;
+    }
+    setPendingDecline(null);
+    setDeclineReason('');
+    setDeclineReasonError(null);
+  };
+
+  const handleDeclineSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!pendingDecline) {
+      return;
+    }
+
+    const normalizedReason = declineReason.trim();
+    if (!normalizedReason) {
+      setDeclineReasonError('Bitte gib einen Grund für die Absage an.');
+      return;
+    }
+
+    setDeclineReasonError(null);
+    updateResponseMutation.mutate(
+      {
+        eventId: pendingDecline.eventId,
+        status: 'declined',
+        comment: normalizedReason,
+      },
+      {
+        onSuccess: () => {
+          setPendingDecline(null);
+          setDeclineReason('');
+          setDeclineReasonError(null);
+        },
+        onError: (error: any) => {
+          const apiMessage = String(error?.response?.data?.error || 'Absage konnte nicht gespeichert werden.');
+          setDeclineReasonError(apiMessage);
+        },
+      }
+    );
+  };
 
   const getTeamPhotoUrl = (team: any): string | undefined => {
     return resolveAssetUrl(team.team_picture);
@@ -244,15 +289,17 @@ export default function DashboardPage() {
 
               const handleStatusClick = (status: string, e: React.MouseEvent) => {
                 e.stopPropagation();
-                let comment: string | undefined;
                 if (status === 'declined' && user?.role !== 'trainer') {
-                  const reason = window.prompt('Bitte Grund für die Absage eingeben:', 'Absage');
-                  if (reason === null) {
-                    return;
-                  }
-                  comment = reason.trim() || 'Absage';
+                  setPendingDecline({
+                    eventId: event.id,
+                    title: String(displayTitle || opponent || event.title || 'Termin'),
+                  });
+                  setDeclineReason('');
+                  setDeclineReasonError(null);
+                  setOpenQuickActionsEventId(null);
+                  return;
                 }
-                updateResponseMutation.mutate({ eventId: event.id, status, comment });
+                updateResponseMutation.mutate({ eventId: event.id, status });
               };
 
               const handleCardClick = () => {
@@ -482,6 +529,55 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {pendingDecline && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-[1px] flex items-center justify-center px-4"
+          onClick={closeDeclineModal}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 sm:p-5 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Absagegrund</h3>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+              Warum möchtest du für {pendingDecline.title} absagen?
+            </p>
+
+            <form className="mt-4 space-y-3" onSubmit={handleDeclineSubmit}>
+              <textarea
+                value={declineReason}
+                onChange={(event) => setDeclineReason(event.target.value)}
+                placeholder="Kurz den Grund eingeben..."
+                className="input min-h-[96px]"
+                autoFocus
+              />
+
+              {declineReasonError && (
+                <p className="text-sm text-red-600 dark:text-red-400">{declineReasonError}</p>
+              )}
+
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={closeDeclineModal}
+                  disabled={updateResponseMutation.isPending}
+                  className="px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-60"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  type="submit"
+                  disabled={updateResponseMutation.isPending}
+                  className="px-3 py-2 text-sm rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                >
+                  {updateResponseMutation.isPending ? 'Speichern...' : 'Absagen'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
