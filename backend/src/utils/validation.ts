@@ -24,6 +24,6 @@ export const createEventSchema = z.object({
 });
 
 export const updateEventResponseSchema = z.object({
-  status: z.enum(['accepted', 'declined', 'tentative']),
+  status: z.enum(['accepted', 'declined', 'tentative', 'pending']),
   comment: z.string().optional(),
 });

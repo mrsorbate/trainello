@@ -7,9 +7,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../database/init';
 import { authenticate, AuthRequest } from '../middleware/auth';
+import { JWT_SECRET } from '../config';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '../../uploads');
@@ -33,16 +33,14 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-
-    if (mimetype && extname) {
+  fileFilter: (_req, file, cb) => {
+    const allowedMimes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+    const allowedExts = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedMimes.has(file.mimetype) && allowedExts.has(ext)) {
       return cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'));
     }
+    cb(new Error('Only JPEG, PNG, and WebP images are allowed'));
   }
 });
 

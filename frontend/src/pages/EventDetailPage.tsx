@@ -852,7 +852,7 @@ export default function EventDetailPage() {
                 disabled={deleteEventMutation.isPending}
                 className="w-full btn bg-red-600 text-white hover:bg-red-700"
               >
-                Gesamte Serie löschen ({event?.series_id ? '?' : '?'})
+                Gesamte Serie löschen ({event?.series_count != null ? `${event.series_count} Termine` : '?'})
               </button>
               <button
                 onClick={() => {

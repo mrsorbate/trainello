@@ -128,20 +128,33 @@ export default function DashboardPage() {
   );
 
   if (eventsLoading || (user?.role !== 'admin' && teamsLoading)) {
-    return <div className="text-center py-12">Lädt...</div>;
+    return (
+      <div className="max-w-4xl mx-auto space-y-5">
+        <div className="text-center space-y-2 py-2">
+          <div className="skeleton h-8 w-40 mx-auto" />
+          <div className="skeleton h-4 w-56 mx-auto" />
+        </div>
+        <div className="card space-y-3">
+          <div className="skeleton h-6 w-36" />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="skeleton h-[88px] w-full" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-4xl mx-auto space-y-5 sm:space-y-8">
-      {/* Centered Header */}
+      {/* Header */}
       <div className="text-center">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-2 break-words">Willkommen zurück, {user?.name}!</p>
+        <h1 className="text-3xl sm:text-4xl font-heading font-bold text-white tracking-wide">Dashboard</h1>
+        <p className="text-sm sm:text-base text-gray-400 mt-1 break-words">Willkommen zurück, <span className="text-gray-200 font-medium">{user?.name}</span>!</p>
         <div className="mt-3">
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="btn btn-secondary w-full sm:w-auto inline-flex items-center justify-center gap-2"
+            className="btn btn-secondary w-full sm:w-auto"
           >
             <RotateCw className="w-4 h-4" />
             Reload
@@ -227,8 +240,8 @@ export default function DashboardPage() {
       {user?.role !== 'admin' && openPosts && openPosts.length > 0 && (
         <div className="card">
           <div className="mb-4 flex items-center justify-center">
-            <h2 className="text-xl font-semibold flex items-center text-center">
-              <MessageSquare className="w-6 h-6 mr-2 text-amber-600" />
+            <h2 className="section-heading">
+              <MessageSquare className="w-5 h-5 text-accent-400" />
               Offene Nachrichten & Umfragen
             </h2>
           </div>
@@ -259,8 +272,8 @@ export default function DashboardPage() {
       {/* Upcoming Events Section */}
       <div className="card">
         <div className="mb-4 flex items-center justify-center">
-          <h2 className="text-xl font-semibold flex items-center text-center">
-            <Calendar className="w-6 h-6 mr-2 text-primary-600" />
+          <h2 className="section-heading">
+            <Calendar className="w-5 h-5 text-primary-400" />
             Terminübersicht
           </h2>
         </div>

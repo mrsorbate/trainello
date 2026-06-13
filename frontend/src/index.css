@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -21,9 +23,18 @@
 
   body {
     @apply bg-gray-900 text-gray-100;
+    font-family: 'Barlow', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
     -webkit-user-select: none;
     -webkit-user-drag: none;
     overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
   }
 
   #root {
@@ -74,27 +85,69 @@
 }
 
 @layer components {
+  /* ── Buttons ── */
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center gap-2 px-5 rounded-xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 cursor-pointer select-none;
+    min-height: 44px;
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    font-size: 0.9375rem;
+    letter-spacing: 0.03em;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
-  
+
+  .btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-700 dark:hover:bg-primary-600;
+    @apply bg-primary-600 text-white hover:bg-primary-500 active:bg-primary-700 focus:ring-primary-500 shadow-card hover:shadow-glow-primary;
   }
-  
+
   .btn-secondary {
-    @apply bg-gray-700 text-gray-100 hover:bg-gray-600 focus:ring-gray-500;
+    @apply bg-gray-700 text-gray-100 hover:bg-gray-600 active:bg-gray-800 focus:ring-gray-500 border border-gray-600 hover:border-gray-500;
   }
-  
+
+  .btn-accent {
+    @apply bg-accent-400 text-gray-900 hover:bg-accent-300 active:bg-accent-500 focus:ring-accent-400 shadow-card font-bold;
+  }
+
+  .btn-ghost {
+    @apply text-gray-400 hover:text-gray-200 hover:bg-gray-700/60 active:bg-gray-700 focus:ring-gray-500 rounded-xl px-3;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn-danger {
+    @apply bg-red-700 text-white hover:bg-red-600 active:bg-red-800 focus:ring-red-500 shadow-card;
+  }
+
+  /* ── Cards ── */
   .card {
-    @apply bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-6;
+    @apply bg-gray-800 rounded-2xl border border-gray-700/70 p-5 shadow-card;
   }
-  
+
+  .card-interactive {
+    @apply card cursor-pointer hover:border-gray-600 hover:shadow-card-hover active:scale-[0.99] transition-all duration-200;
+  }
+
+  /* ── Form inputs ── */
   .input {
-    @apply w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-gray-700 text-white placeholder-gray-400;
+    @apply w-full px-4 border border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent text-white placeholder-gray-500 text-base transition-colors duration-150;
+    min-height: 44px;
     min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
+    background-color: rgb(24 27 35);
+    line-height: 1.5;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-family: 'Barlow', system-ui, sans-serif;
+  }
+
+  .input:focus {
+    outline: none;
   }
 
   input[type='date'],
@@ -108,11 +161,100 @@
     appearance: none;
   }
 
+  /* ── Status badges ── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold;
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-accepted {
+    @apply badge bg-green-900/60 text-green-300 border border-green-700/50;
+  }
+
+  .badge-declined {
+    @apply badge bg-red-900/60 text-red-300 border border-red-700/50;
+  }
+
+  .badge-tentative {
+    @apply badge bg-yellow-900/60 text-yellow-300 border border-yellow-700/50;
+  }
+
+  .badge-pending {
+    @apply badge bg-gray-700/80 text-gray-400 border border-gray-600/50;
+  }
+
+  /* ── Section headings ── */
+  .section-heading {
+    @apply text-xl font-semibold text-white flex items-center gap-2;
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Stat card elements ── */
+  .stat-value {
+    @apply text-3xl font-bold text-white leading-none;
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+  }
+
+  .stat-label {
+    @apply text-sm text-gray-400 leading-tight;
+  }
+
+  /* ── Progress bar ── */
+  .progress-bar {
+    @apply w-full h-2 bg-gray-700 rounded-full overflow-hidden;
+  }
+
+  .progress-bar-fill {
+    @apply h-full rounded-full transition-all duration-500;
+  }
+
+  /* ── Skeleton loading ── */
+  .skeleton {
+    @apply bg-gray-700/80 rounded-xl animate-pulse;
+  }
+
+  /* ── Tactic board ── */
   .tactic-board-pitch {
     background-color: #0f8f44;
     background-image:
       linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 100%),
       repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0px, rgba(255, 255, 255, 0.06) 34px, rgba(255, 255, 255, 0.02) 34px, rgba(255, 255, 255, 0.02) 68px);
+  }
+
+  /* ── Bottom navigation bar (mobile PWA) ── */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-gray-900/96 border-t border-gray-700/80 backdrop-blur-sm flex items-stretch z-40;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .bottom-nav-item {
+    @apply flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-gray-500 transition-colors duration-150 cursor-pointer;
+    min-height: 56px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bottom-nav-item:hover {
+    @apply text-gray-300;
+  }
+
+  .bottom-nav-item.active {
+    @apply text-primary-400;
+  }
+
+  .bottom-nav-label {
+    font-family: 'Barlow', system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── Divider ── */
+  .divider {
+    @apply border-t border-gray-700/60 my-4;
   }
 }
 
@@ -163,5 +305,13 @@
 
   .dark .text-red-600 {
     @apply text-red-400;
+  }
+
+  .font-heading {
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }

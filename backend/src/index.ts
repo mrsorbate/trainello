@@ -1,8 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import multer from 'multer';
-import path from 'path';
+import axios from 'axios';
 import helmet from 'helmet';
 import db from './database/init';
 import { createRateLimiter } from './middleware/rateLimit';
@@ -17,6 +16,9 @@ import settingsRoutes from './routes/settings';
 import notificationsRoutes from './routes/notifications';
 import postsRoutes from './routes/posts';
 import { startAutoGameImportJob } from './services/autoGameImport';
+import { startScheduler } from './services/scheduler';
+import { authenticate, AuthRequest } from './middleware/auth';
+import { upload } from './middleware/upload';
 
 dotenv.config();
 
@@ -44,30 +46,6 @@ const authLimiter = createRateLimiter({
     : 15 * 60 * 1000,
   max: Number.isFinite(authRateLimitMax) && authRateLimitMax > 0 ? authRateLimitMax : 20,
   message: { error: 'Too many auth attempts, please try again later.' },
-});
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) => {
-    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (allowedMimes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
-  }
 });
 
 // Middleware
@@ -163,7 +141,6 @@ app.get('/api/badge-proxy', async (req, res) => {
   }
 
   try {
-    const axios = require('axios');
     const response = await axios.get(parsedUrl.toString(), {
       responseType: 'arraybuffer',
       timeout: 8000,
@@ -172,7 +149,7 @@ app.get('/api/badge-proxy', async (req, res) => {
         'Referer': 'https://www.fussball.de/',
       },
     });
-    const contentType = response.headers['content-type'] || 'image/png';
+    const contentType = String(response.headers['content-type'] || 'image/png');
     res.set('Content-Type', contentType);
     res.set('Cache-Control', 'public, max-age=86400');
     res.send(response.data);
@@ -192,18 +169,19 @@ app.use('/api', postsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api', invitesRoutes);
-app.use('/api', invitesRoutes);
 
-// File upload endpoint
-app.post('/api/admin/upload/logo', upload.single('logo'), (req, res) => {
+// File upload endpoint (duplicate of admin route — kept for compatibility, auth-guarded)
+app.post('/api/admin/upload/logo', authenticate, upload.single('logo'), (req: AuthRequest, res) => {
+  if (req.user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file provided' });
     }
     const logoPath = `/uploads/${req.file.filename}`;
-    const db = require('./database/init').default;
     db.prepare(`
-      UPDATE organizations 
+      UPDATE organizations
       SET logo = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = 1
     `).run(logoPath);
@@ -227,4 +205,5 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   startAutoGameImportJob();
+  startScheduler();
 });

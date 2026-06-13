@@ -944,6 +944,11 @@ export default function EventEditPage() {
                       Nein
                     </button>
                   </div>
+                  {!saveWholeSeries && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                      Dieser Termin wird aus der Serie abgelöst und eigenständig gespeichert.
+                    </p>
+                  )}
                 </div>
 
                 {saveWholeSeries ? (

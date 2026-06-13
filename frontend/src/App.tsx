@@ -1,30 +1,31 @@
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import EventCreatePage from './pages/EventCreatePage';
-import EventEditPage from './pages/EventEditPage';
-import TeamsPage from './pages/TeamsPage';
-import TeamPage from './pages/TeamPage';
-import TeamRosterPage from './pages/TeamRosterPage';
-import TeamSettingsPage from './pages/TeamSettingsPage';
-import TeamPostsPage from './pages/TeamPostsPage';
-import EventsPage from './pages/EventsPage';
-import EventDetailPage from './pages/EventDetailPage';
-import EventSquadPage from './pages/EventSquadPage';
-import StatsPage from './pages/StatsPage';
-import InvitePage from './pages/InvitePage';
-import TeamJoinPage from './pages/TeamJoinPage';
-import AdminPage from './pages/AdminPage';
-import SettingsPage from './pages/SettingsPage';
-import SetupWizardPage from './pages/SetupWizardPage';
-import FirstTimeSetupPage from './pages/FirstTimeSetupPage';
-import MyTablePage from './pages/MyTablePage';
 import { settingsAPI } from './lib/api';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const EventCreatePage = lazy(() => import('./pages/EventCreatePage'));
+const EventEditPage = lazy(() => import('./pages/EventEditPage'));
+const TeamsPage = lazy(() => import('./pages/TeamsPage'));
+const TeamPage = lazy(() => import('./pages/TeamPage'));
+const TeamRosterPage = lazy(() => import('./pages/TeamRosterPage'));
+const TeamSettingsPage = lazy(() => import('./pages/TeamSettingsPage'));
+const TeamPostsPage = lazy(() => import('./pages/TeamPostsPage'));
+const EventsPage = lazy(() => import('./pages/EventsPage'));
+const EventDetailPage = lazy(() => import('./pages/EventDetailPage'));
+const EventSquadPage = lazy(() => import('./pages/EventSquadPage'));
+const StatsPage = lazy(() => import('./pages/StatsPage'));
+const InvitePage = lazy(() => import('./pages/InvitePage'));
+const TeamJoinPage = lazy(() => import('./pages/TeamJoinPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const SetupWizardPage = lazy(() => import('./pages/SetupWizardPage'));
+const FirstTimeSetupPage = lazy(() => import('./pages/FirstTimeSetupPage'));
+const MyTablePage = lazy(() => import('./pages/MyTablePage'));
 
 function App() {
   const { token } = useAuthStore();
@@ -39,7 +40,6 @@ function App() {
       return response.data;
     },
     retry: 1,
-    staleTime: 0, // Always refetch to ensure fresh data
   });
 
   useEffect(() => {
@@ -82,6 +82,7 @@ function App() {
   }
 
   return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div></div>}>
     <Routes>
       {/* First-time setup (no login required) */}
       {!setupCompleted && !token && <Route path="*" element={<FirstTimeSetupPage />} />}
@@ -137,6 +138,7 @@ function App() {
         </>
       )}
     </Routes>
+    </Suspense>
   );
 }
 

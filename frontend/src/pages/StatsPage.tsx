@@ -20,7 +20,15 @@ export default function StatsPage() {
   });
 
   if (isLoading) {
-    return <div className="text-center py-12">Lädt...</div>;
+    return (
+      <div className="space-y-4">
+        <div className="skeleton h-9 w-48" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-24 rounded-2xl" />)}
+        </div>
+        <div className="skeleton h-64 rounded-2xl" />
+      </div>
+    );
   }
 
   const getRate = (accepted: unknown, total: unknown): number => {
@@ -49,89 +57,71 @@ export default function StatsPage() {
       </div>
 
       {/* Event Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="card">
-          <div className="flex items-center space-x-3">
-            <div className="bg-green-100 p-3 rounded-lg">
-              <Calendar className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Vergangene Termine</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.events?.past || 0}</p>
-            </div>
-          </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="card flex flex-col gap-1">
+          <span className="stat-label">Vergangene Termine</span>
+          <span className="stat-value">{stats?.events?.past || 0}</span>
+          <div className="w-8 h-1 rounded-full bg-green-500 mt-1" />
         </div>
-
-        <div className="card">
-          <div className="flex items-center space-x-3">
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <Calendar className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Training</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.events?.pastByCategory?.training || 0}</p>
-            </div>
-          </div>
+        <div className="card flex flex-col gap-1">
+          <span className="stat-label">Training</span>
+          <span className="stat-value">{stats?.events?.pastByCategory?.training || 0}</span>
+          <div className="w-8 h-1 rounded-full bg-primary-500 mt-1" />
         </div>
-
-        <div className="card">
-          <div className="flex items-center space-x-3">
-            <div className="bg-yellow-100 p-3 rounded-lg">
-              <Calendar className="w-6 h-6 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Spiele</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.events?.pastByCategory?.match || 0}</p>
-            </div>
-          </div>
+        <div className="card flex flex-col gap-1">
+          <span className="stat-label">Spiele</span>
+          <span className="stat-value">{stats?.events?.pastByCategory?.match || 0}</span>
+          <div className="w-8 h-1 rounded-full bg-accent-400 mt-1" />
         </div>
-
-        <div className="card">
-          <div className="flex items-center space-x-3">
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <Calendar className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Sonstiges</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.events?.pastByCategory?.other || 0}</p>
-            </div>
-          </div>
+        <div className="card flex flex-col gap-1">
+          <span className="stat-label">Sonstiges</span>
+          <span className="stat-value">{stats?.events?.pastByCategory?.other || 0}</span>
+          <div className="w-8 h-1 rounded-full bg-purple-500 mt-1" />
         </div>
       </div>
 
       {/* Attendance Statistics */}
       <div className="card">
-        <h2 className="text-xl font-semibold mb-4 flex items-center">
-          <TrendingUp className="w-6 h-6 mr-2 text-primary-600" />
+        <h2 className="section-heading mb-5">
+          <TrendingUp className="w-5 h-5 text-primary-400" />
           {user?.role === 'player' ? 'Meine Anwesenheitsstatistik' : 'Anwesenheitsstatistik'}
         </h2>
         <div className="space-y-3 md:hidden">
-          {stats?.attendance?.map((player: any) => (
-            <div key={player.id} className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-900">
+          {stats?.attendance?.map((player: any) => {
+            const rate = player.attendance_rate || 0;
+            const rateColor = rate >= 80 ? 'bg-green-500' : rate >= 50 ? 'bg-accent-400' : 'bg-primary-500';
+            return (
+            <div key={player.id} className="rounded-xl border border-gray-700/60 p-3 bg-gray-900/60">
               <div className="flex items-center justify-between mb-2">
-                <p className="font-medium text-gray-900 dark:text-white">{player.name}</p>
-                <span className="text-sm font-semibold text-gray-900 dark:text-white">{player.attendance_rate || 0}%</span>
+                <p className="font-medium text-white">{player.name}</p>
+                <span className={`text-sm font-bold font-heading ${rate >= 80 ? 'text-green-400' : rate >= 50 ? 'text-accent-400' : 'text-primary-400'}`}>
+                  {rate}%
+                </span>
               </div>
-              <progress
-                className="w-full h-2 mb-2 [&::-webkit-progress-bar]:bg-gray-200 [&::-webkit-progress-bar]:dark:bg-gray-700 [&::-webkit-progress-value]:bg-green-600 [&::-moz-progress-bar]:bg-green-600 rounded-full overflow-hidden"
-                max={100}
-                value={player.attendance_rate || 0}
-                title="Teilnahmequote"
-                aria-label="Teilnahmequote"
-              />
+              <div className="progress-bar mb-3">
+                <div
+                  className={`progress-bar-fill ${rateColor}`}
+                  style={{ width: `${rate}%` }}
+                  role="progressbar"
+                  aria-valuenow={rate}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                />
+              </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
-                <span className="text-green-700">✓ {player.accepted}</span>
-                <span className="text-red-700">✗ {player.declined}</span>
-                <span className="text-gray-700 dark:text-gray-300">⏳ {player.pending}</span>
+                <span className="text-green-400 font-medium">✓ {player.accepted} Zusagen</span>
+                <span className="text-red-400 font-medium">✗ {player.declined} Absagen</span>
+                <span className="text-gray-400">{player.pending} offen</span>
               </div>
-              <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-300">
-                <span>Gesamt: {player.accepted}/{player.total_events} ({getRate(player.accepted, player.total_events)}%)</span>
-                <span>Training: {player.accepted_training}/{player.total_training} ({getRate(player.accepted_training, player.total_training)}%)</span>
-                <span>Spiele: {player.accepted_match}/{player.total_match} ({getRate(player.accepted_match, player.total_match)}%)</span>
-                <span>Sonstiges: {player.accepted_other}/{player.total_other} ({getRate(player.accepted_other, player.total_other)}%)</span>
+              <div className="mt-2 grid grid-cols-2 gap-1.5 text-xs text-gray-400">
+                <span>Gesamt: <span className="text-gray-200">{player.accepted}/{player.total_events}</span></span>
+                <span>Training: <span className="text-gray-200">{getRate(player.accepted_training, player.total_training)}%</span></span>
+                <span>Spiele: <span className="text-gray-200">{getRate(player.accepted_match, player.total_match)}%</span></span>
+                <span>Sonstiges: <span className="text-gray-200">{getRate(player.accepted_other, player.total_other)}%</span></span>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
         <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
