@@ -44,6 +44,54 @@ window.addEventListener('orientationchange', () => {
   void lockMobileOrientation()
 })
 
+const installPullToRefreshGuard = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  let startY = 0
+
+  const getScrollableAncestor = (target: EventTarget | null): HTMLElement => {
+    let node = target instanceof HTMLElement ? target : null
+
+    while (node && node !== document.body && node !== document.documentElement) {
+      const style = window.getComputedStyle(node)
+      const canScrollY = /(auto|scroll)/.test(style.overflowY)
+      if (canScrollY && node.scrollHeight > node.clientHeight) {
+        return node
+      }
+      node = node.parentElement
+    }
+
+    return (document.getElementById('root') || document.scrollingElement || document.documentElement) as HTMLElement
+  }
+
+  const onTouchStart = (event: TouchEvent) => {
+    startY = event.touches[0]?.clientY ?? 0
+  }
+
+  const onTouchMove = (event: TouchEvent) => {
+    if (event.touches.length !== 1) {
+      return
+    }
+
+    const scroller = getScrollableAncestor(event.target)
+    const currentY = event.touches[0]?.clientY ?? startY
+    const deltaY = currentY - startY
+    const atTop = scroller.scrollTop <= 0
+    const atBottom = Math.ceil(scroller.scrollTop + scroller.clientHeight) >= scroller.scrollHeight
+
+    if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {
+      event.preventDefault()
+    }
+  }
+
+  document.addEventListener('touchstart', onTouchStart, { passive: true })
+  document.addEventListener('touchmove', onTouchMove, { passive: false })
+}
+
+installPullToRefreshGuard()
+
 // Zusätzliche iPhone-spezifische Maßnahmen
 if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
   // Starke Sperr-Strategien für iOS

@@ -62,6 +62,8 @@
     padding: 0;
     width: 100%;
     height: auto;
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
     -webkit-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
     text-size-adjust: 100%;
@@ -82,6 +84,8 @@
     user-select: text;
     -webkit-user-drag: none;
     overflow-x: hidden;
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
   }
 
   /* Allow text selection in content areas by default. */
@@ -120,6 +124,8 @@
     width: 100%;
     height: auto;
     overflow-x: hidden;
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
   }
 
   /* Mobile-only: Orientierungssperre */
