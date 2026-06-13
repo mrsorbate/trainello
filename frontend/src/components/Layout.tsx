@@ -71,8 +71,8 @@ export default function Layout({ organization }: LayoutProps) {
       </a>
 
       {/* ── Top navigation bar ── */}
-      <nav className="bg-gray-900/95 backdrop-blur-sm border-b border-gray-700/60 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="bg-gray-900/95 backdrop-blur-sm border-b border-gray-700/60 sticky top-0 z-30 pt-safe">
+        <div className="max-w-7xl mx-auto px-safe sm:px-6 lg:px-8">
           <div className="flex justify-between min-h-[3.25rem] sm:h-14">
 
             {/* Left: Logo + Org */}
@@ -202,29 +202,13 @@ export default function Layout({ organization }: LayoutProps) {
                 </button>
               </div>
 
-              {/* Mobile: Profile avatar only */}
-              <div className="md:hidden flex items-center pr-1">
-                <Link to="/settings" aria-label="Zu den Einstellungen" className="icon-button rounded-full">
-                  {menuProfilePicture ? (
-                    <img
-                      src={resolveAssetUrl(menuProfilePicture)}
-                      alt="Profilbild"
-                      className="w-8 h-8 rounded-full object-cover border-2 border-gray-700 hover:border-primary-500 transition-colors"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-700 border-2 border-gray-700 flex items-center justify-center">
-                      <UserIcon className="w-4 h-4 text-gray-400" />
-                    </div>
-                  )}
-                </Link>
-              </div>
             </div>
           </div>
         </div>
       </nav>
 
       {/* ── Page content ── */}
-      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 md:pb-8">
+      <main id="main-content" className="max-w-7xl mx-auto px-safe sm:px-6 lg:px-8 pt-4 sm:pt-6 pwa-main-safe">
         <Outlet />
       </main>
 

@@ -560,7 +560,7 @@ export default function EventSquadPage() {
                       data-board-y={top}
                     >
                       <div
-                        className={`rounded-full border-2 border-white/90 ring-2 ring-green-800/80 shadow-md bg-gray-900/80 p-0.5 ${isTrainer ? 'cursor-grab active:cursor-grabbing touch-none' : ''}`}
+                        className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border-2 border-white/90 ring-2 ring-green-800/80 shadow-md bg-gray-900/80 p-0.5 ${isTrainer ? 'cursor-grab active:cursor-grabbing touch-none' : ''}`}
                         onPointerDown={isTrainer ? (event) => startDrag(player.id, 'board', event) : undefined}
                         title={player.name}
                         aria-label={player.name}
@@ -596,7 +596,7 @@ export default function EventSquadPage() {
                           key={player.id}
                           type="button"
                           onPointerDown={(event) => startDrag(player.id, 'bench', event)}
-                          className="inline-flex items-center justify-center rounded-full border border-gray-600 bg-gray-900 p-1 cursor-grab active:cursor-grabbing touch-none"
+                          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-gray-600 bg-gray-900 p-1 cursor-grab active:cursor-grabbing touch-none"
                           title={player.name}
                           aria-label={player.name}
                         >

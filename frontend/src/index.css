@@ -338,6 +338,9 @@
 
   .table-shell {
     @apply overflow-x-auto rounded-xl border border-gray-700/60;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
   }
 
   .admin-table {
@@ -386,13 +389,14 @@
 
   /* ── Bottom navigation bar (mobile PWA) ── */
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 bg-gray-900/95 border-t border-gray-700/80 backdrop-blur-sm flex items-stretch z-40;
+    @apply fixed bottom-0 left-0 right-0 bg-gray-900/95 border-t border-gray-700/80 backdrop-blur-sm flex items-stretch gap-1 px-2 z-40;
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .bottom-nav-item {
-    @apply flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-gray-400 cursor-pointer;
+    @apply flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-gray-400 cursor-pointer rounded-xl;
     min-height: 56px;
+    min-width: 44px;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     transition: color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
@@ -429,5 +433,24 @@
 
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .px-safe {
+    padding-left: max(1rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px));
+  }
+
+  .pwa-main-safe {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (min-width: 768px) {
+    .pwa-main-safe {
+      padding-bottom: 2rem;
+    }
   }
 }
