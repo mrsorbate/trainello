@@ -145,20 +145,20 @@ export default function SetupWizardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-4xl font-bold text-white mb-2">
             Willkommen bei teamvote+
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
+          <p className="text-lg text-gray-300">
             {step === 1 ? 'Dein Verein' : step === 2 ? 'Admin-Daten' : step === 3 ? 'Zeitzone' : 'Finale Zusammenfassung'}
           </p>
         </div>
 
         {/* Progress Indicator */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+        <div className="bg-gray-800 rounded-lg shadow-lg p-8 border border-gray-700">
           {/* Step Indicators */}
           <div className="flex items-center justify-between mb-8">
           {[1, 2, 3, 4].map((s) => (
@@ -184,14 +184,14 @@ export default function SetupWizardPage() {
           </div>
 
           <div className="grid grid-cols-4 gap-2 text-center text-xs mb-8">
-            <span className={step >= 1 ? 'text-primary-700 dark:text-primary-300 font-medium whitespace-nowrap' : 'text-gray-500 dark:text-gray-400 whitespace-nowrap'}>1 Verein</span>
-            <span className={step >= 2 ? 'text-primary-700 dark:text-primary-300 font-medium whitespace-nowrap' : 'text-gray-500 dark:text-gray-400 whitespace-nowrap'}>2 Admin</span>
-            <span className={step >= 3 ? 'text-primary-700 dark:text-primary-300 font-medium whitespace-nowrap' : 'text-gray-500 dark:text-gray-400 whitespace-nowrap'}>3 Zeitzone</span>
-            <span className={step >= 4 ? 'text-primary-700 dark:text-primary-300 font-medium whitespace-nowrap' : 'text-gray-500 dark:text-gray-400 whitespace-nowrap'}>4 Zusammenf.</span>
+            <span className={step >= 1 ? 'text-primary-300 font-medium whitespace-nowrap' : 'text-gray-400 whitespace-nowrap'}>1 Verein</span>
+            <span className={step >= 2 ? 'text-primary-300 font-medium whitespace-nowrap' : 'text-gray-400 whitespace-nowrap'}>2 Admin</span>
+            <span className={step >= 3 ? 'text-primary-300 font-medium whitespace-nowrap' : 'text-gray-400 whitespace-nowrap'}>3 Zeitzone</span>
+            <span className={step >= 4 ? 'text-primary-300 font-medium whitespace-nowrap' : 'text-gray-400 whitespace-nowrap'}>4 Zusammenf.</span>
           </div>
 
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-6">
+            <div className="bg-red-900/20 border border-red-800 text-red-300 px-4 py-3 rounded-lg mb-6">
               {error}
             </div>
           )}
@@ -199,13 +199,13 @@ export default function SetupWizardPage() {
           {/* Step 1: Organization Name & Logo */}
           {step === 1 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Building2 className="w-6 h-6 text-primary-600" />
                 Dein Verein
               </h2>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Vereinsname *
                 </label>
                 <input
@@ -215,13 +215,13 @@ export default function SetupWizardPage() {
                   placeholder="z.B. FC Bayern München"
                   className="input"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 mt-1">
                   Dieser Name wird in der Navigation, auf Login-Seiten und in Einladungen angezeigt.
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Kurzer Vereinsname (mobil, optional)
                 </label>
                 <input
@@ -232,13 +232,13 @@ export default function SetupWizardPage() {
                   className="input"
                   maxLength={32}
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 mt-1">
                   Wird bei Bedarf in der mobilen Navigation statt des langen Namens verwendet.
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   <Upload className="w-4 h-4 inline mr-2" />
                   Vereins-Logo (optional)
                 </label>
@@ -249,16 +249,16 @@ export default function SetupWizardPage() {
                     onChange={handleLogoChange}
                     title="Vereins-Logo auswählen"
                     aria-label="Vereins-Logo auswählen"
-                    className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                    className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
                   />
                 </label>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 mt-1">
                   Maximal 5MB (JPG, PNG, GIF, WebP). Kann später im Admin-Panel geändert werden.
                 </p>
                 {logoPreview && (
                   <div className="mt-3 flex items-center gap-3">
-                    <img src={resolveAssetUrl(logoPreview)} alt="Logo Vorschau" className="h-12 w-12 rounded object-contain border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700" />
-                    <span className="text-sm text-gray-600 dark:text-gray-300">{setupData.logo?.name}</span>
+                    <img src={resolveAssetUrl(logoPreview)} alt="Logo Vorschau" className="h-12 w-12 rounded object-contain border border-gray-600 bg-gray-700" />
+                    <span className="text-sm text-gray-300">{setupData.logo?.name}</span>
                   </div>
                 )}
               </div>
@@ -268,13 +268,13 @@ export default function SetupWizardPage() {
           {/* Step 2: Admin Data */}
           {step === 2 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Shield className="w-6 h-6 text-primary-600" />
                 Admin-Daten
               </h2>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Admin Benutzername *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Admin Benutzername *</label>
                 <input
                   type="text"
                   value={setupData.adminUsername}
@@ -282,11 +282,11 @@ export default function SetupWizardPage() {
                   placeholder="z.B. admin"
                   className="input"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Damit meldest du dich später an (nur Kleinbuchstaben/Zahlen/Unterstrich).</p>
+                <p className="text-xs text-gray-400 mt-1">Damit meldest du dich später an (nur Kleinbuchstaben/Zahlen/Unterstrich).</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Admin E-Mail *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Admin E-Mail *</label>
                 <input
                   type="email"
                   value={setupData.adminEmail}
@@ -294,11 +294,11 @@ export default function SetupWizardPage() {
                   placeholder="z.B. admin@verein.de"
                   className="input"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Wird für Passwort-Reset und Benachrichtigungen verwendet.</p>
+                <p className="text-xs text-gray-400 mt-1">Wird für Passwort-Reset und Benachrichtigungen verwendet.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passwort *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Passwort *</label>
                 <input
                   type="password"
                   value={setupData.adminPassword}
@@ -306,11 +306,11 @@ export default function SetupWizardPage() {
                   placeholder="Mindestens 6 Zeichen"
                   className="input"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Empfehlung: mindestens 10 Zeichen mit Zahlen und Sonderzeichen.</p>
+                <p className="text-xs text-gray-400 mt-1">Empfehlung: mindestens 10 Zeichen mit Zahlen und Sonderzeichen.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passwort bestätigen *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Passwort bestätigen *</label>
                 <input
                   type="password"
                   value={setupData.confirmPassword}
@@ -325,13 +325,13 @@ export default function SetupWizardPage() {
           {/* Step 3: Timezone */}
           {step === 3 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Globe className="w-6 h-6 text-primary-600" />
                 Zeitzone
               </h2>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Zeitzone</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Zeitzone</label>
                 <select
                   value={setupData.timezone}
                   onChange={handleTimezoneChange}
@@ -345,7 +345,7 @@ export default function SetupWizardPage() {
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Beeinflusst Terminzeiten, Deadlines und Erinnerungen.</p>
+                <p className="text-xs text-gray-400 mt-1">Beeinflusst Terminzeiten, Deadlines und Erinnerungen.</p>
               </div>
 
             </div>
@@ -354,14 +354,14 @@ export default function SetupWizardPage() {
           {/* Step 4: Final Summary */}
           {step === 4 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Globe className="w-6 h-6 text-primary-600" />
                 Finale Zusammenfassung
               </h2>
 
-              <div className="p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
-                <h3 className="font-bold text-primary-900 dark:text-primary-200 mb-2">Finale Zusammenfassung:</h3>
-                <div className="space-y-1 text-sm text-primary-800 dark:text-primary-300">
+              <div className="p-4 bg-primary-900/20 rounded-lg border border-primary-800">
+                <h3 className="font-bold text-primary-200 mb-2">Finale Zusammenfassung:</h3>
+                <div className="space-y-1 text-sm text-primary-300">
                   <p>
                     <strong>Verein:</strong> {setupData.organizationName}
                   </p>
@@ -387,7 +387,7 @@ export default function SetupWizardPage() {
                 </div>
               </div>
 
-              <p className="text-sm text-gray-600 dark:text-gray-300 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+              <p className="text-sm text-gray-300 bg-blue-900/20 p-3 rounded-lg">
                 Hinweis: Nach dem Setup sind neue Registrierungen nur per persönlichem Einladungslink möglich.
               </p>
             </div>
@@ -399,7 +399,7 @@ export default function SetupWizardPage() {
               <button
                 onClick={handlePrevious}
                 disabled={setupMutation.isPending}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ← Zurück
               </button>
@@ -417,7 +417,7 @@ export default function SetupWizardPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-gray-600 dark:text-gray-300 text-sm mt-8">
+        <p className="text-center text-gray-300 text-sm mt-8">
           Ihre Daten werden sicher auf Ihrem Server gespeichert
         </p>
       </div>

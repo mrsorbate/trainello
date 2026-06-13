@@ -256,9 +256,9 @@ export default function EventSquadPage() {
   const renderAvatar = (name: string, profilePicture?: string, sizeClass = 'w-7 h-7') => {
     const avatarUrl = resolveAssetUrl(profilePicture);
     if (avatarUrl) {
-      return <img src={avatarUrl} alt={`${name} Profilbild`} className={`${sizeClass} rounded-full object-cover border border-gray-200 dark:border-gray-700 bg-white`} />;
+      return <img src={avatarUrl} alt={`${name} Profilbild`} className={`${sizeClass} rounded-full object-cover border border-gray-700 bg-white`} />;
     }
-    return <div className={`${sizeClass} rounded-full bg-gray-200 dark:bg-gray-700`} />;
+    return <div className={`${sizeClass} rounded-full bg-gray-700`} />;
   };
 
   const toggleSquadPlayer = (userId: number, shouldSelect: boolean) => {
@@ -438,11 +438,11 @@ export default function EventSquadPage() {
   };
 
   if (isEventLoading) {
-    return <div className="text-center py-12 text-gray-600 dark:text-gray-300">Lädt...</div>;
+    return <div className="text-center py-12 text-gray-300">Lädt...</div>;
   }
 
   if (!event) {
-    return <div className="text-center py-12 text-gray-600 dark:text-gray-300">Termin nicht gefunden.</div>;
+    return <div className="text-center py-12 text-gray-300">Termin nicht gefunden.</div>;
   }
 
   if (event.type !== 'match') {
@@ -456,11 +456,11 @@ export default function EventSquadPage() {
             }}
             aria-label="Zurück zum Termin"
             title="Zurück zum Termin"
-            className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            className="text-gray-300 hover:text-gray-900 hover:text-white"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white">Kader & Aufstellung</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-white">Kader & Aufstellung</h1>
         </div>
         <div className="card">Diese Seite ist nur für Spieltermine verfügbar.</div>
       </div>
@@ -476,13 +476,13 @@ export default function EventSquadPage() {
             const target = originFrom || `/events/${eventId}`;
             navigate(target, { replace: true });
           }}
-          className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+          className="text-gray-300 hover:text-gray-900 hover:text-white"
           aria-label="Zurück"
           title="Zurück"
         >
           <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
-        <h1 className="text-lg sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-lg sm:text-3xl font-bold text-white flex items-center gap-2">
           <ClipboardList className="w-5 h-5 sm:w-7 sm:h-7 text-primary-600" />
           Kader & Aufstellung
         </h1>
@@ -490,8 +490,8 @@ export default function EventSquadPage() {
 
       <div className="card">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{event.title}</h2>
-          <span className={`text-xs px-2 py-1 rounded-full ${matchSquad?.is_released === 1 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'}`}>
+          <h2 className="text-lg font-semibold text-white">{event.title}</h2>
+          <span className={`text-xs px-2 py-1 rounded-full ${matchSquad?.is_released === 1 ? 'bg-green-100 text-green-700 bg-green-900/30 text-green-300' : 'bg-yellow-100 text-yellow-700 bg-yellow-900/30 text-yellow-300'}`}>
             {matchSquad?.is_released === 1 ? 'Freigegeben' : 'Entwurf'}
           </span>
         </div>
@@ -499,15 +499,15 @@ export default function EventSquadPage() {
 
       {isMatchSquadLoading ? (
         <div className="card">
-          <p className="text-sm text-gray-600 dark:text-gray-300">Kader wird geladen...</p>
+          <p className="text-sm text-gray-300">Kader wird geladen...</p>
         </div>
       ) : canViewMatchSquad ? (
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6">
           <div className={`${isTrainer ? 'xl:col-span-8' : 'xl:col-span-12'} card p-0 overflow-hidden`}>
-            <div className="px-4 sm:px-5 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div className="px-4 sm:px-5 py-3 bg-gray-800 border-b border-gray-700">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Taktik-Board</p>
-                <span className="text-xs text-gray-600 dark:text-gray-300">{boardPlayerCount}/{MAX_BOARD_PLAYERS}</span>
+                <p className="text-[11px] uppercase tracking-wide text-gray-400">Taktik-Board</p>
+                <span className="text-xs text-gray-300">{boardPlayerCount}/{MAX_BOARD_PLAYERS}</span>
               </div>
             </div>
 
@@ -555,7 +555,7 @@ export default function EventSquadPage() {
                       data-board-y={top}
                     >
                       <div
-                        className={`rounded-full border-2 border-white/90 ring-2 ring-green-300/70 dark:ring-green-800/80 shadow-md bg-white/90 dark:bg-gray-900/80 p-0.5 ${isTrainer ? 'cursor-grab active:cursor-grabbing touch-none' : ''}`}
+                        className={`rounded-full border-2 border-white/90 ring-2 ring-green-300/70 ring-green-800/80 shadow-md bg-white/90 bg-gray-900/80 p-0.5 ${isTrainer ? 'cursor-grab active:cursor-grabbing touch-none' : ''}`}
                         onPointerDown={isTrainer ? (event) => startDrag(player.id, 'board', event) : undefined}
                         title={player.name}
                         aria-label={player.name}
@@ -572,7 +572,7 @@ export default function EventSquadPage() {
                     data-board-x={dragPosition.x_pct}
                     data-board-y={dragPosition.y_pct}
                   >
-                    <div className="rounded-full border-2 border-primary-300 dark:border-primary-500 ring-2 ring-primary-200 dark:ring-primary-700 shadow-md bg-primary-50/80 dark:bg-primary-900/60 p-0.5">
+                    <div className="rounded-full border-2 border-primary-500 ring-2 ring-primary-200 ring-primary-700 shadow-md bg-primary-900/60 p-0.5">
                       {renderAvatar(getPlayerNameById(draggingPlayerId), undefined, 'w-8 h-8 min-[390px]:w-9 min-[390px]:h-9 sm:w-12 sm:h-12')}
                     </div>
                   </div>
@@ -581,8 +581,8 @@ export default function EventSquadPage() {
             </div>
 
             {isTrainer && (
-              <div className="px-4 sm:px-5 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Bank ({benchPlayerCount}/{MAX_BENCH_PLAYERS})</p>
+              <div className="px-4 sm:px-5 py-3 border-t border-gray-700 bg-gray-800">
+                <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-2">Bank ({benchPlayerCount}/{MAX_BENCH_PLAYERS})</p>
                 {benchPlayers.length > 0 ? (
                   <div className="-mx-1 px-1 overflow-x-auto">
                     <div className="flex sm:flex-wrap gap-2 min-w-max sm:min-w-0">
@@ -591,7 +591,7 @@ export default function EventSquadPage() {
                           key={player.id}
                           type="button"
                           onPointerDown={(event) => startDrag(player.id, 'bench', event)}
-                          className="inline-flex items-center justify-center rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-1 cursor-grab active:cursor-grabbing touch-none"
+                          className="inline-flex items-center justify-center rounded-full border border-gray-600 bg-gray-900 p-1 cursor-grab active:cursor-grabbing touch-none"
                           title={player.name}
                           aria-label={player.name}
                         >
@@ -601,7 +601,7 @@ export default function EventSquadPage() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Keine Spieler auf der Bank.</p>
+                  <p className="text-sm text-gray-300">Keine Spieler auf der Bank.</p>
                 )}
               </div>
             )}
@@ -610,20 +610,20 @@ export default function EventSquadPage() {
           {isTrainer && (
             <div className="xl:col-span-4 space-y-4 sm:space-y-6">
               <div className="card">
-                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Kader festlegen (nur Zusagen)</p>
-                <div className="mb-3 flex items-center justify-between text-xs text-gray-600 dark:text-gray-300">
+                <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-2">Kader festlegen (nur Zusagen)</p>
+                <div className="mb-3 flex items-center justify-between text-xs text-gray-300">
                   <span>Board: {boardPlayerCount}/{MAX_BOARD_PLAYERS}</span>
                   <span>Bank: {benchPlayerCount}/{MAX_BENCH_PLAYERS}</span>
                 </div>
                 {acceptedPlayers.length > 0 ? (
                   <div className="space-y-3 lg:max-h-[62vh] lg:overflow-y-auto lg:pr-1">
-                    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800/60 p-3 sm:p-4">
-                      <h3 className="font-semibold text-sm mb-3 flex items-center justify-between text-gray-800 dark:text-gray-100">
+                    <div className="rounded-xl border border-gray-700 bg-gray-800/60 p-3 sm:p-4">
+                      <h3 className="font-semibold text-sm mb-3 flex items-center justify-between text-gray-100">
                         <span className="flex items-center">
-                          <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">✓</span>
+                          <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-700 bg-green-900/40 text-green-300">✓</span>
                           Zugesagt
                         </span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-900 text-gray-300 border border-gray-700">
                           {acceptedPlayers.length}
                         </span>
                       </h3>
@@ -632,10 +632,10 @@ export default function EventSquadPage() {
                         {acceptedPlayers.map((player) => {
                           const isEnabled = editableSquadUserIds.includes(player.id);
                           return (
-                            <div key={player.id} className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors ${isEnabled ? 'border-primary-300 bg-primary-50/50 dark:border-primary-700 dark:bg-primary-900/20' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'}`}>
+                            <div key={player.id} className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors ${isEnabled ? 'border-primary-300 bg-primary-50/50 border-primary-700 bg-primary-900/20' : 'border-gray-700 bg-gray-900'}`}>
                               <span className="inline-flex items-center gap-2 min-w-0 flex-1">
                                 {renderAvatar(player.name, player.profile_picture, 'w-8 h-8')}
-                                <span className="text-sm text-gray-800 dark:text-gray-200 truncate">{player.name}</span>
+                                <span className="text-sm text-gray-200 truncate">{player.name}</span>
                               </span>
                               <button
                                 type="button"
@@ -643,7 +643,7 @@ export default function EventSquadPage() {
                                 aria-checked={isEnabled}
                                 aria-label={`${player.name} im Kader umschalten`}
                                 onClick={() => toggleSquadPlayer(player.id, !isEnabled)}
-                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${isEnabled ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'}`}
+                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${isEnabled ? 'bg-primary-600' : 'bg-gray-600'}`}
                               >
                                 <span
                                   className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${isEnabled ? 'translate-x-6' : 'translate-x-1'}`}
@@ -654,7 +654,7 @@ export default function EventSquadPage() {
                         })}
                       </div>
 
-                      <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                      <div className="mt-3 pt-2 border-t border-gray-700">
                         <button
                           type="button"
                           onClick={() => saveMatchSquad()}
@@ -667,12 +667,12 @@ export default function EventSquadPage() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Aktuell gibt es keine zugesagten Spieler.</p>
+                  <p className="text-sm text-gray-300">Aktuell gibt es keine zugesagten Spieler.</p>
                 )}
               </div>
 
               <div className="card">
-                <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-3">Aktionen</p>
+                <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-3">Aktionen</p>
                 <div className="flex flex-col gap-2">
                   <button type="button" onClick={() => releaseMatchSquad()} disabled={saveMatchSquadMutation.isPending || releaseMatchSquadMutation.isPending || editableSquadUserIds.length === 0} className="btn btn-primary w-full">
                     {releaseMatchSquadMutation.isPending ? 'Gibt frei...' : 'Kader freigeben'}
@@ -684,7 +684,7 @@ export default function EventSquadPage() {
         </div>
       ) : (
         <div className="card">
-          <p className="text-sm text-gray-600 dark:text-gray-300">Der Kader wurde noch nicht freigegeben.</p>
+          <p className="text-sm text-gray-300">Der Kader wurde noch nicht freigegeben.</p>
         </div>
       )}
     </div>

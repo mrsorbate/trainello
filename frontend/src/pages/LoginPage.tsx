@@ -57,7 +57,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-6 sm:space-y-8">
         <div className="text-center">
           {/* App Branding */}
@@ -66,7 +66,7 @@ export default function LoginPage() {
           </div>
 
           {/* Separator */}
-          <hr className="my-6 border-gray-300 dark:border-gray-600" />
+          <hr className="my-6 border-gray-600" />
 
           {/* Organization Info */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 mb-4">
@@ -77,32 +77,32 @@ export default function LoginPage() {
                 className="h-10 sm:h-12 w-auto object-contain"
               />
             )}
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white break-words text-center">
+            <h2 className="text-xl sm:text-2xl font-semibold text-white break-words text-center">
               {organizationName}
             </h2>
           </div>
 
-          <p className="mt-3 sm:mt-4 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-3 sm:mt-4 text-sm text-gray-400">
             Melde dich an, um fortzufahren
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {sessionExpiredNotice && (
-            <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg text-sm dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-200">
+            <div className="bg-yellow-900/20 border border-yellow-700/60 text-yellow-300 px-4 py-3 rounded-lg text-sm bg-amber-900/30 border-amber-800 text-amber-200">
               Aus Sicherheitsgründen musst du dich alle 30 Tage neu einloggen.
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-red-900/20 border border-red-700/60 text-red-400 px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-300">
                 Benutzername
               </label>
               <input
@@ -117,7 +117,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
                 Passwort
               </label>
               <input

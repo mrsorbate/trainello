@@ -528,7 +528,7 @@ export default function EventEditPage() {
   }
 
   if (isLoading) {
-    return <div className="text-center py-12 text-gray-600 dark:text-gray-300">Lädt...</div>;
+    return <div className="text-center py-12 text-gray-300">Lädt...</div>;
   }
 
   return (
@@ -540,24 +540,24 @@ export default function EventEditPage() {
             const target = originFrom || `/events/${eventId}`;
             navigate(target, { replace: true });
           }}
-          className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+          className="text-gray-300 hover:text-gray-900 hover:text-white"
           aria-label="Zurück"
           title="Zurück"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white">Termin bearbeiten</h1>
+        <h1 className="text-xl sm:text-3xl font-bold text-white">Termin bearbeiten</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
           <div className="card space-y-4">
-            <h4 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+            <h4 className="font-medium text-white flex items-center gap-2">
               <CalendarDays className="w-4 h-4 text-primary-600" />
               Termin
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Kategorie *</label>
+              <label className="block text-sm font-medium text-gray-300">Kategorie *</label>
               <div className="mt-1 grid grid-cols-3 gap-2" role="group" aria-label="Kategorie auswählen">
                 {categoryOptions.map((option) => {
                   const isActive = eventData.type === option.value;
@@ -569,7 +569,7 @@ export default function EventEditPage() {
                       className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
                         isActive
                           ? 'bg-primary-600 text-white border-primary-600'
-                          : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          : 'bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600'
                       }`}
                     >
                       {option.label}
@@ -580,7 +580,7 @@ export default function EventEditPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Platzart</label>
+              <label className="block text-sm font-medium text-gray-300">Platzart</label>
               <div className="mt-1 flex flex-wrap gap-2" role="group" aria-label="Platzart auswählen">
                 {pitchTypeOptions.map((option) => {
                   const isActive = eventData.pitch_type === option.value;
@@ -592,7 +592,7 @@ export default function EventEditPage() {
                       className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
                         isActive
                           ? 'bg-primary-600 text-white border-primary-600'
-                          : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          : 'bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600'
                       }`}
                     >
                       {option.label}
@@ -603,7 +603,7 @@ export default function EventEditPage() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Titel *</label>
+              <label className="block text-sm font-medium text-gray-300">Titel *</label>
               <input
                 type="text"
                 required
@@ -615,7 +615,7 @@ export default function EventEditPage() {
             </div>
 
             <div className="min-w-0">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Beginn *</label>
+              <label className="block text-sm font-medium text-gray-300">Beginn *</label>
               <input
                 type="datetime-local"
                 required
@@ -624,13 +624,13 @@ export default function EventEditPage() {
                 title="Beginn"
                 className="input mt-1 w-full min-w-0"
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-gray-400 mt-1">
                 {eventData.start_time ? `Gewählt: ${eventData.start_time.replace('T', ' ')}` : 'Datum und Uhrzeit auswählen'}
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Dauer (Minuten) *</label>
+              <label className="block text-sm font-medium text-gray-300">Dauer (Minuten) *</label>
               <div className="mt-1 flex items-center gap-2 min-w-0">
                 <button
                   type="button"
@@ -665,7 +665,7 @@ export default function EventEditPage() {
           </div>
 
           <div className="card space-y-4">
-            <h4 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+            <h4 className="font-medium text-white flex items-center gap-2">
               <MapPin className="w-4 h-4 text-primary-600" />
               Ort & Organisation
             </h4>
@@ -689,7 +689,7 @@ export default function EventEditPage() {
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Ort oder Spielstätte</label>
+              <label className="block text-sm font-medium text-gray-300">Ort oder Spielstätte</label>
               <input
                 type="text"
                 value={eventData.location_venue}
@@ -700,7 +700,7 @@ export default function EventEditPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Strasse</label>
+              <label className="block text-sm font-medium text-gray-300">Strasse</label>
               <input
                 type="text"
                 value={eventData.location_street}
@@ -711,7 +711,7 @@ export default function EventEditPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">PLZ Ort</label>
+              <label className="block text-sm font-medium text-gray-300">PLZ Ort</label>
               <input
                 type="text"
                 value={eventData.location_zip_city}
@@ -722,7 +722,7 @@ export default function EventEditPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Treffpunkt</label>
+              <label className="block text-sm font-medium text-gray-300">Treffpunkt</label>
               <input
                 type="text"
                 value={eventData.meeting_point}
@@ -734,7 +734,7 @@ export default function EventEditPage() {
 
             <div>
               <div className="flex items-center justify-between">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Treffen vor Beginn (Minuten)</label>
+                <label className="block text-sm font-medium text-gray-300">Treffen vor Beginn (Minuten)</label>
                 <button
                   type="button"
                   onClick={() => {
@@ -781,7 +781,7 @@ export default function EventEditPage() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Beschreibung</label>
+              <label className="block text-sm font-medium text-gray-300">Beschreibung</label>
               <textarea
                 value={eventData.description}
                 onChange={(e) => setEventData({ ...eventData, description: e.target.value })}
@@ -794,7 +794,7 @@ export default function EventEditPage() {
 
           <div className="card space-y-4">
               <div className="space-y-4">
-                <h4 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                <h4 className="font-medium text-white flex items-center gap-2">
                   <Settings2 className="w-4 h-4 text-primary-600" />
                   Einstellungen
                 </h4>
@@ -807,12 +807,12 @@ export default function EventEditPage() {
                     onChange={(e) => setEventData({ ...eventData, visibility_all: e.target.checked })}
                     className="h-4 w-4 text-primary-600"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Teilnehmerliste für alle sichtbar</span>
+                  <span className="text-sm text-gray-300">Teilnehmerliste für alle sichtbar</span>
                 </label>
 
                 <div>
                   <div className="flex items-center justify-between gap-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rückmeldefrist (Stunden vor Termin)</label>
+                    <label className="block text-sm font-medium text-gray-300">Rückmeldefrist (Stunden vor Termin)</label>
                     <button
                       type="button"
                       onClick={() => {
@@ -878,14 +878,14 @@ export default function EventEditPage() {
                       +
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-gray-400 mt-1">
                     Frist endet am: {eventData.rsvp_deadline ? eventData.rsvp_deadline.replace('T', ' ') : '—'}
                   </p>
                 </div>
 
                 {membersForEdit?.length ? (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Teammitglieder</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Teammitglieder</label>
                     <div className="flex flex-wrap items-center gap-3">
                       <button
                         type="button"
@@ -894,7 +894,7 @@ export default function EventEditPage() {
                       >
                         Teammitglieder auswählen
                       </button>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-gray-400">
                         {eventData.invite_all
                           ? `Alle ${allMemberIds.length} Teammitglieder eingeladen`
                           : `${eventData.invited_user_ids.length} von ${allMemberIds.length} Teammitgliedern eingeladen`}
@@ -907,13 +907,13 @@ export default function EventEditPage() {
 
           {event?.series_id ? (
             <div className="card space-y-4">
-              <h4 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+              <h4 className="font-medium text-white flex items-center gap-2">
                 <Repeat className="w-4 h-4 text-primary-600" />
                 Serientermin
               </h4>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ganze Serie speichern</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Ganze Serie speichern</label>
                   <div className="grid grid-cols-2 gap-2" role="group" aria-label="Ganze Serie speichern ja oder nein">
                     <button
                       type="button"
@@ -924,7 +924,7 @@ export default function EventEditPage() {
                       className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
                         saveWholeSeries
                           ? 'bg-primary-600 text-white border-primary-600'
-                          : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          : 'bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600'
                       }`}
                     >
                       Ja
@@ -938,14 +938,14 @@ export default function EventEditPage() {
                       className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
                         !saveWholeSeries
                           ? 'bg-primary-600 text-white border-primary-600'
-                          : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          : 'bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600'
                       }`}
                     >
                       Nein
                     </button>
                   </div>
                   {!saveWholeSeries && (
-                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                    <p className="text-xs text-amber-400 mt-2">
                       Dieser Termin wird aus der Serie abgelöst und eigenständig gespeichert.
                     </p>
                   )}
@@ -954,7 +954,7 @@ export default function EventEditPage() {
                 {saveWholeSeries ? (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Wochentage auswählen</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Wochentage auswählen</label>
                       <div className="flex flex-wrap gap-2">
                         {[
                           { value: 1, label: 'Mo' },
@@ -979,7 +979,7 @@ export default function EventEditPage() {
                             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                               seriesRepeatDays.includes(day.value)
                                 ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-700 text-gray-200 hover:bg-gray-600'
                             }`}
                           >
                             {day.label}
@@ -989,7 +989,7 @@ export default function EventEditPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Wiederholung endet am *</label>
+                      <label className="block text-sm font-medium text-gray-300">Wiederholung endet am *</label>
                       <input
                         type="date"
                         required={saveWholeSeries}
@@ -1005,13 +1005,13 @@ export default function EventEditPage() {
                     </div>
 
                     {seriesValidationMessage ? (
-                      <p className="text-sm text-red-600 dark:text-red-400">{seriesValidationMessage}</p>
+                      <p className="text-sm text-red-400">{seriesValidationMessage}</p>
                     ) : null}
                   </>
                 ) : null}
 
                 <div className="grid grid-cols-2 gap-2" role="group" aria-label="Ganze Serie speichern ja oder nein">
-                  <div className="col-span-2 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="col-span-2 text-xs text-gray-400">
                     Bei „Ja“ werden die Änderungen auf die komplette Serie mit den gewählten Wochentagen bis zum Enddatum angewendet.
                   </div>
                 </div>
@@ -1019,7 +1019,7 @@ export default function EventEditPage() {
             </div>
           ) : null}
 
-          <div className="mt-2 pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col gap-3">
+          <div className="mt-2 pt-4 border-t border-gray-700 flex flex-col gap-3">
             <button type="submit" className="btn btn-primary w-full" disabled={updateEventMutation.isPending}>
               {updateEventMutation.isPending ? 'Speichern...' : 'Speichern'}
             </button>
@@ -1039,8 +1039,8 @@ export default function EventEditPage() {
       {inviteSelectionModalOpen && membersForEdit?.length ? (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="card max-w-lg w-full max-h-[80vh] overflow-hidden flex flex-col">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Teilnehmer auswählen</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 mb-3">
+            <h3 className="text-lg font-semibold text-white">Teilnehmer auswählen</h3>
+            <p className="text-sm text-gray-300 mt-1 mb-3">
               Wähle aus, welche Spieler eingeladen werden.
             </p>
 
@@ -1059,21 +1059,21 @@ export default function EventEditPage() {
                 const isChecked = eventData.invited_user_ids.includes(member.id);
                 const avatarUrl = resolveAssetUrl(member?.profile_picture);
                 return (
-                  <div key={member.id} className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2">
+                  <div key={member.id} className="flex items-center justify-between gap-3 rounded-lg border border-gray-700 px-3 py-2">
                     <div className="flex items-center gap-2 min-w-0">
                       {avatarUrl ? (
                         <img
                           src={avatarUrl}
                           alt={`${member.name} Profilbild`}
-                          className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                          className="w-8 h-8 rounded-full object-cover border border-gray-700"
                           loading="lazy"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-semibold flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-gray-700 text-gray-200 text-xs font-semibold flex items-center justify-center">
                           {getInitials(member.name)}
                         </div>
                       )}
-                      <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{member.name}</span>
+                      <span className="text-sm text-gray-300 truncate">{member.name}</span>
                     </div>
 
                     <button
@@ -1088,13 +1088,13 @@ export default function EventEditPage() {
                       className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                         isChecked
                           ? 'bg-primary-600 text-white'
-                          : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+                          : 'bg-gray-200 text-gray-700 bg-gray-700 text-gray-200'
                       }`}
                     >
                       <span>{isChecked ? 'ON' : 'OFF'}</span>
                       <span
                         className={`w-3 h-3 rounded-full ${
-                          isChecked ? 'bg-white' : 'bg-gray-500 dark:bg-gray-300'
+                          isChecked ? 'bg-white' : 'bg-gray-300'
                         }`}
                       />
                     </button>

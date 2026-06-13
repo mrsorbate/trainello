@@ -283,8 +283,8 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
       )}
 
       {createdInviteUrl && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3 dark:bg-blue-900/20 dark:border-blue-800">
-          <p className="text-blue-800 dark:text-blue-200 font-semibold">
+        <div className="mb-6 p-4 bg-blue-900/20 border border-blue-700/60 rounded-lg space-y-3 bg-blue-900/20 border-blue-800">
+          <p className="text-blue-200 font-semibold">
             📩 Einladungslink für {createdInviteeName || inviteRoleLabel}
           </p>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -307,7 +307,7 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
             <button
               type="button"
               onClick={() => setIsEditingInviteMessage((prev) => !prev)}
-              className="text-sm text-blue-700 dark:text-blue-300 hover:underline"
+              className="text-sm text-blue-300 hover:underline"
             >
               {isEditingInviteMessage ? 'Textvorschau anzeigen' : 'Text bearbeiten'}
             </button>
@@ -321,7 +321,7 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
                 className="input w-full"
               />
             ) : (
-              <div className="bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-800 rounded-md p-3 whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-200">
+              <div className="bg-gray-800 border border-blue-800 rounded-md p-3 whitespace-pre-wrap text-sm text-gray-200">
                 {generatedInviteMessage}
               </div>
             )}
@@ -333,7 +333,7 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-gray-600 dark:text-gray-300">
+              <tr className="border-b border-gray-700 text-left text-gray-300">
                 <th className="py-2 pr-3">Name</th>
                 <th className="py-2 pr-3">Status</th>
                 <th className="py-2 pr-3">Gültig bis</th>
@@ -349,8 +349,8 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
                 const inviteeName = invite.player_name || inviteRoleLabel;
 
                 return (
-                  <tr key={invite.id} className="border-b border-gray-100 dark:border-gray-800">
-                    <td className="py-3 pr-3 font-medium text-gray-900 dark:text-white">{inviteeName}</td>
+                  <tr key={invite.id} className="border-b border-gray-800">
+                    <td className="py-3 pr-3 font-medium text-white">{inviteeName}</td>
                     <td className="py-3 pr-3">
                       {(isExpired || isMaxedOut) ? (
                         <span className="px-2 py-0.5 bg-gray-200 text-gray-700 text-xs rounded">
@@ -360,10 +360,10 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
                         <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">Aktiv</span>
                       )}
                     </td>
-                    <td className="py-3 pr-3 text-gray-700 dark:text-gray-300">
+                    <td className="py-3 pr-3 text-gray-300">
                       {invite.expires_at ? new Date(invite.expires_at).toLocaleDateString('de-DE') : '-'}
                     </td>
-                    <td className="py-3 pr-3 text-gray-700 dark:text-gray-300">
+                    <td className="py-3 pr-3 text-gray-300">
                       {invite.used_count}{invite.max_uses ? ` / ${invite.max_uses}` : ''}
                     </td>
                     <td className="py-3 pr-3">

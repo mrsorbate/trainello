@@ -43,16 +43,16 @@ export default function TeamPage() {
           <button
             type="button"
             onClick={() => goBack('/')}
-            className="mt-0.5 sm:mt-0 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            className="mt-0.5 sm:mt-0 text-gray-300 hover:text-gray-900 hover:text-white"
             aria-label="Zurück"
             title="Zurück"
           >
             <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">{team?.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white break-words">{team?.name}</h1>
             {team?.description && (
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1 break-words">{team.description}</p>
+              <p className="text-sm sm:text-base text-gray-300 mt-1 break-words">{team.description}</p>
             )}
           </div>
         </div>
@@ -68,8 +68,8 @@ export default function TeamPage() {
             <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Termine</h3>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 break-words">Trainings & Spiele</p>
+            <h3 className="font-semibold text-white text-sm sm:text-base">Termine</h3>
+            <p className="text-xs sm:text-sm text-gray-300 break-words">Trainings & Spiele</p>
           </div>
         </Link>
 
@@ -81,8 +81,8 @@ export default function TeamPage() {
             <Users className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Trainer &amp; Spieler</h3>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 break-words">{trainers.length} Trainer • {players.length} Spieler</p>
+            <h3 className="font-semibold text-white text-sm sm:text-base">Trainer &amp; Spieler</h3>
+            <p className="text-xs sm:text-sm text-gray-300 break-words">{trainers.length} Trainer • {players.length} Spieler</p>
           </div>
         </Link>
 
@@ -94,8 +94,8 @@ export default function TeamPage() {
             <BarChart className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Statistiken</h3>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 break-words">Anwesenheit</p>
+            <h3 className="font-semibold text-white text-sm sm:text-base">Statistiken</h3>
+            <p className="text-xs sm:text-sm text-gray-300 break-words">Anwesenheit</p>
           </div>
         </Link>
 
@@ -104,11 +104,11 @@ export default function TeamPage() {
           className="card hover:shadow-md transition-shadow flex items-start sm:items-center space-x-2 sm:space-x-4"
         >
           <div className="bg-amber-100 p-2.5 sm:p-3 rounded-lg">
-            <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-amber-700" />
+            <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
           </div>
           <div className="min-w-0">
-            <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Nachrichten &amp; Umfragen</h3>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 break-words">Offene Einträge ansehen</p>
+            <h3 className="font-semibold text-white text-sm sm:text-base">Nachrichten &amp; Umfragen</h3>
+            <p className="text-xs sm:text-sm text-gray-300 break-words">Offene Einträge ansehen</p>
           </div>
         </Link>
 
@@ -117,12 +117,12 @@ export default function TeamPage() {
             to={`/teams/${teamId}/settings`}
             className="card hover:shadow-md transition-shadow flex items-start sm:items-center space-x-2 sm:space-x-4"
           >
-            <div className="bg-gray-200 dark:bg-gray-800 p-2.5 sm:p-3 rounded-lg">
-              <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-100" />
+            <div className="bg-gray-800 p-2.5 sm:p-3 rounded-lg">
+              <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-gray-100" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Einstellungen</h3>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 break-words">Standards &amp; API</p>
+              <h3 className="font-semibold text-white text-sm sm:text-base">Einstellungen</h3>
+              <p className="text-xs sm:text-sm text-gray-300 break-words">Standards &amp; API</p>
             </div>
           </Link>
         )}

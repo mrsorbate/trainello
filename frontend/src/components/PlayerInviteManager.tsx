@@ -167,7 +167,7 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
   return (
     <div className="card">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <h2 className="text-xl font-semibold flex items-center text-gray-900 dark:text-white">
+        <h2 className="text-xl font-semibold flex items-center text-white">
           <span className="mr-2">👥</span>
           Spieler anlegen & Einladungen
         </h2>
@@ -185,11 +185,11 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
       {showCreateForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
           <div className="card max-w-xl w-full max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="create-player-title">
-            <h3 id="create-player-title" className="font-semibold text-gray-900 dark:text-white mb-4">Spieler einladen</h3>
+            <h3 id="create-player-title" className="font-semibold text-white mb-4">Spieler einladen</h3>
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Spielername
                 </label>
                 <input
@@ -205,7 +205,7 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Gültig für (Tage)
                 </label>
                 <div className="flex items-center gap-2">
@@ -256,9 +256,9 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
         <>
         <div className="space-y-2 md:hidden">
           {invites.map((invite: any) => (
-            <div key={`invite-mobile-${invite.id}`} className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-900">
-              <p className="font-medium text-gray-900 dark:text-white">{invite.player_name}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <div key={`invite-mobile-${invite.id}`} className="rounded-lg border border-gray-700 p-3 bg-gray-900">
+              <p className="font-medium text-white">{invite.player_name}</p>
+              <p className="text-sm text-gray-400 mt-1">
                 Gültig bis: {invite.expires_at ? new Date(invite.expires_at).toLocaleDateString('de-DE') : 'Unbegrenzt'}
               </p>
               <div className="flex items-center gap-2 mt-3">
@@ -275,7 +275,7 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
                 <button
                   onClick={() => openDeleteModal(invite)}
                   disabled={deletingId === invite.id}
-                  className="btn btn-secondary flex-1 text-red-600 dark:text-red-400"
+                  className="btn btn-secondary flex-1 text-red-400"
                   title="Löschen"
                   aria-label={`Einladung für ${invite.player_name} löschen`}
                 >
@@ -289,10 +289,10 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Name</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Gültig bis</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900 dark:text-white">
+              <tr className="border-b border-gray-700">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-white">Name</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-white">Gültig bis</th>
+                <th className="px-4 py-3 text-right text-sm font-semibold text-white">
                   Aktionen
                 </th>
               </tr>
@@ -301,17 +301,17 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
               {invites.map((invite: any) => (
                 <tr
                   key={`invite-${invite.id}`}
-                  className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  className="border-b border-gray-700 hover:bg-gray-800/50 transition-colors"
                 >
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-medium">{invite.player_name}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                  <td className="px-4 py-3 text-sm text-white font-medium">{invite.player_name}</td>
+                  <td className="px-4 py-3 text-sm text-gray-400">
                     {invite.expires_at ? new Date(invite.expires_at).toLocaleDateString('de-DE') : 'Unbegrenzt'}
                   </td>
                   <td className="px-4 py-3 text-sm text-right space-x-2 flex items-center justify-end">
                     <button
                       onClick={() => copyLink(invite)}
                       disabled={deletingId === invite.id}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      className="p-2 hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-400 hover:text-gray-900 hover:text-white"
                       title="Einladung teilen"
                       aria-label={`Einladung für ${invite.player_name} teilen`}
                     >
@@ -320,7 +320,7 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
                     <button
                       onClick={() => openDeleteModal(invite)}
                       disabled={deletingId === invite.id}
-                      className="p-2 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                      className="p-2 hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-400 hover:text-red-600 hover:text-red-400"
                       title="Löschen"
                       aria-label={`Einladung für ${invite.player_name} löschen`}
                     >
@@ -338,8 +338,8 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
         </div>
         </>
       ) : (
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-          <Plus className="w-12 h-12 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
+        <div className="text-center py-8 text-gray-400">
+          <Plus className="w-12 h-12 mx-auto mb-2 text-gray-500" />
           <p>Noch keine Spieler eingeladen</p>
           <p className="text-sm mt-1">Erstelle eine Einladung, um Spieler hinzuzufügen</p>
         </div>
@@ -349,10 +349,10 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
       {showDeleteModal && inviteToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
           <div className="card max-w-md w-full" role="dialog" aria-modal="true" aria-labelledby="delete-invite-title">
-            <h3 id="delete-invite-title" className="font-semibold text-gray-900 dark:text-white mb-4">
+            <h3 id="delete-invite-title" className="font-semibold text-white mb-4">
               Einladung löschen?
             </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-6">
+            <p className="text-gray-300 mb-6">
               Soll die Einladung für <strong>{inviteToDelete.player_name}</strong> wirklich gelöscht werden?
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
@@ -381,13 +381,13 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
       {showShareModal && selectedInviteForShare && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
           <div className="card max-w-2xl w-full max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="share-invite-title">
-            <h3 id="share-invite-title" className="font-semibold text-gray-900 dark:text-white mb-4">
+            <h3 id="share-invite-title" className="font-semibold text-white mb-4">
               Einladung für {selectedInviteForShare.player_name} teilen
             </h3>
 
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Einladungstext:</p>
+                <p className="text-sm text-gray-400 mb-2">Einladungstext:</p>
                 <div className="flex gap-2 mb-2">
                   <button
                     type="button"
@@ -398,7 +398,7 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
                       }
                       setIsEditingInviteMessage(false);
                     }}
-                    className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                    className="text-sm text-primary-400 hover:underline"
                   >
                     {isEditingInviteMessage ? 'Vorschau anzeigen' : 'Text bearbeiten'}
                   </button>
@@ -414,7 +414,7 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
                     className="input w-full text-sm"
                   />
                 ) : (
-                  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+                  <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 whitespace-pre-wrap text-sm text-gray-300">
                     {inviteMessageDraft}
                   </div>
                 )}

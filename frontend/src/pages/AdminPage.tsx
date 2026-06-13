@@ -827,9 +827,9 @@ export default function AdminPage() {
   };
 
   const getStatusBadgeClasses = (variant: 'ok' | 'warning' | 'error') => {
-    if (variant === 'ok') return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100';
-    if (variant === 'warning') return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100';
-    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100';
+    if (variant === 'ok') return 'bg-green-100 text-green-800 bg-green-900 text-green-100';
+    if (variant === 'warning') return 'bg-yellow-100 text-yellow-800 bg-yellow-900 text-yellow-100';
+    return 'bg-red-100 text-red-800 bg-red-900 text-red-100';
   };
 
   const getRegistrationBadge = (registrationStatus: string) => {
@@ -906,14 +906,14 @@ export default function AdminPage() {
       : null,
   ].filter(Boolean) as Array<{ key: string; label: string; clear: () => void }>;
 
-  const userTableHeadCellClass = 'px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase';
+  const userTableHeadCellClass = 'px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase';
   const userTableCellClass = 'px-4 py-2 whitespace-nowrap';
-  const userTableTextCellClass = 'px-4 py-2 text-sm text-gray-600 dark:text-gray-300';
-  const userTableEmptyCellClass = 'px-4 py-3 text-sm text-gray-500 dark:text-gray-400';
+  const userTableTextCellClass = 'px-4 py-2 text-sm text-gray-300';
+  const userTableEmptyCellClass = 'px-4 py-3 text-sm text-gray-400';
   const userActionButtonClass = 'p-2 sm:p-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
   const auditHeaderCellClass = 'py-1.5 pr-3';
   const auditCellClass = 'py-1.5 pr-3';
-  const auditExpandedRowClass = 'py-2 px-2 bg-gray-50 dark:bg-gray-800';
+  const auditExpandedRowClass = 'py-2 px-2 bg-gray-800';
   const tableSearchInputClass = 'input text-sm py-2';
   const trainerInviteMessageBase = trainerInviteLink
     ? buildInviteMessage(trainerName, getSelectedTrainerTeamLabel(), trainerInviteLink)
@@ -930,8 +930,8 @@ export default function AdminPage() {
         <div className="flex items-center space-x-3">
           <Shield className="w-8 h-8 text-primary-600" />
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin-Panel</h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-1">Team- und Benutzerverwaltung</p>
+            <h1 className="text-3xl font-bold text-white">Admin-Panel</h1>
+            <p className="text-gray-300 mt-1">Team- und Benutzerverwaltung</p>
           </div>
         </div>
       </div>
@@ -954,7 +954,7 @@ export default function AdminPage() {
         {showOrganizationSettings ? (
           <form onSubmit={handleUpdateSettings} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Vereinsname
               </label>
               <input
@@ -970,7 +970,7 @@ export default function AdminPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Kurzer Vereinsname (mobil)
               </label>
               <input
@@ -983,13 +983,13 @@ export default function AdminPage() {
                 aria-label="Kurzer Vereinsname"
                 maxLength={32}
               />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-xs text-gray-400">
                 Optional: Wird in der mobilen Navigation statt dem langen Namen verwendet.
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Zeitzone
               </label>
               <select
@@ -1023,31 +1023,31 @@ export default function AdminPage() {
                   <img
                     src={resolveAssetUrl(settings.logo)}
                     alt="Vereinslogo"
-                    className="w-24 h-24 rounded-lg object-contain bg-white border-2 border-gray-200 dark:border-gray-700 p-2"
+                    className="w-24 h-24 rounded-lg object-contain bg-white border-2 border-gray-700 p-2"
                   />
                 </div>
               )}
               <div className="flex-1 space-y-2">
                 <div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Vereinsname:</span>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{settings?.name || 'Nicht festgelegt'}</p>
+                  <span className="text-sm font-medium text-gray-400">Vereinsname:</span>
+                  <p className="text-lg font-semibold text-white">{settings?.name || 'Nicht festgelegt'}</p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Kurzer Vereinsname:</span>
-                  <p className="text-gray-900 dark:text-white">{settings?.short_name || 'Nicht festgelegt'}</p>
+                  <span className="text-sm font-medium text-gray-400">Kurzer Vereinsname:</span>
+                  <p className="text-white">{settings?.short_name || 'Nicht festgelegt'}</p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Zeitzone:</span>
-                  <p className="text-gray-900 dark:text-white">{settings?.timezone || 'Europe/Berlin'}</p>
+                  <span className="text-sm font-medium text-gray-400">Zeitzone:</span>
+                  <p className="text-white">{settings?.timezone || 'Europe/Berlin'}</p>
                 </div>
               </div>
             </div>
 
-            <div className="pt-3 border-t dark:border-gray-700">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="pt-3 border-t border-gray-700">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Vereinslogo {settings?.logo ? 'ändern' : 'hochladen'}
               </label>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              <p className="text-xs text-gray-400 mb-3">
                 Erlaubt: JPG, PNG, GIF, WebP (max. 5MB)
               </p>
               <input
@@ -1068,12 +1068,12 @@ export default function AdminPage() {
                 <span>{uploadLogoMutation.isPending ? 'Lädt hoch...' : settings?.logo ? 'Logo ändern' : 'Logo hochladen'}</span>
               </button>
               {uploadLogoMutation.isError && (
-                <p className="text-sm text-red-600 dark:text-red-400 mt-2">
+                <p className="text-sm text-red-400 mt-2">
                   Upload fehlgeschlagen. Bitte versuche es erneut.
                 </p>
               )}
               {uploadLogoMutation.isSuccess && !uploadLogoMutation.isPending && (
-                <p className="text-sm text-green-600 dark:text-green-400 mt-2">
+                <p className="text-sm text-green-400 mt-2">
                   ✓ Logo erfolgreich hochgeladen!
                 </p>
               )}
@@ -1083,37 +1083,37 @@ export default function AdminPage() {
       </div>
 
       {/* Workflow */}
-      <div className="card border border-blue-200 dark:border-blue-900 bg-blue-50/70 dark:bg-blue-950/30 py-3.5">
+      <div className="card border border-blue-900 bg-blue-950/30 py-3.5">
         <div className="mb-2.5">
           <div>
-            <h2 className="text-base font-semibold text-blue-900 dark:text-blue-200">Workflow</h2>
-            <p className="text-sm text-blue-900 dark:text-blue-200 mt-1 leading-snug">
+            <h2 className="text-base font-semibold text-blue-200">Workflow</h2>
+            <p className="text-sm text-blue-200 mt-1 leading-snug">
               Kurzablauf: Admin organisiert Teams und Trainer, Trainer führen die Teamarbeit.
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-          <div className="rounded-lg border border-blue-200 dark:border-blue-900 bg-white dark:bg-gray-900/70 p-2.5">
-            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-1">Schritt 1</p>
-            <p className="text-sm font-medium text-gray-900 dark:text-white leading-snug">Team erstellen</p>
-            <p className="text-xs text-gray-700 dark:text-gray-200 mt-1 leading-snug">Name und Beschreibung festlegen.</p>
+          <div className="rounded-lg border border-blue-900 bg-gray-900/70 p-2.5">
+            <p className="text-xs font-semibold text-blue-300 uppercase tracking-wide mb-1">Schritt 1</p>
+            <p className="text-sm font-medium text-white leading-snug">Team erstellen</p>
+            <p className="text-xs text-gray-200 mt-1 leading-snug">Name und Beschreibung festlegen.</p>
           </div>
 
-          <div className="rounded-lg border border-blue-200 dark:border-blue-900 bg-white dark:bg-gray-900/70 p-2.5">
-            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-1">Schritt 2</p>
-            <p className="text-sm font-medium text-gray-900 dark:text-white leading-snug">Trainer zuweisen</p>
-            <p className="text-xs text-gray-700 dark:text-gray-200 mt-1 leading-snug">Trainer pro Team hinzufügen oder ändern.</p>
+          <div className="rounded-lg border border-blue-900 bg-gray-900/70 p-2.5">
+            <p className="text-xs font-semibold text-blue-300 uppercase tracking-wide mb-1">Schritt 2</p>
+            <p className="text-sm font-medium text-white leading-snug">Trainer zuweisen</p>
+            <p className="text-xs text-gray-200 mt-1 leading-snug">Trainer pro Team hinzufügen oder ändern.</p>
           </div>
 
-          <div className="rounded-lg border border-blue-200 dark:border-blue-900 bg-white dark:bg-gray-900/70 p-2.5">
-            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-1">Schritt 3</p>
-            <p className="text-sm font-medium text-gray-900 dark:text-white leading-snug">Spieler durch Trainer pflegen</p>
-            <p className="text-xs text-gray-700 dark:text-gray-200 mt-1 leading-snug">Trainer verwalten Spieler und Alltag im Team.</p>
+          <div className="rounded-lg border border-blue-900 bg-gray-900/70 p-2.5">
+            <p className="text-xs font-semibold text-blue-300 uppercase tracking-wide mb-1">Schritt 3</p>
+            <p className="text-sm font-medium text-white leading-snug">Spieler durch Trainer pflegen</p>
+            <p className="text-xs text-gray-200 mt-1 leading-snug">Trainer verwalten Spieler und Alltag im Team.</p>
           </div>
         </div>
 
-        <p className="text-xs text-blue-900 dark:text-blue-200 mt-2.5 leading-snug">
+        <p className="text-xs text-blue-200 mt-2.5 leading-snug">
           Hinweis: Der Admin ist organisatorisch zuständig und wird nicht als Teammitglied geführt.
         </p>
       </div>
@@ -1148,17 +1148,17 @@ export default function AdminPage() {
         
         <div className="space-y-2">
           {filteredTeams.map((team: any) => (
-            <div key={team.id} className="p-3 bg-gray-50/80 border border-gray-200 rounded-md dark:bg-gray-800/60 dark:border-gray-700">
+            <div key={team.id} className="p-3 bg-gray-50/80 border border-gray-200 rounded-md bg-gray-800/60 border-gray-700">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{team.name}</h3>
+                  <h3 className="text-sm font-semibold text-white">{team.name}</h3>
                   {team.description && (
-                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">{team.description}</p>
+                    <p className="text-xs text-gray-300 mt-0.5">{team.description}</p>
                   )}
-                  <div className="flex items-center space-x-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center space-x-3 mt-1 text-xs text-gray-400">
                     <span>👥 {team.member_count} Mitglieder</span>
                   </div>
-                  <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                  <div className="mt-1 text-xs text-gray-300">
                     <span className="font-medium">Trainer:</span> {team.trainer_names || '-'}
                   </div>
                 </div>
@@ -1176,7 +1176,7 @@ export default function AdminPage() {
                       setSelectedTeam(team.id);
                       setShowAssignTrainer(true);
                     }}
-                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                    className="p-1.5 text-blue-600 hover:bg-blue-900/30 rounded-md transition-colors"
                     title="Trainer zuweisen"
                   >
                     <Shield className="w-4 h-4" />
@@ -1193,7 +1193,7 @@ export default function AdminPage() {
                   </button>
                   <button
                     onClick={() => handleDeleteTeam(team)}
-                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    className="p-1.5 text-red-600 hover:bg-red-900/30 rounded-md transition-colors"
                     title="Team löschen"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -1204,8 +1204,8 @@ export default function AdminPage() {
           ))}
 
           {filteredTeams.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <Users className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+            <div className="text-center py-8 text-gray-400">
+              <Users className="w-12 h-12 mx-auto mb-3 text-gray-600" />
               <p>{teams?.length ? 'Keine Teams gefunden' : 'Noch keine Teams erstellt'}</p>
               <div className="mt-3 flex justify-center gap-2">
                 {teams?.length ? (
@@ -1241,7 +1241,7 @@ export default function AdminPage() {
             </h3>
             <form onSubmit={handleAssignTrainer} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Trainer auswählen *
                 </label>
                 <select
@@ -1291,7 +1291,7 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="card max-w-md w-full max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="delete-team-title">
             <h3 id="delete-team-title" className="text-lg font-semibold mb-4">Team löschen</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            <p className="text-sm text-gray-300 mb-4">
               Soll <strong>{teamToDelete.name}</strong> wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.
             </p>
             <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
@@ -1327,7 +1327,7 @@ export default function AdminPage() {
             <h3 id="edit-team-title" className="text-lg font-semibold mb-4">Team bearbeiten</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Teamname *</label>
+                <label className="block text-sm font-medium text-gray-300">Teamname *</label>
                 <input
                   type="text"
                   autoFocus
@@ -1341,7 +1341,7 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Beschreibung</label>
+                <label className="block text-sm font-medium text-gray-300">Beschreibung</label>
                 <textarea
                   value={editTeamDescription}
                   onChange={(e) => setEditTeamDescription(e.target.value)}
@@ -1388,7 +1388,7 @@ export default function AdminPage() {
             </h3>
             <form onSubmit={handleRemoveTrainer} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Trainer auswählen *
                 </label>
                 <select
@@ -1454,7 +1454,7 @@ export default function AdminPage() {
 
         <div className="space-y-6">
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-violet-800 dark:text-violet-300">Admins ({admins.length})</h3>
+            <h3 className="text-lg font-semibold mb-3 text-violet-300">Admins ({admins.length})</h3>
             <div className="mb-3">
               <input
                 type="text"
@@ -1468,7 +1468,7 @@ export default function AdminPage() {
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-[620px] sm:min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+                <thead className="bg-gray-800">
                   <tr>
                     <th className={userTableHeadCellClass}>Name</th>
                     <th className={userTableHeadCellClass}>Benutzername</th>
@@ -1476,17 +1476,17 @@ export default function AdminPage() {
                     <th className={userTableHeadCellClass}>Hinweis</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-gray-900 divide-y divide-gray-700">
                   {filteredAdmins.map((admin: any) => (
-                    <tr key={admin.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <tr key={admin.id} className="hover:bg-gray-800">
                       <td className={userTableCellClass}>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">{admin.name || '-'}</div>
+                        <div className="text-sm font-medium text-white">{admin.name || '-'}</div>
                       </td>
                       <td className={userTableCellClass}>
-                        <div className="text-sm text-gray-700 dark:text-gray-200">{admin.username || '-'}</div>
+                        <div className="text-sm text-gray-200">{admin.username || '-'}</div>
                       </td>
                       <td className={userTableCellClass}>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">{admin.email || '-'}</div>
+                        <div className="text-sm text-gray-300">{admin.email || '-'}</div>
                       </td>
                       <td className={userTableCellClass}>
                         <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-violet-100 text-violet-800">
@@ -1515,7 +1515,7 @@ export default function AdminPage() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-blue-800 dark:text-blue-300">Trainer ({trainers.length})</h3>
+            <h3 className="text-lg font-semibold mb-3 text-blue-300">Trainer ({trainers.length})</h3>
             <div className="mb-3">
               <input
                 type="text"
@@ -1529,7 +1529,7 @@ export default function AdminPage() {
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-[760px] sm:min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+                <thead className="bg-gray-800">
                   <tr>
                     <th className={userTableHeadCellClass}>Name</th>
                     <th className={userTableHeadCellClass}>Benutzername</th>
@@ -1539,14 +1539,14 @@ export default function AdminPage() {
                     <th className={userTableHeadCellClass}>Aktionen</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-gray-900 divide-y divide-gray-700">
                   {filteredTrainers.map((user: any) => (
-                    <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <tr key={user.id} className="hover:bg-gray-800">
                       <td className={userTableCellClass}>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</div>
+                        <div className="text-sm font-medium text-white">{user.name}</div>
                       </td>
                       <td className={userTableCellClass}>
-                        <div className="text-sm text-gray-700 dark:text-gray-200">
+                        <div className="text-sm text-gray-200">
                           {user.registration_status === 'pending' ? 'Wird bei Registrierung gesetzt' : (user.username || '-')}
                         </div>
                       </td>
@@ -1556,7 +1556,7 @@ export default function AdminPage() {
                         </span>
                       </td>
                       <td className={userTableCellClass}>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                        <div className="text-sm text-gray-300">
                           {user.registration_status === 'pending' ? '-' : user.email}
                         </div>
                       </td>
@@ -1567,7 +1567,7 @@ export default function AdminPage() {
                             <button
                               onClick={() => handleResendTrainerInvite(user)}
                               disabled={resendTrainerInviteMutation.isPending}
-                              className={`${userActionButtonClass} text-blue-600 hover:bg-blue-50`}
+                              className={`${userActionButtonClass} text-blue-600 hover:bg-blue-900/30`}
                               title="Link neu versenden"
                             >
                               <Share2 className="w-4 h-4" />
@@ -1584,7 +1584,7 @@ export default function AdminPage() {
                           <button
                             onClick={() => handleDeleteUser(user)}
                             disabled={deleteUserMutation.isPending}
-                            className={`${userActionButtonClass} text-red-600 hover:bg-red-50`}
+                            className={`${userActionButtonClass} text-red-600 hover:bg-red-900/30`}
                             title="Benutzer löschen"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1613,7 +1613,7 @@ export default function AdminPage() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-green-800 dark:text-green-300">Spieler ({players.length})</h3>
+            <h3 className="text-lg font-semibold mb-3 text-green-300">Spieler ({players.length})</h3>
             <div className="mb-3">
               <input
                 type="text"
@@ -1627,7 +1627,7 @@ export default function AdminPage() {
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-[760px] sm:min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+                <thead className="bg-gray-800">
                   <tr>
                     <th className={userTableHeadCellClass}>Name</th>
                     <th className={userTableHeadCellClass}>Benutzername</th>
@@ -1637,14 +1637,14 @@ export default function AdminPage() {
                     <th className={userTableHeadCellClass}>Aktionen</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-gray-900 divide-y divide-gray-700">
                   {filteredPlayers.map((user: any) => (
-                    <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <tr key={user.id} className="hover:bg-gray-800">
                       <td className={userTableCellClass}>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</div>
+                        <div className="text-sm font-medium text-white">{user.name}</div>
                       </td>
                       <td className={userTableCellClass}>
-                        <div className="text-sm text-gray-700 dark:text-gray-200">
+                        <div className="text-sm text-gray-200">
                           {user.registration_status === 'pending' ? 'Wird bei Registrierung gesetzt' : (user.username || '-')}
                         </div>
                       </td>
@@ -1654,7 +1654,7 @@ export default function AdminPage() {
                         </span>
                       </td>
                       <td className={userTableCellClass}>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">{user.email}</div>
+                        <div className="text-sm text-gray-300">{user.email}</div>
                       </td>
                       <td className={userTableTextCellClass}>{user.team_names || '-'}</td>
                       <td className={userTableCellClass}>
@@ -1670,7 +1670,7 @@ export default function AdminPage() {
                           <button
                             onClick={() => handleDeleteUser(user)}
                             disabled={deleteUserMutation.isPending}
-                            className={`${userActionButtonClass} text-red-600 hover:bg-red-50`}
+                            className={`${userActionButtonClass} text-red-600 hover:bg-red-900/30`}
                             title="Benutzer löschen"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1708,7 +1708,7 @@ export default function AdminPage() {
             Audit-Log Admin-Aktionen
           </h2>
           <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
-            <span className="text-xs text-gray-500 dark:text-gray-400">Auto-Refresh: 60s</span>
+            <span className="text-xs text-gray-400">Auto-Refresh: 60s</span>
             <button
               type="button"
               onClick={() => refetchAuditLogs()}
@@ -1721,7 +1721,7 @@ export default function AdminPage() {
         </div>
 
         {auditLogsLoading ? (
-          <div className="text-sm text-gray-500 dark:text-gray-400">Audit-Log wird geladen...</div>
+          <div className="text-sm text-gray-400">Audit-Log wird geladen...</div>
         ) : (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -1786,13 +1786,13 @@ export default function AdminPage() {
                 {activeAuditFilterChips.map((chip) => (
                   <span
                     key={chip.key}
-                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-300"
                   >
                     {chip.label}
                     <button
                       type="button"
                       onClick={chip.clear}
-                      className="text-blue-700 hover:text-blue-900"
+                      className="text-blue-400 hover:text-blue-900"
                       aria-label={`${chip.label} entfernen`}
                     >
                       ×
@@ -1805,7 +1805,7 @@ export default function AdminPage() {
             <div className="overflow-x-auto">
             <table className="min-w-[860px] sm:min-w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
+                <tr className="text-left text-gray-400 border-b border-gray-700">
                   <th className={auditHeaderCellClass}>Zeitpunkt</th>
                   <th className={auditHeaderCellClass}>Admin</th>
                   <th className={auditHeaderCellClass}>Aktion</th>
@@ -1817,21 +1817,21 @@ export default function AdminPage() {
               <tbody>
                 {filteredAuditLogs.map((log: any) => (
                   <Fragment key={log.id}>
-                    <tr className="border-b dark:border-gray-800 align-top">
-                      <td className={`${auditCellClass} whitespace-nowrap text-gray-700 dark:text-gray-200`}>
+                    <tr className="border-b border-gray-800 align-top">
+                      <td className={`${auditCellClass} whitespace-nowrap text-gray-200`}>
                         <div>{formatDateTime(log.created_at)}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">{formatRelativeTime(log.created_at)}</div>
+                        <div className="text-xs text-gray-400">{formatRelativeTime(log.created_at)}</div>
                       </td>
-                      <td className={`${auditCellClass} text-gray-700 dark:text-gray-200`}>
+                      <td className={`${auditCellClass} text-gray-200`}>
                         {log.actor_name || log.actor_username || `#${log.actor_id}`}
                       </td>
-                      <td className={`${auditCellClass} text-gray-900 dark:text-white font-medium`}>
+                      <td className={`${auditCellClass} text-white font-medium`}>
                         {formatAuditAction(log.action)}
                       </td>
-                      <td className={`${auditCellClass} text-gray-700 dark:text-gray-200`}>
+                      <td className={`${auditCellClass} text-gray-200`}>
                         {log.target_type ? `${log.target_type} #${log.target_id ?? '—'}` : '—'}
                       </td>
-                      <td className={`${auditCellClass} text-gray-600 dark:text-gray-300`}>
+                      <td className={`${auditCellClass} text-gray-300`}>
                         {log.details?.team_name || log.details?.target_name || log.details?.trainer_name || '—'}
                       </td>
                       <td className="py-1.5">
@@ -1845,19 +1845,19 @@ export default function AdminPage() {
                       </td>
                     </tr>
                     {expandedAuditLogId === log.id && (
-                      <tr className="border-b dark:border-gray-800">
+                      <tr className="border-b border-gray-800">
                         <td colSpan={6} className={auditExpandedRowClass}>
                           {log.details && Object.keys(log.details).length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                               {Object.entries(log.details).map(([detailKey, detailValue]) => (
-                                <div key={detailKey} className="text-gray-700 dark:text-gray-200">
+                                <div key={detailKey} className="text-gray-200">
                                   <span className="font-medium">{formatAuditDetailLabel(detailKey)}:</span>{' '}
                                   <span>{String(detailValue)}</span>
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Keine zusätzlichen Details vorhanden.</p>
+                            <p className="text-sm text-gray-400">Keine zusätzlichen Details vorhanden.</p>
                           )}
                         </td>
                       </tr>
@@ -1866,7 +1866,7 @@ export default function AdminPage() {
                 ))}
                 {filteredAuditLogs.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-6 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={6} className="py-6 text-center text-gray-400">
                       Keine Audit-Einträge für die gewählten Filter.
                     </td>
                   </tr>
@@ -1879,9 +1879,9 @@ export default function AdminPage() {
       </div>
 
       {/* Danger Zone */}
-      <div className="card border-2 border-red-200 dark:border-red-900">
-        <h2 className="text-xl font-semibold mb-2 text-red-700 dark:text-red-400">Gefahrenzone</h2>
-        <p className="text-sm text-red-700 dark:text-red-300 mb-4">
+      <div className="card border-2 border-red-900">
+        <h2 className="text-xl font-semibold mb-2 text-red-400">Gefahrenzone</h2>
+        <p className="text-sm text-red-300 mb-4">
           Verein löschen entfernt alle Teams, Benutzer, Einladungen, Termine und Uploads endgültig.
         </p>
 
@@ -1894,7 +1894,7 @@ export default function AdminPage() {
           </button>
         ) : (
           <div className="space-y-3">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
+            <p className="text-sm text-gray-300">
               Gib zur Bestätigung den Vereinsnamen ein: <strong>{settings?.name || 'Unbekannt'}</strong>
             </p>
             <input
@@ -1928,7 +1928,7 @@ export default function AdminPage() {
               </button>
             </div>
             {deleteOrganizationMutation.isError && (
-              <p className="text-sm text-red-600 dark:text-red-400">
+              <p className="text-sm text-red-400">
                 Löschen fehlgeschlagen. Bitte erneut versuchen.
               </p>
             )}
@@ -1943,7 +1943,7 @@ export default function AdminPage() {
             <h3 id="create-team-title" className="text-lg font-semibold mb-4">Neues Team erstellen</h3>
             <form onSubmit={handleCreateTeam} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Team Name *</label>
+                <label className="block text-sm font-medium text-gray-300">Team Name *</label>
                 <input
                   type="text"
                   autoFocus
@@ -1957,7 +1957,7 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Beschreibung</label>
+                <label className="block text-sm font-medium text-gray-300">Beschreibung</label>
                 <textarea
                   value={teamDescription}
                   onChange={(e) => setTeamDescription(e.target.value)}
@@ -1990,7 +1990,7 @@ export default function AdminPage() {
             <h3 id="create-admin-title" className="text-lg font-semibold mb-4">Neuen Admin erstellen</h3>
             <form onSubmit={handleCreateAdmin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Name *</label>
                 <input
                   type="text"
                   autoFocus
@@ -2004,7 +2004,7 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Benutzername *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Benutzername *</label>
                 <input
                   type="text"
                   required
@@ -2017,7 +2017,7 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-Mail *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">E-Mail *</label>
                 <input
                   type="email"
                   required
@@ -2030,7 +2030,7 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Passwort *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Passwort *</label>
                 <input
                   type="password"
                   required
@@ -2069,11 +2069,11 @@ export default function AdminPage() {
       {showCreateTrainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="card max-w-xl w-full max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="create-trainer-title">
-            <h3 id="create-trainer-title" className="font-semibold text-gray-900 dark:text-white mb-4">Trainer anlegen & Registrierungslink erstellen</h3>
+            <h3 id="create-trainer-title" className="font-semibold text-white mb-4">Trainer anlegen & Registrierungslink erstellen</h3>
 
             <form onSubmit={handleCreateTrainer} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Name *</label>
                 <input
                   type="text"
                   autoFocus
@@ -2088,10 +2088,10 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Teams zuweisen *</label>
-                <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-900">
+                <label className="block text-sm font-medium text-gray-300 mb-2">Teams zuweisen *</label>
+                <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-700 rounded-lg p-3 bg-gray-900">
                   {teams?.map((team: any) => (
-                    <label key={team.id} className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
+                    <label key={team.id} className="flex items-center space-x-2 text-sm text-gray-300">
                       <input
                         type="checkbox"
                         checked={trainerTeamIds.includes(team.id)}
@@ -2103,18 +2103,18 @@ export default function AdminPage() {
                     </label>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Mindestens ein Team auswählen.</p>
+                <p className="text-xs text-gray-400 mt-1">Mindestens ein Team auswählen.</p>
               </div>
 
               {createTrainerMutation.isError && (
-                <p className="text-sm text-red-600 dark:text-red-400">
+                <p className="text-sm text-red-400">
                   {(createTrainerMutation.error as any)?.response?.data?.error || 'Trainer-Link konnte nicht erstellt werden'}
                 </p>
               )}
 
               {trainerInviteLink && (
-                <div className="p-3 rounded-lg border border-blue-200 bg-blue-50 space-y-2">
-                  <p className="text-sm text-blue-800">Einladungstext für <strong>{trainerName}</strong>:</p>
+                <div className="p-3 rounded-lg border border-blue-200 bg-blue-900/20 space-y-2">
+                  <p className="text-sm text-blue-300">Einladungstext für <strong>{trainerName}</strong>:</p>
                   <textarea
                     readOnly={!isEditingTrainerInviteMessage}
                     value={trainerInviteMessage}
@@ -2189,7 +2189,7 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="card max-w-md w-full max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="reset-password-title">
             <h3 id="reset-password-title" className="text-lg font-semibold mb-4">Passwort zurücksetzen</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            <p className="text-sm text-gray-300 mb-4">
               Soll das Passwort für <strong>{userToResetPassword.name}</strong> wirklich zurückgesetzt und neu generiert werden?
             </p>
             <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
@@ -2223,7 +2223,7 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="card max-w-md w-full max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="delete-user-title">
             <h3 id="delete-user-title" className="text-lg font-semibold mb-4">Benutzer löschen</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            <p className="text-sm text-gray-300 mb-4">
               Soll <strong>{userToDelete.name}</strong> wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.
             </p>
             <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
@@ -2257,7 +2257,7 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="card max-w-md w-full max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="resend-link-title">
             <h3 id="resend-link-title" className="text-lg font-semibold mb-4">Registrierungslink</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-sm text-gray-300 mb-3">
               Neuer Einladungstext für <strong>{resendTrainerName}</strong>:
             </p>
             <textarea
@@ -2318,7 +2318,7 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="card max-w-md w-full max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="generated-password-title">
             <h3 id="generated-password-title" className="text-lg font-semibold mb-4">Neues Passwort</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-sm text-gray-300 mb-3">
               Das Passwort wurde zurückgesetzt. Teile dieses Passwort sicher mit dem Benutzer.
             </p>
             <input

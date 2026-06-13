@@ -105,19 +105,19 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
   return (
     <div
       key={cardKey}
-      className="p-3 sm:p-4 rounded-xl border transition-all hover:shadow-md bg-white border-gray-200 hover:border-primary-300 dark:bg-gray-800 dark:border-gray-700 dark:hover:border-primary-600"
+      className="p-3 sm:p-4 rounded-xl border transition-all hover:shadow-md bg-white border-gray-200 hover:border-primary-300 bg-gray-800 border-gray-700 hover:border-primary-600"
     >
       <div className="flex items-center gap-3 sm:gap-4">
         <div className="w-16 sm:w-20 shrink-0 flex items-center justify-center">
           <div className="flex flex-col items-center justify-center text-center">
             {weekdayLabel && (
-              <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-300 leading-none">{weekdayLabel}</p>
+              <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-gray-300 leading-none">{weekdayLabel}</p>
             )}
-            <p className="mt-0.5 text-xl sm:text-2xl font-semibold tabular-nums text-gray-900 dark:text-gray-100 leading-none tracking-tight">{dateLabel}</p>
+            <p className="mt-0.5 text-xl sm:text-2xl font-semibold tabular-nums text-gray-100 leading-none tracking-tight">{dateLabel}</p>
           </div>
         </div>
 
-        <div className="w-px bg-gray-200 dark:bg-gray-700 shrink-0 self-stretch" />
+        <div className="w-px bg-gray-700 shrink-0 self-stretch" />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 min-w-0 flex-wrap">
@@ -130,17 +130,17 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
                   loading="lazy"
                 />
               ) : (
-                <Swords className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 dark:text-gray-300 shrink-0" />
+                <Swords className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 shrink-0" />
               )}
-              <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{opponent}</h3>
+              <h3 className="text-xs sm:text-sm font-semibold text-white truncate">{opponent}</h3>
             </div>
           </div>
 
-          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
+          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-gray-200">
             <span className="text-sm sm:text-base font-semibold tracking-tight">{timeLabel} <span className="text-xs sm:text-sm font-normal">Uhr</span></span>
           </div>
 
-          <div className="mt-0.5 flex items-center gap-1.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+          <div className="mt-0.5 flex items-center gap-1.5 text-xs sm:text-sm text-gray-400">
             {isHomeMatch ? (
               <Home className="w-3.5 h-3.5" />
             ) : (
@@ -150,14 +150,14 @@ const renderMatchCard = (match: any, section: any, cardKey: string) => {
           </div>
 
           {section.leagueName && (
-            <div className="mt-0.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+            <div className="mt-0.5 text-xs sm:text-sm text-gray-400">
               {section.leagueName}
             </div>
           )}
 
           {teamDisplayName && (
             <div className="mt-1 flex items-center gap-2">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200 whitespace-nowrap">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 bg-primary-900/40 text-primary-200 whitespace-nowrap">
                 {teamDisplayName}
               </span>
             </div>
@@ -283,30 +283,30 @@ export default function MySchedulePage() {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center gap-2">
           <Calendar className="w-6 h-6 text-primary-600" />
           <span>Mein Spielplan</span>
         </h1>
-        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1">
+        <p className="text-xs sm:text-sm text-gray-300 mt-1">
           Nächste und letzte Spiele aus deinen fussball.de Teams.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="text-sm text-gray-500 dark:text-gray-400 py-4">Lädt Spielplan...</div>
+        <div className="text-sm text-gray-400 py-4">Lädt Spielplan...</div>
       ) : error ? (
-        <div className="text-sm text-red-600 dark:text-red-400 py-4">Spielplan konnte nicht geladen werden.</div>
+        <div className="text-sm text-red-400 py-4">Spielplan konnte nicht geladen werden.</div>
       ) : !hasAnyGames ? (
-        <div className="card text-sm text-gray-500 dark:text-gray-400">Keine Spiele gefunden.</div>
+        <div className="card text-sm text-gray-400">Keine Spiele gefunden.</div>
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-800 p-1 rounded-full w-fit">
+          <div className="flex items-center gap-3 bg-gray-800 p-1 rounded-full w-fit">
             <button
               onClick={() => setView('next')}
               className={`px-4 py-2 rounded-full font-medium transition-colors ${
                 view === 'next'
                   ? 'bg-primary-600 text-white'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  : 'text-gray-300 hover:bg-gray-200 hover:bg-gray-700'
               }`}
             >
               Anstehend
@@ -316,7 +316,7 @@ export default function MySchedulePage() {
               className={`px-4 py-2 rounded-full font-medium transition-colors ${
                 view === 'last'
                   ? 'bg-primary-600 text-white'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  : 'text-gray-300 hover:bg-gray-200 hover:bg-gray-700'
               }`}
             >
               Vergangen
@@ -329,7 +329,7 @@ export default function MySchedulePage() {
                 {hasAnyNextGames ? (
                   renderScheduleSections(sections, 'next')
                 ) : (
-                  <div className="card text-sm text-gray-500 dark:text-gray-400">Keine nächsten Spiele gefunden.</div>
+                  <div className="card text-sm text-gray-400">Keine nächsten Spiele gefunden.</div>
                 )}
               </section>
             )}
@@ -339,7 +339,7 @@ export default function MySchedulePage() {
                 {hasAnyLastGames ? (
                   renderScheduleSections(sections, 'last')
                 ) : (
-                  <div className="card text-sm text-gray-500 dark:text-gray-400">Keine letzten Spiele gefunden.</div>
+                  <div className="card text-sm text-gray-400">Keine letzten Spiele gefunden.</div>
                 )}
               </section>
             )}

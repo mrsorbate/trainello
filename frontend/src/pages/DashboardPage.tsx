@@ -192,7 +192,7 @@ export default function DashboardPage() {
               <div className="relative w-full min-h-[14rem] sm:min-h-[24rem]">
                 <div className="absolute inset-0 flex">
                   {teamsWithPhotos.slice(0, 2).map((team: any, index: number) => (
-                    <div key={team.id} className={`relative w-1/2 h-full ${index === 0 ? 'border-r border-white/30 dark:border-gray-900/40' : ''}`}>
+                    <div key={team.id} className={`relative w-1/2 h-full ${index === 0 ? 'border-r border-white/30 border-gray-900/40' : ''}`}>
                       <img
                         src={getTeamPhotoUrl(team)}
                         alt={team.name}
@@ -251,17 +251,17 @@ export default function DashboardPage() {
               <Link
                 key={post.id}
                 to={`/teams/${post.team_id}/posts`}
-                className="block rounded-lg border border-amber-200 bg-amber-50 p-3 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-900/20 dark:hover:bg-amber-900/30"
+                className="block rounded-lg border border-amber-200 bg-amber-50 p-3 hover:bg-amber-100 border-amber-800 bg-amber-900/20 hover:bg-amber-900/30"
               >
-                <p className="text-xs uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                <p className="text-xs uppercase tracking-wide text-amber-300">
                   {post.type === 'poll' ? 'Umfrage' : 'Nachricht'}
                 </p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{post.title}</p>
-                <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">{post.team_name}</p>
+                <p className="text-sm font-semibold text-white mt-0.5">{post.title}</p>
+                <p className="text-xs text-gray-300 mt-0.5">{post.team_name}</p>
               </Link>
             ))}
             {openPosts.length > 6 && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center pt-1">
+              <p className="text-xs text-gray-400 text-center pt-1">
                 {openPosts.length - 6} weitere Einträge offen
               </p>
             )}
@@ -279,7 +279,7 @@ export default function DashboardPage() {
         </div>
         
         {eventsLoading ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">Lädt...</div>
+          <div className="text-center py-8 text-gray-400">Lädt...</div>
         ) : upcomingEvents && upcomingEvents.length > 0 ? (
           <div className="space-y-3">
             {upcomingEvents.map((event: any) => {
@@ -298,13 +298,13 @@ export default function DashboardPage() {
               const getStatusCircleClass = (status: string) => {
                 switch (status) {
                   case 'accepted':
-                    return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
+                    return 'bg-green-100 text-green-700 bg-green-900/30 text-green-300';
                   case 'declined':
-                    return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300';
+                    return 'bg-red-100 text-red-700 bg-red-900/30 text-red-300';
                   case 'tentative':
-                    return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300';
+                    return 'bg-yellow-100 text-yellow-700 bg-yellow-900/30 text-yellow-300';
                   default:
-                    return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+                    return 'bg-gray-100 text-gray-600 bg-gray-700 text-gray-300';
                 }
               };
 
@@ -333,11 +333,11 @@ export default function DashboardPage() {
                 const baseClass = 'w-9 h-9 rounded-full flex items-center justify-center transition-colors disabled:opacity-50';
                 
                 if (status === 'accepted') {
-                  return `${baseClass} ${isSelected ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50'}`;
+                  return `${baseClass} ${isSelected ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-900/30 text-green-300 hover:bg-green-900/50'}`;
                 } else if (status === 'declined') {
-                  return `${baseClass} ${isSelected ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50'}`;
+                  return `${baseClass} ${isSelected ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-900/30 text-red-300 hover:bg-red-900/50'}`;
                 } else if (status === 'tentative') {
-                  return `${baseClass} ${isSelected ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-900/50'}`;
+                  return `${baseClass} ${isSelected ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-900/30 text-yellow-300 hover:bg-yellow-900/50'}`;
                 }
               };
 
@@ -385,10 +385,10 @@ export default function DashboardPage() {
               const squadIndicator = getSquadIndicator();
               const squadBadgeText = squadIndicator || event.team_name;
               const squadBadgeClass = squadIndicator === 'II'
-                ? 'bg-black text-white dark:bg-black dark:text-white'
+                ? 'bg-black text-white bg-black text-white'
                 : squadIndicator === 'I'
-                  ? 'bg-yellow-300 text-yellow-900 dark:bg-yellow-300 dark:text-yellow-900'
-                  : 'bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200';
+                  ? 'bg-yellow-300 text-yellow-900 bg-yellow-300 text-yellow-900'
+                  : 'bg-primary-100 text-primary-800 bg-primary-900/40 text-primary-200';
               const weekdayLabel = startDate.toLocaleDateString('de-DE', { weekday: 'short' });
               const dayLabel = String(startDate.getDate()).padStart(2, '0');
               const monthLabel = String(startDate.getMonth() + 1).padStart(2, '0');
@@ -415,19 +415,19 @@ export default function DashboardPage() {
                   onClick={handleCardClick}
                   className={`${locationText ? 'min-h-[136px] sm:min-h-[156px]' : 'min-h-fit'} p-3 sm:p-4 rounded-xl border transition-all hover:shadow-md cursor-pointer ${
                     isToday 
-                      ? 'bg-primary-900/20 border-primary-700 dark:bg-primary-900/30 dark:border-primary-600' 
-                      : 'bg-white border-gray-200 hover:border-primary-300 dark:bg-gray-800 dark:border-gray-700 dark:hover:border-primary-600'
+                      ? 'bg-primary-900/20 border-primary-700 bg-primary-900/30 border-primary-600' 
+                      : 'bg-white border-gray-200 hover:border-primary-300 bg-gray-800 border-gray-700 hover:border-primary-600'
                   }`}
                 >
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className="w-20 sm:w-24 shrink-0 flex items-center justify-center">
                       <div className="flex flex-col items-center justify-center text-center">
-                        <p className="text-[11px] sm:text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-gray-300 leading-none">{weekdayLabel}</p>
-                        <p className="mt-1 text-3xl sm:text-4xl font-semibold tabular-nums text-gray-900 dark:text-gray-100 leading-none tracking-tight">{dateLabel}</p>
+                        <p className="text-[11px] sm:text-xs font-medium uppercase tracking-wide text-gray-300 leading-none">{weekdayLabel}</p>
+                        <p className="mt-1 text-3xl sm:text-4xl font-semibold tabular-nums text-gray-100 leading-none tracking-tight">{dateLabel}</p>
                       </div>
                     </div>
 
-                    <div className="w-px bg-gray-200 dark:bg-gray-700 shrink-0 self-stretch" />
+                    <div className="w-px bg-gray-700 shrink-0 self-stretch" />
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 min-w-0">
@@ -440,13 +440,13 @@ export default function DashboardPage() {
                               loading="lazy"
                             />
                           ) : event.type === 'training' ? (
-                            <Cone className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 shrink-0" />
+                            <Cone className="w-5 h-5 sm:w-6 sm:h-6 text-gray-300 shrink-0" />
                           ) : event.type === 'match' ? (
-                            <Swords className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 shrink-0" />
+                            <Swords className="w-5 h-5 sm:w-6 sm:h-6 text-gray-300 shrink-0" />
                           ) : (
-                            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 shrink-0" />
+                            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-gray-300 shrink-0" />
                           )}
-                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">{displayTitle || opponent || event.title}</h3>
+                          <h3 className="text-base sm:text-lg font-semibold text-white truncate">{displayTitle || opponent || event.title}</h3>
                         </div>
                         {squadBadgeText && (
                           <span
@@ -457,18 +457,18 @@ export default function DashboardPage() {
                         )}
                       </div>
 
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-200">
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-gray-200">
                         <span className="text-xl sm:text-2xl font-semibold tracking-tight">{timeLabel} <span className="text-base sm:text-lg font-normal">Uhr</span></span>
                       </div>
 
                       {meetingTimeLabel && (
-                        <div className="mt-0.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                        <div className="mt-0.5 text-xs sm:text-sm text-gray-400">
                           Treffpunkt: {meetingTimeLabel} Uhr
                         </div>
                       )}
 
                       {matchTypeLabel && (
-                        <div className="mt-0.5 flex items-center gap-1.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                        <div className="mt-0.5 flex items-center gap-1.5 text-xs sm:text-sm text-gray-400">
                           {event.is_home_match ? (
                             <Home className="w-3.5 h-3.5" />
                           ) : (
@@ -479,22 +479,22 @@ export default function DashboardPage() {
                       )}
 
                       <div className="mt-1.5 flex items-center gap-2 sm:gap-3 text-xs sm:text-sm tabular-nums whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 text-green-700 dark:text-green-300 font-medium">
+                        <span className="inline-flex items-center gap-1 text-green-300 font-medium">
                           <Check className="w-3.5 h-3.5" />
                           {event.accepted_count}
                         </span>
-                        <span className="inline-flex items-center gap-1 text-yellow-700 dark:text-yellow-300 font-medium">
+                        <span className="inline-flex items-center gap-1 text-yellow-300 font-medium">
                           <HelpCircle className="w-3.5 h-3.5" />
                           {event.tentative_count}
                         </span>
-                        <span className="inline-flex items-center gap-1 text-red-700 dark:text-red-300 font-medium">
+                        <span className="inline-flex items-center gap-1 text-red-300 font-medium">
                           <X className="w-3.5 h-3.5" />
                           {event.declined_count}
                         </span>
                       </div>
 
                       {locationText && (
-                        <div className="mt-1.5 flex items-center gap-1.5 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                        <div className="mt-1.5 flex items-center gap-1.5 text-xs sm:text-sm text-gray-300">
                           <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           <span className="truncate">{locationText}</span>
                         </div>
@@ -510,7 +510,7 @@ export default function DashboardPage() {
                           }}
                           className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-colors ${getStatusCircleClass(event.my_status)} ${
                             openQuickActionsEventId === event.id
-                              ? 'ring-2 ring-primary-400 dark:ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800'
+                              ? 'ring-2 ring-primary-400 ring-primary-500 ring-offset-2 ring-offset-white ring-offset-gray-800'
                               : ''
                           }`}
                           title="Status anzeigen und ändern"
@@ -520,7 +520,7 @@ export default function DashboardPage() {
                         </button>
 
                         {openQuickActionsEventId === event.id && (
-                          <div className="absolute right-0 top-12 sm:right-full sm:top-1/2 sm:-translate-y-1/2 sm:mr-2 z-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full px-2 py-2 shadow-lg flex items-center gap-2">
+                          <div className="absolute right-0 top-12 sm:right-full sm:top-1/2 sm:-translate-y-1/2 sm:mr-2 z-20 bg-gray-800 border border-gray-700 rounded-full px-2 py-2 shadow-lg flex items-center gap-2">
                             <button
                               onClick={(e) => {
                                 handleStatusClick('accepted', e);
@@ -567,8 +567,8 @@ export default function DashboardPage() {
             })}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            <Calendar className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+          <div className="text-center py-8 text-gray-400">
+            <Calendar className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-gray-600" />
             <p>Keine Termine</p>
           </div>
         )}
@@ -588,11 +588,11 @@ export default function DashboardPage() {
           onClick={closeDeclineModal}
         >
           <div
-            className="w-full max-w-md rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 sm:p-5 shadow-xl"
+            className="w-full max-w-md rounded-xl border border-gray-700 bg-gray-800 p-4 sm:p-5 shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Absagegrund</h3>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+            <h3 className="text-base sm:text-lg font-semibold text-white">Absagegrund</h3>
+            <p className="mt-1 text-sm text-gray-300">
               Warum möchtest du für {pendingDecline.title} absagen?
             </p>
 
@@ -608,8 +608,8 @@ export default function DashboardPage() {
                     }}
                     className={`px-3 py-1.5 text-xs sm:text-sm rounded-full border transition-colors ${
                       declineReason === reason
-                        ? 'bg-primary-100 border-primary-400 text-primary-900 dark:bg-primary-900/40 dark:border-primary-600 dark:text-primary-100'
-                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
+                        ? 'bg-primary-100 border-primary-400 text-primary-900 bg-primary-900/40 border-primary-600 text-primary-100'
+                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-800 border-gray-600 text-gray-200 hover:bg-gray-700'
                     }`}
                   >
                     {reason}
@@ -631,7 +631,7 @@ export default function DashboardPage() {
               />
 
               {declineReasonError && (
-                <p className="text-sm text-red-600 dark:text-red-400">{declineReasonError}</p>
+                <p className="text-sm text-red-400">{declineReasonError}</p>
               )}
 
               <div className="flex items-center justify-end gap-2">
@@ -639,7 +639,7 @@ export default function DashboardPage() {
                   type="button"
                   onClick={closeDeclineModal}
                   disabled={updateResponseMutation.isPending}
-                  className="px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-60"
+                  className="px-3 py-2 text-sm rounded-md border border-gray-600 text-gray-200 hover:bg-gray-700 disabled:opacity-60"
                 >
                   Abbrechen
                 </button>

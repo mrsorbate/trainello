@@ -656,29 +656,29 @@ export default function TeamSettingsPage() {
         <button
           type="button"
           onClick={() => goBack(`/teams/${teamId}`)}
-          className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+          className="text-gray-300 hover:text-gray-900 hover:text-white"
           aria-label="Zurück"
           title="Zurück"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
         <div className="min-w-0">
-          <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words flex items-center gap-2">
+          <h1 className="text-xl sm:text-3xl font-bold text-white break-words flex items-center gap-2">
             <Settings className="w-6 h-6 text-primary-600 shrink-0" />
             <span>Team-Einstellungen</span>
           </h1>
-          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1">Standardwerte und fussball.de Verknüpfung verwalten</p>
+          <p className="text-xs sm:text-sm text-gray-300 mt-1">Standardwerte und fussball.de Verknüpfung verwalten</p>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="text-sm text-gray-500 dark:text-gray-400 py-2">Lädt Einstellungen...</div>
+        <div className="text-sm text-gray-400 py-2">Lädt Einstellungen...</div>
       ) : error ? (
-        <div className="text-sm text-red-600 dark:text-red-400 py-2">{(error as any)?.response?.data?.error || 'Einstellungen konnten nicht geladen werden'}</div>
+        <div className="text-sm text-red-400 py-2">{(error as any)?.response?.data?.error || 'Einstellungen konnten nicht geladen werden'}</div>
       ) : (
         <>
           <div className="card space-y-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-2">
               <Camera className="w-5 h-5 text-primary-600" />
               Mannschaftsbild
             </h2>
@@ -687,10 +687,10 @@ export default function TeamSettingsPage() {
               <img
                 src={teamPictureUrl}
                 alt={team?.name || 'Mannschaftsbild'}
-                className="w-full max-h-72 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+                className="w-full max-h-72 object-cover rounded-lg border border-gray-700"
               />
             ) : (
-              <div className="w-full h-40 rounded-lg border border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+              <div className="w-full h-40 rounded-lg border border-dashed border-gray-700 flex items-center justify-center text-sm text-gray-400">
                 Noch kein Mannschaftsbild vorhanden
               </div>
             )}
@@ -723,17 +723,17 @@ export default function TeamSettingsPage() {
                   {deleteTeamPictureMutation.isPending ? 'Löscht...' : 'Mannschaftsbild löschen'}
                 </button>
               )}
-              <p className="text-xs text-gray-500 dark:text-gray-400">JPEG, PNG, GIF oder WEBP (max. 5MB)</p>
+              <p className="text-xs text-gray-400">JPEG, PNG, GIF oder WEBP (max. 5MB)</p>
             </div>
           </div>
 
           <div className="card space-y-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-2">
               <Edit2 className="w-5 h-5 text-primary-600" />
               Dein individueller Teamname
             </h2>
 
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-gray-300">
               Dieser Name hilft dir, das Team in deiner Ansicht leichter zu unterscheiden.
             </p>
 
@@ -771,12 +771,12 @@ export default function TeamSettingsPage() {
           </div>
 
           <div className="card space-y-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-2">
               <Settings className="w-5 h-5 text-primary-600" />
               API-Einstellungen
             </h2>
             <div>
-              <label htmlFor="fussballde-id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="fussballde-id" className="block text-sm font-medium text-gray-300 mb-1">
                 fussball.de IDs / URLs
               </label>
               <div className="flex flex-col sm:flex-row gap-2">
@@ -804,11 +804,11 @@ export default function TeamSettingsPage() {
                   Quellen normalisieren
                 </button>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Eine ID oder URL pro Zeile. Beispiel-ID: 011MI8V6UC000000VTVG0001VTR8C1K7</p>
+              <p className="text-xs text-gray-400 mt-1">Eine ID oder URL pro Zeile. Beispiel-ID: 011MI8V6UC000000VTVG0001VTR8C1K7</p>
             </div>
 
             <div>
-              <label htmlFor="fussballde-team-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="fussballde-team-name" className="block text-sm font-medium text-gray-300 mb-1">
                 fussball.de Team-Namen
               </label>
               <textarea
@@ -819,7 +819,7 @@ export default function TeamSettingsPage() {
                 placeholder="Ein Teamname pro Zeile"
                 rows={3}
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Ein Name pro Zeile. Wird für die automatische Heimspiel-Erkennung verwendet.</p>
+              <p className="text-xs text-gray-400 mt-1">Ein Name pro Zeile. Wird für die automatische Heimspiel-Erkennung verwendet.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -853,9 +853,9 @@ export default function TeamSettingsPage() {
 
             {showDeleteImportedGamesConfirm && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Importierte Spiele wirklich löschen?</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                <div className="bg-gray-800 rounded-lg p-6 max-w-sm w-full">
+                  <h3 className="text-lg font-bold text-white mb-2">Importierte Spiele wirklich löschen?</h3>
+                  <p className="text-sm text-gray-300 mb-4">
                     Alle von fussball.de importierten Spiele werden gelöscht. Du kannst sie anschließend neu importieren.
                   </p>
                   <div className="flex gap-3">
@@ -879,12 +879,12 @@ export default function TeamSettingsPage() {
           </div>
 
           <div className="card space-y-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-2">
               <SlidersHorizontal className="w-5 h-5 text-primary-600" />
               Termineinstellungen
             </h2>
             <div>
-              <label htmlFor="default-response" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="default-response" className="block text-sm font-medium text-gray-300 mb-1">
                 Standard-Rückmeldung für neue Termine
               </label>
               <div className="mt-1 grid grid-cols-2 sm:grid-cols-4 gap-2" role="group" aria-label="Standard-Rückmeldung auswählen">
@@ -903,7 +903,7 @@ export default function TeamSettingsPage() {
                       className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
                         isActive
                           ? 'bg-primary-600 text-white border-primary-600'
-                          : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          : 'bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600'
                       }`}
                     >
                       {option.label}
@@ -914,12 +914,12 @@ export default function TeamSettingsPage() {
             </div>
 
             <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Standard-Rückmeldefrist je Kategorie
               </label>
 
               <div>
-                <label htmlFor="default-rsvp-deadline-hours-training" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Training</label>
+                <label htmlFor="default-rsvp-deadline-hours-training" className="block text-xs text-gray-400 mb-1">Training</label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -953,7 +953,7 @@ export default function TeamSettingsPage() {
               </div>
 
               <div>
-                <label htmlFor="default-rsvp-deadline-days-match" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Spiel (Tage vor Termin)</label>
+                <label htmlFor="default-rsvp-deadline-days-match" className="block text-xs text-gray-400 mb-1">Spiel (Tage vor Termin)</label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -987,7 +987,7 @@ export default function TeamSettingsPage() {
               </div>
 
               <div>
-                <label htmlFor="default-rsvp-deadline-hours-other" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Sonstiges</label>
+                <label htmlFor="default-rsvp-deadline-hours-other" className="block text-xs text-gray-400 mb-1">Sonstiges</label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -1022,12 +1022,12 @@ export default function TeamSettingsPage() {
             </div>
 
             <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Standard Treffpunkt Minuten vor Beginn
               </label>
 
               <div>
-                <label htmlFor="default-arrival-minutes-training" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Training</label>
+                <label htmlFor="default-arrival-minutes-training" className="block text-xs text-gray-400 mb-1">Training</label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -1061,7 +1061,7 @@ export default function TeamSettingsPage() {
               </div>
 
               <div>
-                <label htmlFor="default-arrival-minutes-match" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Spiel</label>
+                <label htmlFor="default-arrival-minutes-match" className="block text-xs text-gray-400 mb-1">Spiel</label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -1096,12 +1096,12 @@ export default function TeamSettingsPage() {
             </div>
 
             <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Standard-Dauer je Kategorie (Minuten)
               </label>
 
               <div>
-                <label htmlFor="default-duration-minutes-training" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Training</label>
+                <label htmlFor="default-duration-minutes-training" className="block text-xs text-gray-400 mb-1">Training</label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -1135,7 +1135,7 @@ export default function TeamSettingsPage() {
               </div>
 
               <div>
-                <label htmlFor="default-duration-minutes-match" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Spiel</label>
+                <label htmlFor="default-duration-minutes-match" className="block text-xs text-gray-400 mb-1">Spiel</label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -1169,7 +1169,7 @@ export default function TeamSettingsPage() {
               </div>
 
               <div>
-                <label htmlFor="default-duration-minutes-other" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Sonstiges</label>
+                <label htmlFor="default-duration-minutes-other" className="block text-xs text-gray-400 mb-1">Sonstiges</label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -1214,13 +1214,13 @@ export default function TeamSettingsPage() {
           </div>
 
           <div className="card space-y-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-lg sm:text-xl font-semibold text-white">
               Heimspiel-Plätze
             </h2>
 
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <p className="text-sm text-gray-700 dark:text-gray-300">
+                <p className="text-sm text-gray-300">
                   Plätze für Heimspiele verwalten und einen Standardplatz festlegen.
                 </p>
                 <button
@@ -1233,7 +1233,7 @@ export default function TeamSettingsPage() {
               </div>
 
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Standardplatz</label>
+                <label className="block text-xs text-gray-400 mb-1">Standardplatz</label>
                 <select
                   value={defaultHomeVenueName}
                   onChange={(e) => setDefaultHomeVenueName(e.target.value)}
@@ -1254,13 +1254,13 @@ export default function TeamSettingsPage() {
               </div>
 
               {homeVenues.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-700 p-4 text-sm text-gray-500 dark:text-gray-400">
+                <div className="rounded-lg border border-dashed border-gray-700 p-4 text-sm text-gray-400">
                   Noch keine Plätze angelegt.
                 </div>
               ) : (
                 <div className="space-y-3">
                   {homeVenues.map((venue, index) => (
-                    <div key={index} className="rounded-xl border border-gray-200 dark:border-gray-700 p-3 sm:p-4 space-y-3 bg-gray-50/40 dark:bg-gray-800/40">
+                    <div key={index} className="rounded-xl border border-gray-700 p-3 sm:p-4 space-y-3 bg-gray-800/40">
                       {(() => {
                         const isExpanded = expandedHomeVenueIndex === index;
                         const summaryParts = [venue.street.trim(), venue.zip_city.trim(), venue.pitch_type.trim()].filter(Boolean);
@@ -1274,22 +1274,22 @@ export default function TeamSettingsPage() {
                             >
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                  <p className="text-sm font-semibold text-white">
                                     {venue.name.trim() || `Platz ${index + 1}`}
                                   </p>
                                   {venue.name.trim() && venue.name.trim() === defaultHomeVenueName.trim() && (
-                                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-200">
+                                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 bg-primary-900/40 text-primary-200">
                                       Standard
                                     </span>
                                   )}
                                 </div>
                                 {summaryParts.length > 0 && (
-                                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-300 truncate">
+                                  <p className="mt-1 text-xs text-gray-300 truncate">
                                     {summaryParts.join(' • ')}
                                   </p>
                                 )}
                               </div>
-                              <span className="text-gray-500 dark:text-gray-400 mt-0.5 shrink-0">
+                              <span className="text-gray-400 mt-0.5 shrink-0">
                                 {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                               </span>
                             </button>
@@ -1298,7 +1298,7 @@ export default function TeamSettingsPage() {
                               <>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                   <div>
-                                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Platzname</label>
+                                    <label className="block text-xs text-gray-400 mb-1">Platzname</label>
                                     <input
                                       type="text"
                                       value={venue.name}
@@ -1309,7 +1309,7 @@ export default function TeamSettingsPage() {
                                   </div>
 
                                   <div>
-                                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Platzart</label>
+                                    <label className="block text-xs text-gray-400 mb-1">Platzart</label>
                                     <select
                                       value={venue.pitch_type}
                                       onChange={(e) => updateHomeVenue(index, 'pitch_type', e.target.value)}
@@ -1327,7 +1327,7 @@ export default function TeamSettingsPage() {
                                   </div>
 
                                   <div>
-                                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Straße</label>
+                                    <label className="block text-xs text-gray-400 mb-1">Straße</label>
                                     <input
                                       type="text"
                                       value={venue.street}
@@ -1338,7 +1338,7 @@ export default function TeamSettingsPage() {
                                   </div>
 
                                   <div>
-                                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">PLZ / Ort</label>
+                                    <label className="block text-xs text-gray-400 mb-1">PLZ / Ort</label>
                                     <input
                                       type="text"
                                       value={venue.zip_city}
@@ -1380,15 +1380,15 @@ export default function TeamSettingsPage() {
           </div>
 
           <div className="card space-y-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-lg sm:text-xl font-semibold text-white">
               Kalender-Export
             </h2>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
+            <p className="text-sm text-gray-300">
               Diesen Link in Apple/Google/Outlook als Abo-Kalender hinzufügen. Neue oder geänderte Termine werden automatisch beim nächsten Kalender-Refresh übernommen.
             </p>
 
             <div className="space-y-2">
-              <label className="block text-xs text-gray-500 dark:text-gray-400">ICS-Feed URL</label>
+              <label className="block text-xs text-gray-400">ICS-Feed URL</label>
               <input
                 type="text"
                 readOnly
@@ -1418,11 +1418,11 @@ export default function TeamSettingsPage() {
             </div>
           </div>
 
-          <div className="card border-2 border-red-200 dark:border-red-900 space-y-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-red-700 dark:text-red-400">
+          <div className="card border-2 border-red-900 space-y-4">
+            <h2 className="text-lg sm:text-xl font-semibold text-red-400">
               Gefahrenzone
             </h2>
-            <p className="text-sm text-red-700 dark:text-red-300">
+            <p className="text-sm text-red-300">
               Das Löschen entfernt das Team und alle zugehörigen Termine endgültig.
             </p>
             <button
@@ -1437,9 +1437,9 @@ export default function TeamSettingsPage() {
 
           {showDeleteTeamConfirm && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Team wirklich löschen?</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              <div className="bg-gray-800 rounded-lg p-6 max-w-sm w-full">
+                <h3 className="text-lg font-bold text-white mb-2">Team wirklich löschen?</h3>
+                <p className="text-sm text-gray-300 mb-4">
                   Diese Aktion kann nicht rückgängig gemacht werden.
                 </p>
                 <div className="flex gap-3">

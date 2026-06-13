@@ -169,15 +169,15 @@ export default function TeamPostsPage() {
           <button
             type="button"
             onClick={() => goBack(`/teams/${teamId}`)}
-            className="mt-0.5 sm:mt-0 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            className="mt-0.5 sm:mt-0 text-gray-300 hover:text-gray-900 hover:text-white"
             aria-label="Zurück"
             title="Zurück"
           >
             <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">Nachrichten & Umfragen</h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1 break-words">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white break-words">Nachrichten & Umfragen</h1>
+            <p className="text-sm sm:text-base text-gray-300 mt-1 break-words">
               {team?.name || 'Team'}
             </p>
           </div>
@@ -186,7 +186,7 @@ export default function TeamPostsPage() {
 
       {isTrainer && (
         <div className="card space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Neue Einträge erstellen</h2>
+          <h2 className="text-lg font-semibold text-white">Neue Einträge erstellen</h2>
 
           <div className="flex flex-wrap gap-2">
             <button
@@ -194,8 +194,8 @@ export default function TeamPostsPage() {
               onClick={() => setPostType('announcement')}
               className={`px-3 py-2 rounded-md text-sm border ${
                 postType === 'announcement'
-                  ? 'bg-primary-100 border-primary-400 text-primary-900 dark:bg-primary-900/40 dark:border-primary-600 dark:text-primary-100'
-                  : 'bg-white border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200'
+                  ? 'bg-primary-100 border-primary-400 text-primary-900 bg-primary-900/40 border-primary-600 text-primary-100'
+                  : 'bg-white border-gray-300 text-gray-700 bg-gray-800 border-gray-600 text-gray-200'
               }`}
             >
               Nachricht
@@ -205,8 +205,8 @@ export default function TeamPostsPage() {
               onClick={() => setPostType('poll')}
               className={`px-3 py-2 rounded-md text-sm border ${
                 postType === 'poll'
-                  ? 'bg-primary-100 border-primary-400 text-primary-900 dark:bg-primary-900/40 dark:border-primary-600 dark:text-primary-100'
-                  : 'bg-white border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200'
+                  ? 'bg-primary-100 border-primary-400 text-primary-900 bg-primary-900/40 border-primary-600 text-primary-100'
+                  : 'bg-white border-gray-300 text-gray-700 bg-gray-800 border-gray-600 text-gray-200'
               }`}
             >
               Umfrage
@@ -214,7 +214,7 @@ export default function TeamPostsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Titel</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Titel</label>
             <input
               type="text"
               value={title}
@@ -226,7 +226,7 @@ export default function TeamPostsPage() {
 
           {postType === 'announcement' ? (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nachricht</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Nachricht</label>
               <textarea
                 value={content}
                 onChange={(event) => setContent(event.target.value)}
@@ -236,7 +236,7 @@ export default function TeamPostsPage() {
             </div>
           ) : (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Antwortoptionen (eine pro Zeile)</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Antwortoptionen (eine pro Zeile)</label>
               <textarea
                 value={optionsText}
                 onChange={(event) => setOptionsText(event.target.value)}
@@ -262,15 +262,15 @@ export default function TeamPostsPage() {
 
       <div className="card space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Offene Einträge</h2>
+          <h2 className="text-lg font-semibold text-white">Offene Einträge</h2>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleScopeChange('open')}
               className={`px-3 py-2 rounded-md text-sm border ${
                 scope === 'open'
-                  ? 'bg-primary-100 border-primary-400 text-primary-900 dark:bg-primary-900/40 dark:border-primary-600 dark:text-primary-100'
-                  : 'bg-white border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200'
+                  ? 'bg-primary-100 border-primary-400 text-primary-900 bg-primary-900/40 border-primary-600 text-primary-100'
+                  : 'bg-white border-gray-300 text-gray-700 bg-gray-800 border-gray-600 text-gray-200'
               }`}
             >
               Offen
@@ -280,8 +280,8 @@ export default function TeamPostsPage() {
               onClick={() => handleScopeChange('all')}
               className={`px-3 py-2 rounded-md text-sm border ${
                 scope === 'all'
-                  ? 'bg-primary-100 border-primary-400 text-primary-900 dark:bg-primary-900/40 dark:border-primary-600 dark:text-primary-100'
-                  : 'bg-white border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200'
+                  ? 'bg-primary-100 border-primary-400 text-primary-900 bg-primary-900/40 border-primary-600 text-primary-100'
+                  : 'bg-white border-gray-300 text-gray-700 bg-gray-800 border-gray-600 text-gray-200'
               }`}
             >
               Alle
@@ -290,38 +290,38 @@ export default function TeamPostsPage() {
         </div>
 
         {errorMessage && (
-          <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-700 dark:bg-red-900/20 dark:text-red-200">
+          <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 border-red-700 bg-red-900/20 text-red-200">
             {errorMessage}
           </div>
         )}
 
         {isLoading ? (
-          <p className="text-gray-500 dark:text-gray-400">Lade Einträge...</p>
+          <p className="text-gray-400">Lade Einträge...</p>
         ) : posts && posts.length > 0 ? (
           <div className="space-y-3">
             {posts.map((post) => {
               const isAnnouncementDone = Boolean(post.my_seen_at);
               const isPollDone = typeof post.my_answer_option === 'number' || Boolean(post.my_answered_at);
               return (
-                <article key={post.id} className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                <article key={post.id} className="rounded-xl border border-gray-200 bg-white p-4 border-gray-700 bg-gray-800">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <p className="text-xs uppercase tracking-wide text-gray-400">
                         {post.type === 'announcement' ? 'Nachricht' : 'Umfrage'}
                       </p>
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{post.title}</h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <h3 className="text-base sm:text-lg font-semibold text-white">{post.title}</h3>
+                      <p className="text-xs text-gray-400 mt-1">
                         {formatDate(post.created_at)}{post.created_by_name ? ` • von ${post.created_by_name}` : ''}
                       </p>
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-gray-400">
                       {post.type === 'announcement' && isAnnouncementDone && 'Gelesen'}
                       {post.type === 'poll' && isPollDone && 'Beantwortet'}
                     </div>
                   </div>
 
                   {post.content && (
-                    <p className="mt-3 text-sm sm:text-base text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{post.content}</p>
+                    <p className="mt-3 text-sm sm:text-base text-gray-200 whitespace-pre-wrap">{post.content}</p>
                   )}
 
                   {post.type === 'poll' && Array.isArray(post.poll_options) && post.poll_options.length > 0 && (
@@ -336,8 +336,8 @@ export default function TeamPostsPage() {
                             onClick={() => answerPollMutation.mutate({ postId: post.id, optionIndex })}
                             className={`w-full text-left px-3 py-2 rounded-md border text-sm transition-colors ${
                               isSelected
-                                ? 'bg-green-100 border-green-400 text-green-900 dark:bg-green-900/30 dark:border-green-600 dark:text-green-100'
-                                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700'
+                                ? 'bg-green-100 border-green-400 text-green-900 bg-green-900/30 border-green-600 text-green-100'
+                                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-800 border-gray-600 text-gray-200 hover:bg-gray-700'
                             }`}
                           >
                             <span className="inline-flex items-center gap-2">
@@ -368,8 +368,8 @@ export default function TeamPostsPage() {
         ) : (
           <div className="text-center py-8">
             <MessageSquare className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-            <p className="text-gray-600 dark:text-gray-300">Keine Einträge gefunden.</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-gray-300">Keine Einträge gefunden.</p>
+            <p className="text-sm text-gray-400 mt-1">
               {scope === 'open' ? 'Aktuell ist nichts offen.' : 'Noch keine Nachrichten oder Umfragen erstellt.'}
             </p>
             <div className="mt-4">

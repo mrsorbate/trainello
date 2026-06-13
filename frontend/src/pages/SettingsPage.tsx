@@ -443,8 +443,8 @@ export default function SettingsPage() {
       <div className="flex items-start sm:items-center gap-3">
         <User className="w-8 h-8 text-primary-600" />
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Einstellungen</h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1">Verwalte dein Profil und deine Einstellungen</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Einstellungen</h1>
+          <p className="text-sm sm:text-base text-gray-300 mt-1">Verwalte dein Profil und deine Einstellungen</p>
         </div>
       </div>
 
@@ -476,7 +476,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex-1 space-y-3 w-full">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-gray-300">
               Erlaubte Formate: JPG, PNG, GIF, WebP (max. 5MB)
             </p>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -520,14 +520,14 @@ export default function SettingsPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-300">
               Benutzername
             </label>
-            <div className="mt-1 text-gray-900 dark:text-white font-medium">{profile?.username || authUser?.username}</div>
+            <div className="mt-1 text-white font-medium">{profile?.username || authUser?.username}</div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-300">
               Spitzname
             </label>
             <div className="mt-1 flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -551,30 +551,30 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-300">
               Name
             </label>
-            <div className="mt-1 text-gray-900 dark:text-white font-medium">{profile?.name || authUser?.name}</div>
+            <div className="mt-1 text-white font-medium">{profile?.name || authUser?.name}</div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-300">
               E-Mail
             </label>
-            <div className="mt-1 text-gray-900 dark:text-white">{profile?.email || authUser?.email}</div>
+            <div className="mt-1 text-white">{profile?.email || authUser?.email}</div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-300">
               Rolle
             </label>
             <div className="mt-1">
               <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
                 authUser?.role === 'admin'
-                  ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200'
+                  ? 'bg-purple-100 text-purple-800 bg-purple-900/40 text-purple-200'
                   : authUser?.role === 'trainer'
-                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200'
-                  : 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
+                  ? 'bg-blue-100 text-blue-300 bg-blue-900/40 text-blue-200'
+                  : 'bg-green-100 text-green-800 bg-green-900/40 text-green-200'
               }`}>
                 {authUser?.role === 'admin' ? 'Administrator' : authUser?.role === 'trainer' ? 'Trainer' : 'Spieler'}
               </span>
@@ -583,7 +583,7 @@ export default function SettingsPage() {
 
           {authUser?.role === 'trainer' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-medium text-gray-300">
                 Handynummer
               </label>
               <div className="mt-1 flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -604,7 +604,7 @@ export default function SettingsPage() {
                   {updateProfileMutation.isPending ? 'Speichert...' : 'Speichern'}
                 </button>
               </div>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              <p className="mt-2 text-sm text-gray-300">
                 Nur für Trainer-Info sichtbar in deinem Profil.
               </p>
             </div>
@@ -612,12 +612,12 @@ export default function SettingsPage() {
 
           {authUser?.role !== 'admin' && authUser?.role !== 'trainer' && (
             <div className="space-y-4 pt-2">
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Spielerprofil</h3>
+              <div className="border-t border-gray-700 pt-4">
+                <h3 className="text-base font-semibold text-white mb-3">Spielerprofil</h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Größe (cm)</label>
+                    <label className="block text-sm font-medium text-gray-300">Größe (cm)</label>
                     <input
                       type="number"
                       min={100}
@@ -630,7 +630,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Gewicht (kg)</label>
+                    <label className="block text-sm font-medium text-gray-300">Gewicht (kg)</label>
                     <input
                       type="number"
                       min={30}
@@ -643,7 +643,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Kleidergröße</label>
+                    <label className="block text-sm font-medium text-gray-300">Kleidergröße</label>
                     <input
                       type="text"
                       value={clothingSize}
@@ -655,7 +655,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Schuhgröße</label>
+                    <label className="block text-sm font-medium text-gray-300">Schuhgröße</label>
                     <input
                       type="text"
                       value={shoeSize}
@@ -667,7 +667,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Trikotnummer</label>
+                    <label className="block text-sm font-medium text-gray-300">Trikotnummer</label>
                     <input
                       type="number"
                       min={0}
@@ -680,7 +680,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Füßigkeit</label>
+                    <label className="block text-sm font-medium text-gray-300">Füßigkeit</label>
                     <div className="mt-1 grid grid-cols-3 gap-2" role="group" aria-label="Füßigkeit auswählen">
                       {[
                         { value: 'links', label: 'Links' },
@@ -695,8 +695,8 @@ export default function SettingsPage() {
                             onClick={() => setFootedness(isActive ? '' : option.value)}
                             className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
                               isActive
-                                ? 'border-primary-500 bg-primary-50 text-primary-700 dark:border-primary-400 dark:bg-primary-900/30 dark:text-primary-200'
-                                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
+                                ? 'border-primary-500 bg-primary-50 text-primary-700 border-primary-400 bg-primary-900/30 text-primary-200'
+                                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 border-gray-600 bg-gray-800 text-gray-200 hover:bg-gray-700'
                             }`}
                           >
                             {option.label}
@@ -707,7 +707,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Position</label>
+                    <label className="block text-sm font-medium text-gray-300">Position</label>
                     <input
                       type="text"
                       value={position}
@@ -743,22 +743,22 @@ export default function SettingsPage() {
             Meine Teamnamen
           </h2>
 
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+          <p className="text-sm text-gray-300 mb-4">
             Gib jedem Team einen persönlichen Namen, um es leichter zu unterscheiden.
           </p>
 
           {isTrainerTeamsLoading && (
-            <p className="text-sm text-gray-600 dark:text-gray-300">Teams werden geladen...</p>
+            <p className="text-sm text-gray-300">Teams werden geladen...</p>
           )}
 
           {isTrainerTeamsError && (
-            <p className="text-sm text-red-600 dark:text-red-400">
+            <p className="text-sm text-red-400">
               Teamnamen konnten nicht geladen werden. Bitte Seite neu laden.
             </p>
           )}
 
           {!isTrainerTeamsLoading && !isTrainerTeamsError && (!trainerTeams || trainerTeams.length === 0) && (
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-gray-300">
               Du bist aktuell keinem Team als Trainer zugeordnet.
             </p>
           )}
@@ -766,9 +766,9 @@ export default function SettingsPage() {
           {!isTrainerTeamsLoading && !isTrainerTeamsError && trainerTeams && trainerTeams.length > 0 && (
             <div className="space-y-3">
               {trainerTeams.map((team: any) => (
-                <div key={team.id} className="flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg">
+                <div key={team.id} className="flex items-center gap-3 p-3 border border-gray-600 rounded-lg">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{team.name}</p>
+                    <p className="text-sm font-medium text-gray-200">{team.name}</p>
                     {editingTeamId === team.id ? (
                       <input
                         type="text"
@@ -784,7 +784,7 @@ export default function SettingsPage() {
                         autoFocus
                       />
                     ) : (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <p className="text-sm text-gray-400 mt-1">
                         {customTeamNames[team.id]
                           ? `Mein Name: ${customTeamNames[team.id]}`
                           : 'Kein persönlicher Name gesetzt'}
@@ -835,24 +835,24 @@ export default function SettingsPage() {
         </h2>
 
         {!pushSupported ? (
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="text-sm text-gray-300">
             Dieser Browser unterstützt keine Web-Push-Benachrichtigungen.
           </p>
         ) : !isPushConfigured && !isPushStatusLoading ? (
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="text-sm text-gray-300">
             Push ist auf dem Server noch nicht konfiguriert. Bitte VAPID-Keys in der Backend-Umgebung setzen.
           </p>
         ) : (
           <div className="space-y-4">
-            <div className="text-sm text-gray-700 dark:text-gray-200 space-y-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="text-sm text-gray-200 space-y-1 p-3 bg-gray-800 rounded-lg">
               <p>
-                Status: <span className={isPushSubscribed ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium'}>{isPushSubscribed ? 'Aktiv' : 'Inaktiv'}</span>
+                Status: <span className={isPushSubscribed ? 'text-green-400 font-medium' : 'text-red-400 font-medium'}>{isPushSubscribed ? 'Aktiv' : 'Inaktiv'}</span>
               </p>
               <p>
                 Berechtigung: <span className={`font-medium ${
-                  pushPermission === 'granted' ? 'text-green-600 dark:text-green-400' :
-                  pushPermission === 'denied' ? 'text-red-600 dark:text-red-400' :
-                  'text-amber-600 dark:text-amber-400'
+                  pushPermission === 'granted' ? 'text-green-400' :
+                  pushPermission === 'denied' ? 'text-red-400' :
+                  'text-amber-400'
                 }`}>
                   {pushPermission === 'granted' ? '✓ Erlaubt' : pushPermission === 'denied' ? '✗ Blockiert' : '⚠ Noch nicht gefragt'}
                 </span>
@@ -860,13 +860,13 @@ export default function SettingsPage() {
             </div>
 
             {pushPermission === 'denied' && (
-              <p className="text-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg">
+              <p className="text-sm text-amber-300 bg-amber-900/20 p-3 rounded-lg">
                 Benachrichtigungen sind im Browser blockiert. Bitte überprüfe die Browser-Einstellungen und erteile die Berechtigung für diese Website.
               </p>
             )}
 
             {!isPushSubscribed && pushPermission !== 'granted' && (
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-400">
                 Klicke auf den Button unten, um Benachrichtigungen zu aktivieren. Der Browser wird nach Erlaubnis fragen.
               </p>
             )}
@@ -916,8 +916,8 @@ export default function SettingsPage() {
           <div
             className={`mb-4 p-4 rounded-lg flex items-start space-x-3 ${
               passwordMessage.type === 'success'
-                ? 'bg-green-50 border border-green-200'
-                : 'bg-red-50 border border-red-200'
+                ? 'bg-green-900/20 border border-green-700/60'
+                : 'bg-red-900/20 border border-red-700/60'
             }`}
           >
             {passwordMessage.type === 'success' ? (
@@ -937,7 +937,7 @@ export default function SettingsPage() {
 
         <form onSubmit={handlePasswordChange} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-300">
               Aktuelles Passwort
             </label>
             <input
@@ -951,7 +951,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-300">
               Neues Passwort
             </label>
             <input
@@ -966,7 +966,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-300">
               Neues Passwort bestätigen
             </label>
             <input
@@ -991,9 +991,9 @@ export default function SettingsPage() {
 
       {showDeletePictureConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Profilbild löschen?</h3>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+          <div className="w-full max-w-md rounded-2xl bg-gray-800 p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-white">Profilbild löschen?</h3>
+            <p className="mt-2 text-sm text-gray-300">
               Möchtest du dein Profilbild wirklich dauerhaft entfernen?
             </p>
 

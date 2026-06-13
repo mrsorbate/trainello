@@ -72,7 +72,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-6 sm:space-y-8">
         <div className="text-center">
           {/* App Branding */}
@@ -81,7 +81,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Separator */}
-          <hr className="my-6 border-gray-300 dark:border-gray-600" />
+          <hr className="my-6 border-gray-600" />
 
           {/* Organization Info */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 mb-4">
@@ -92,26 +92,26 @@ export default function RegisterPage() {
                 className="h-10 sm:h-12 w-auto object-contain"
               />
             )}
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white break-words text-center">
+            <h2 className="text-xl sm:text-2xl font-semibold text-white break-words text-center">
               {organizationName}
             </h2>
           </div>
 
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-sm text-gray-400">
             Account erstellen
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-red-900/20 border border-red-700/60 text-red-400 px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-300">
                 Name
               </label>
               <input
@@ -126,7 +126,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-300">
                 Benutzername
               </label>
               <input
@@ -141,7 +141,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
                 E-Mail
               </label>
               <input
@@ -156,7 +156,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
                 Passwort
               </label>
               <input

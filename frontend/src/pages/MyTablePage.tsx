@@ -99,26 +99,26 @@ export default function MyTablePage() {
   };
 
   if (teamsLoading || (hasTeams && tableLoading)) {
-    return <div className="text-sm text-gray-500 dark:text-gray-400 py-4">Lädt Tabellen...</div>;
+    return <div className="text-sm text-gray-400 py-4">Lädt Tabellen...</div>;
   }
 
   if (teamsError || tableError) {
-    return <div className="text-sm text-red-600 dark:text-red-400 py-4">Tabellen konnten nicht geladen werden.</div>;
+    return <div className="text-sm text-red-400 py-4">Tabellen konnten nicht geladen werden.</div>;
   }
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center gap-2">
           <BarChart3 className="w-6 h-6 text-primary-600" />
           <span>Meine Tabelle</span>
         </h1>
       </div>
 
       {!hasTeams ? (
-        <div className="card text-sm text-gray-500 dark:text-gray-400">Keine Teams gefunden.</div>
+        <div className="card text-sm text-gray-400">Keine Teams gefunden.</div>
       ) : sections.length === 0 ? (
-        <div className="card text-sm text-gray-500 dark:text-gray-400">Keine Tabellen-Daten gefunden.</div>
+        <div className="card text-sm text-gray-400">Keine Tabellen-Daten gefunden.</div>
       ) : (
         <div className="space-y-4">
           {sections.map((section) => {
@@ -127,9 +127,9 @@ export default function MyTablePage() {
             return (
             <div key={section.key || section.teamId} className="card space-y-3">
               <div>
-                <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-base sm:text-lg font-semibold text-white">
                   {displayTeamName || section.teamName}
-                  <span className="ml-2 text-xs sm:text-sm font-normal text-gray-500 dark:text-gray-400">
+                  <span className="ml-2 text-xs sm:text-sm font-normal text-gray-400">
                     {section.leagueName || 'Unbekannte Liga'}
                   </span>
                 </h2>
@@ -137,26 +137,26 @@ export default function MyTablePage() {
 
               {Array.isArray(section.rows) && section.rows.length > 0 ? (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-800">
+                  <table className="min-w-full divide-y divide-gray-700">
+                    <thead className="bg-gray-800">
                       <tr>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">#</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Team</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Sp</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tore</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pkt</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">#</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">Team</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">Sp</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">Tore</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">Pkt</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody className="bg-gray-900 divide-y divide-gray-700">
                       {section.rows.map((row: any, index: number) => (
                         <tr
                           key={`${section.teamId}-${index}`}
                           className={isOwnTeamRow(section, row)
-                            ? 'bg-primary-100 dark:bg-primary-900/40'
+                            ? 'bg-primary-900/40'
                             : ''}
                         >
-                          <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">{row.place ?? index + 1}</td>
-                          <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
+                          <td className="px-3 py-2 text-sm text-white">{row.place ?? index + 1}</td>
+                          <td className="px-3 py-2 text-sm text-white">
                             <div className="flex items-center gap-2">
                               {normalizeBadgeUrl(row?.img) ? (
                                 <img
@@ -166,21 +166,21 @@ export default function MyTablePage() {
                                   loading="lazy"
                                 />
                               ) : (
-                                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700" />
+                                <div className="w-6 h-6 rounded-full bg-gray-700" />
                               )}
-                              <span className={isOwnTeamRow(section, row) ? 'font-semibold text-primary-900 dark:text-primary-100' : ''}>{String(row.team || '-')}</span>
+                              <span className={isOwnTeamRow(section, row) ? 'font-semibold text-primary-100' : ''}>{String(row.team || '-')}</span>
                             </div>
                           </td>
-                          <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{row.games ?? '-'}</td>
-                          <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{String(row.goal || '-')}</td>
-                          <td className="px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white">{row.points ?? '-'}</td>
+                          <td className="px-3 py-2 text-sm text-gray-300">{row.games ?? '-'}</td>
+                          <td className="px-3 py-2 text-sm text-gray-300">{String(row.goal || '-')}</td>
+                          <td className="px-3 py-2 text-sm font-semibold text-white">{row.points ?? '-'}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               ) : (
-                <div className="text-sm text-gray-500 dark:text-gray-400">Für dieses Team ist keine Tabelle verfügbar.</div>
+                <div className="text-sm text-gray-400">Für dieses Team ist keine Tabelle verfügbar.</div>
               )}
             </div>
             );

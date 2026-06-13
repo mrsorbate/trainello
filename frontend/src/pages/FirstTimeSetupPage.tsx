@@ -169,12 +169,12 @@ export default function FirstTimeSetupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50 from-gray-900 to-gray-800 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
           <img src="/teamvoteplus-logo.svg" alt="teamvote+" className="mx-auto h-16 sm:h-20 w-auto" />
-          <p className="mt-4 text-lg font-semibold text-gray-700 dark:text-gray-300">
+          <p className="mt-4 text-lg font-semibold text-gray-300">
             {step === 1 ? 'Dein Verein' : step === 2 ? 'Admin-Daten' : step === 3 ? 'Zeitzone' : 'Finale Zusammenfassung'}
           </p>
         </div>
@@ -188,15 +188,15 @@ export default function FirstTimeSetupPage() {
         </div>
 
         <div className="grid grid-cols-4 gap-2 text-center text-xs">
-          <span className={step >= 1 ? 'text-primary-700 dark:text-primary-300 font-medium whitespace-nowrap' : 'text-gray-500 dark:text-gray-400 whitespace-nowrap'}>1 Verein</span>
-          <span className={step >= 2 ? 'text-primary-700 dark:text-primary-300 font-medium whitespace-nowrap' : 'text-gray-500 dark:text-gray-400 whitespace-nowrap'}>2 Admin</span>
-          <span className={step >= 3 ? 'text-primary-700 dark:text-primary-300 font-medium whitespace-nowrap' : 'text-gray-500 dark:text-gray-400 whitespace-nowrap'}>3 Zeitzone</span>
-          <span className={step >= 4 ? 'text-primary-700 dark:text-primary-300 font-medium whitespace-nowrap' : 'text-gray-500 dark:text-gray-400 whitespace-nowrap'}>4 Zusammenf.</span>
+          <span className={step >= 1 ? 'text-primary-300 font-medium whitespace-nowrap' : 'text-gray-400 whitespace-nowrap'}>1 Verein</span>
+          <span className={step >= 2 ? 'text-primary-300 font-medium whitespace-nowrap' : 'text-gray-400 whitespace-nowrap'}>2 Admin</span>
+          <span className={step >= 3 ? 'text-primary-300 font-medium whitespace-nowrap' : 'text-gray-400 whitespace-nowrap'}>3 Zeitzone</span>
+          <span className={step >= 4 ? 'text-primary-300 font-medium whitespace-nowrap' : 'text-gray-400 whitespace-nowrap'}>4 Zusammenf.</span>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-red-900/20 border border-red-800 text-red-200 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -205,7 +205,7 @@ export default function FirstTimeSetupPage() {
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <label htmlFor="org-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="org-name" className="block text-sm font-medium text-gray-300">
                   Vereinsname
                 </label>
                 <input
@@ -218,13 +218,13 @@ export default function FirstTimeSetupPage() {
                   placeholder="z.B. SV Musterdorf"
                   autoFocus
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-gray-400">
                   Dieser Name wird in Navigation, Login und Einladungen angezeigt.
                 </p>
               </div>
 
               <div>
-                <label htmlFor="org-short-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="org-short-name" className="block text-sm font-medium text-gray-300">
                   Kurzer Vereinsname (mobil, optional)
                 </label>
                 <input
@@ -236,13 +236,13 @@ export default function FirstTimeSetupPage() {
                   placeholder="z.B. SVM"
                   maxLength={32}
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-gray-400">
                   Wird bei Bedarf in der mobilen Navigation statt des langen Namens verwendet.
                 </p>
               </div>
 
               <div>
-                <label htmlFor="org-logo" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="org-logo" className="block text-sm font-medium text-gray-300">
                   Vereinslogo (optional)
                 </label>
                 <input
@@ -252,13 +252,13 @@ export default function FirstTimeSetupPage() {
                   onChange={handleLogoChange}
                   className="input mt-1"
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-gray-400">
                   Formate: JPG, PNG, GIF, WebP. Maximal 5MB. Kann später im Admin-Panel geändert werden.
                 </p>
                 {logoPreview && (
                   <div className="mt-3 flex items-center space-x-3">
                     <img src={resolveAssetUrl(logoPreview)} alt="Logo Vorschau" className="h-12 w-12 rounded object-contain bg-gray-700 border border-gray-600" />
-                    <span className="text-sm text-gray-600 dark:text-gray-300">{logoFile?.name}</span>
+                    <span className="text-sm text-gray-300">{logoFile?.name}</span>
                   </div>
                 )}
               </div>
@@ -269,7 +269,7 @@ export default function FirstTimeSetupPage() {
           {step === 2 && (
             <div className="space-y-4">
               <div>
-                <label htmlFor="admin-username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="admin-username" className="block text-sm font-medium text-gray-300">
                   Admin Benutzername
                 </label>
                 <input
@@ -282,13 +282,13 @@ export default function FirstTimeSetupPage() {
                   placeholder="admin"
                   autoFocus
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-gray-400">
                   Damit meldest du dich später an (nur Kleinbuchstaben, Zahlen und Unterstrich).
                 </p>
               </div>
 
               <div>
-                <label htmlFor="admin-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="admin-email" className="block text-sm font-medium text-gray-300">
                   Admin E-Mail
                 </label>
                 <input
@@ -300,13 +300,13 @@ export default function FirstTimeSetupPage() {
                   className="input mt-1"
                   placeholder="admin@verein.de"
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-gray-400">
                   Wird später für Passwort-Reset und Benachrichtigungen verwendet.
                 </p>
               </div>
 
               <div>
-                <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="admin-password" className="block text-sm font-medium text-gray-300">
                   Passwort
                 </label>
                 <input
@@ -321,13 +321,13 @@ export default function FirstTimeSetupPage() {
                   className="input mt-1"
                   placeholder="••••••••"
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-gray-400">
                   Empfehlung: mindestens 10 Zeichen mit Zahlen und Sonderzeichen.
                 </p>
               </div>
 
               <div>
-                <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300">
                   Passwort bestätigen
                 </label>
                 <input
@@ -350,7 +350,7 @@ export default function FirstTimeSetupPage() {
           {step === 3 && (
             <div className="space-y-4">
               <div>
-                <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="timezone" className="block text-sm font-medium text-gray-300">
                   Zeitzone
                 </label>
                 <select
@@ -366,7 +366,7 @@ export default function FirstTimeSetupPage() {
                     </option>
                   ))}
                 </select>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-gray-400">
                   Beeinflusst Terminzeiten, Deadlines und Erinnerungen.
                 </p>
               </div>
@@ -376,13 +376,13 @@ export default function FirstTimeSetupPage() {
           {/* Step 4: Final Summary */}
           {step === 4 && (
             <div className="space-y-4">
-              <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 space-y-2">
-                <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Finale Zusammenfassung:</h3>
-                <p className="text-sm text-gray-700 dark:text-gray-300"><strong>Verein:</strong> {organizationName}</p>
-                <p className="text-sm text-gray-700 dark:text-gray-300"><strong>Kurzname:</strong> {organizationShortName.trim() || 'Nicht gesetzt'}</p>
-                <p className="text-sm text-gray-700 dark:text-gray-300"><strong>Logo:</strong> {logoFile ? 'Wird hochgeladen' : 'Kein Logo (optional)'}</p>
-                <p className="text-sm text-gray-700 dark:text-gray-300"><strong>Admin:</strong> {adminUsername} ({adminEmail})</p>
-                <p className="text-sm text-gray-700 dark:text-gray-300"><strong>Zeitzone:</strong> {timezone}</p>
+              <div className="rounded-lg border border-gray-700 bg-gray-800 p-4 space-y-2">
+                <h3 className="text-sm font-semibold text-gray-200">Finale Zusammenfassung:</h3>
+                <p className="text-sm text-gray-300"><strong>Verein:</strong> {organizationName}</p>
+                <p className="text-sm text-gray-300"><strong>Kurzname:</strong> {organizationShortName.trim() || 'Nicht gesetzt'}</p>
+                <p className="text-sm text-gray-300"><strong>Logo:</strong> {logoFile ? 'Wird hochgeladen' : 'Kein Logo (optional)'}</p>
+                <p className="text-sm text-gray-300"><strong>Admin:</strong> {adminUsername} ({adminEmail})</p>
+                <p className="text-sm text-gray-300"><strong>Zeitzone:</strong> {timezone}</p>
               </div>
 
               <p className="text-sm text-blue-200 bg-blue-900/30 border border-blue-800 p-3 rounded-lg">
@@ -415,7 +415,7 @@ export default function FirstTimeSetupPage() {
             </button>
           </div>
 
-          <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-center text-xs text-gray-400">
             Schritt {step} von 4
           </p>
         </form>

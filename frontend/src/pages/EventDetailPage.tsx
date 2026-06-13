@@ -374,18 +374,18 @@ export default function EventDetailPage() {
               <div
                 key={response.id}
                 onClick={() => isTrainer && setExpandedResponseUserId((prev) => (prev === response.user_id ? null : response.user_id))}
-                className={`w-full flex ${showDeclineReason ? 'items-start' : 'items-center'} space-x-2 sm:space-x-3 text-sm rounded-lg px-2 py-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700`}
+                className={`w-full flex ${showDeclineReason ? 'items-start' : 'items-center'} space-x-2 sm:space-x-3 text-sm rounded-lg px-2 py-2 transition-colors hover:bg-gray-700`}
               >
                 {renderAvatar(response.user_name, response.user_profile_picture)}
                 {showDeclineReason ? (
                   <div className="min-w-0 flex-1">
-                    <p className="text-gray-900 dark:text-white font-medium truncate">{response.user_name}</p>
-                    <p className="mt-0 text-xs text-gray-600 dark:text-gray-300 break-words">
+                    <p className="text-white font-medium truncate">{response.user_name}</p>
+                    <p className="mt-0 text-xs text-gray-300 break-words">
                       Grund: {response.comment.trim()}
                     </p>
                   </div>
                 ) : (
-                  <span className="text-gray-900 dark:text-white font-medium truncate">{response.user_name}</span>
+                  <span className="text-white font-medium truncate">{response.user_name}</span>
                 )}
                 {renderTrainerStatusActions(response.user_id, currentStatus)}
               </div>
@@ -416,17 +416,17 @@ export default function EventDetailPage() {
         <div className="flex items-start sm:items-center space-x-3 sm:space-x-4">
           <button
             onClick={() => handleBackNavigation()}
-            className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            className="text-gray-300 hover:text-gray-900 hover:text-white"
             aria-label="Zurück"
             title="Zurück"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white">Termin nicht verfügbar</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-white">Termin nicht verfügbar</h1>
         </div>
 
         <div className="card">
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="text-sm text-gray-300">
             Dieser Termin konnte nicht geladen werden oder existiert nicht mehr.
           </p>
         </div>
@@ -440,7 +440,7 @@ export default function EventDetailPage() {
         <button
           type="button"
           onClick={() => handleBackNavigation()}
-          className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+          className="text-gray-300 hover:text-gray-900 hover:text-white"
           aria-label="Zurück"
           title="Zurück"
         >
@@ -803,7 +803,7 @@ export default function EventDetailPage() {
                         setInlinePanel(null);
                       }}
                       disabled={updateResponseMutation.isPending}
-                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl font-heading font-semibold text-sm bg-red-600 text-white hover:bg-red-500 transition-colors disabled:opacity-50"
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl font-heading font-semibold text-sm bg-red-600 text-white hover:bg-red-900/300 transition-colors disabled:opacity-50"
                       style={{ minHeight: '44px' }}
                     >
                       {updateResponseMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}

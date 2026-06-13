@@ -202,14 +202,14 @@ export default function PushInstallPrompt({ userId }: PushInstallPromptProps) {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-40 sm:left-auto sm:right-6 sm:w-[30rem]">
-      <div className="rounded-xl border border-primary-200 dark:border-primary-700 bg-white dark:bg-gray-800 shadow-lg p-4">
+      <div className="rounded-xl border border-primary-700 bg-gray-800 shadow-lg p-4">
         <div className="flex items-start gap-3">
-          <div className="rounded-full bg-primary-100 dark:bg-primary-900/40 p-2">
-            <Bell className="w-5 h-5 text-primary-700 dark:text-primary-300" />
+          <div className="rounded-full bg-primary-900/40 p-2">
+            <Bell className="w-5 h-5 text-primary-300" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-gray-900 dark:text-white">Push-Benachrichtigungen aktivieren</p>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm font-semibold text-white">Push-Benachrichtigungen aktivieren</p>
+            <p className="mt-1 text-sm text-gray-300">
               Erhalte sofort eine Benachrichtigung bei neuen oder geänderten Terminen.
             </p>
             <div className="mt-3 flex gap-2">
@@ -233,7 +233,7 @@ export default function PushInstallPrompt({ userId }: PushInstallPromptProps) {
           <button
             type="button"
             onClick={handleDismiss}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            className="text-gray-400 hover:text-gray-200"
             aria-label="Hinweis schließen"
             title="Hinweis schließen"
           >
