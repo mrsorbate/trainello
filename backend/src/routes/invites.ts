@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../database/init';
 import { authenticate, AuthRequest } from '../middleware/auth';
+import { getPublicFrontendBaseUrl } from '../utils/publicUrl';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -104,7 +105,7 @@ router.post('/teams/:teamId/invites', authenticate, (req: AuthRequest, res) => {
       invitee_name: normalizedInviteeName,
       expires_at: expiresAt,
       max_uses: maxUses,
-      invite_url: `${process.env.FRONTEND_URL || 'http://localhost:5174'}/invite/${token}`
+      invite_url: `${getPublicFrontendBaseUrl(req)}/invite/${token}`
     });
   } catch (error) {
     console.error('Create invite error:', error);
@@ -154,7 +155,7 @@ router.post('/teams/:teamId/join-link', authenticate, (req: AuthRequest, res) =>
     );
     const result = stmt.run(teamId, token, 'player', req.user!.id, null, 1000, null);
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
+    const frontendUrl = getPublicFrontendBaseUrl(req);
 
     return res.status(201).json({
       id: result.lastInsertRowid,
@@ -217,7 +218,7 @@ router.get('/teams/:teamId/join-link', authenticate, (req: AuthRequest, res) => 
       return res.status(404).json({ error: 'No active team join link found' });
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
+    const frontendUrl = getPublicFrontendBaseUrl(req);
 
     return res.json({
       ...invite,

@@ -95,6 +95,7 @@ export interface CreateTeamDTO {
 }
 export interface CreateEventDTO {
     team_id: number;
+    team_ids?: number[];
     title: string;
     type: 'training' | 'match' | 'other';
     description?: string;

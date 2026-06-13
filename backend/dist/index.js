@@ -6,10 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const multer_1 = __importDefault(require("multer"));
-const path_1 = __importDefault(require("path"));
+const axios_1 = __importDefault(require("axios"));
 const helmet_1 = __importDefault(require("helmet"));
-require("./database/init");
+const init_1 = __importDefault(require("./database/init"));
 const rateLimit_1 = require("./middleware/rateLimit");
 const auth_1 = __importDefault(require("./routes/auth"));
 const teams_1 = __importDefault(require("./routes/teams"));
@@ -19,6 +18,12 @@ const invites_1 = __importDefault(require("./routes/invites"));
 const admin_1 = __importDefault(require("./routes/admin"));
 const profile_1 = __importDefault(require("./routes/profile"));
 const settings_1 = __importDefault(require("./routes/settings"));
+const notifications_1 = __importDefault(require("./routes/notifications"));
+const posts_1 = __importDefault(require("./routes/posts"));
+const autoGameImport_1 = require("./services/autoGameImport");
+const scheduler_1 = require("./services/scheduler");
+const auth_2 = require("./middleware/auth");
+const upload_1 = require("./middleware/upload");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
@@ -43,29 +48,6 @@ const authLimiter = (0, rateLimit_1.createRateLimiter)({
     max: Number.isFinite(authRateLimitMax) && authRateLimitMax > 0 ? authRateLimitMax : 20,
     message: { error: 'Too many auth attempts, please try again later.' },
 });
-// Configure multer for file uploads
-const storage = multer_1.default.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path_1.default.extname(file.originalname));
-    }
-});
-const upload = (0, multer_1.default)({
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: (req, file, cb) => {
-        const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        if (allowedMimes.includes(file.mimetype)) {
-            cb(null, true);
-        }
-        else {
-            cb(new Error('Only image files are allowed'));
-        }
-    }
-});
 // Middleware
 app.set('trust proxy', 1);
 app.use((0, helmet_1.default)({
@@ -84,7 +66,7 @@ app.use('/uploads', express_1.default.static('uploads'));
 // Root route
 app.get('/', (req, res) => {
     res.json({
-        name: 'sqadX.app API',
+        name: 'teamvote+ API',
         version: '1.0.0',
         status: 'running',
         endpoints: {
@@ -116,7 +98,57 @@ app.get('/', (req, res) => {
 });
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    try {
+        init_1.default.prepare('SELECT 1 as ok').get();
+        return res.json({
+            status: 'ok',
+            db: 'ok',
+            timestamp: new Date().toISOString(),
+        });
+    }
+    catch (error) {
+        console.error('Health DB check failed:', error);
+        return res.status(503).json({
+            status: 'degraded',
+            db: 'error',
+            error: 'database_unavailable',
+            timestamp: new Date().toISOString(),
+        });
+    }
+});
+// Image proxy for fussball.de team badges (CORS workaround)
+// Must be registered before generic authenticated /api routers.
+app.get('/api/badge-proxy', async (req, res) => {
+    const url = String(req.query.url || '');
+    let parsedUrl;
+    try {
+        parsedUrl = new URL(url);
+    }
+    catch {
+        return res.status(400).end();
+    }
+    const hostname = parsedUrl.hostname.toLowerCase();
+    const isFussballDomain = hostname === 'fussball.de' || hostname.endsWith('.fussball.de');
+    if ((parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') || !isFussballDomain) {
+        return res.status(400).end();
+    }
+    try {
+        const response = await axios_1.default.get(parsedUrl.toString(), {
+            responseType: 'arraybuffer',
+            timeout: 8000,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                'Referer': 'https://www.fussball.de/',
+            },
+        });
+        const contentType = String(response.headers['content-type'] || 'image/png');
+        res.set('Content-Type', contentType);
+        res.set('Cache-Control', 'public, max-age=86400');
+        res.send(response.data);
+    }
+    catch {
+        res.status(502).end();
+    }
 });
 // Routes
 app.use('/api/auth', authLimiter, auth_1.default);
@@ -124,23 +156,27 @@ app.use('/api/teams', teams_1.default);
 app.use('/api/events', events_1.default);
 app.use('/api/stats', stats_1.default);
 app.use('/api/settings', settings_1.default);
+app.use('/api/notifications', notifications_1.default);
+app.use('/api', posts_1.default);
 app.use('/api/admin', admin_1.default);
 app.use('/api/profile', profile_1.default);
 app.use('/api', invites_1.default);
-// File upload endpoint
-app.post('/api/admin/upload/logo', upload.single('logo'), (req, res) => {
+// File upload endpoint (duplicate of admin route — kept for compatibility, auth-guarded)
+app.post('/api/admin/upload/logo', auth_2.authenticate, upload_1.upload.single('logo'), (req, res) => {
+    if (req.user?.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file provided' });
         }
         const logoPath = `/uploads/${req.file.filename}`;
-        const db = require('./database/init').default;
-        db.prepare(`
-      UPDATE organizations 
+        init_1.default.prepare(`
+      UPDATE organizations
       SET logo = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = 1
     `).run(logoPath);
-        const org = db.prepare('SELECT * FROM organizations WHERE id = 1').get();
+        const org = init_1.default.prepare('SELECT * FROM organizations WHERE id = 1').get();
         res.json(org);
     }
     catch (error) {
@@ -157,5 +193,7 @@ app.use((err, req, res, next) => {
 });
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
+    (0, autoGameImport_1.startAutoGameImportJob)();
+    (0, scheduler_1.startScheduler)();
 });
 //# sourceMappingURL=index.js.map

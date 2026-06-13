@@ -8,6 +8,7 @@ import { authenticate, AuthRequest } from '../middleware/auth';
 import { CreateTeamDTO } from '../types';
 import { FussballDeClient, buildTeamPageUrl } from '../services/fussballDe/client';
 import { sendPushToUsers } from '../services/pushNotifications';
+import { getPublicFrontendBaseUrl } from '../utils/publicUrl';
 
 const router = Router();
 const hasTeamsCalendarTokenColumn = (() => {
@@ -2379,7 +2380,7 @@ router.post('/:id/players', async (req: AuthRequest, res) => {
     );
     const result = stmt.run(teamId, token, 'player', req.user!.id, name, birth_date || null, jersey_number || null, 1);
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
+    const frontendUrl = getPublicFrontendBaseUrl(req);
     const inviteUrl = `${frontendUrl}/invite/${token}`;
 
     res.status(201).json({
@@ -2529,4 +2530,3 @@ router.delete('/:id', (req: AuthRequest, res) => {
 });
 
 export default router;
-

@@ -27,13 +27,19 @@ router.get('/team/:teamId', (req, res) => {
             COUNT(CASE WHEN er.status = 'accepted' THEN 1 END) as accepted,
             COUNT(CASE WHEN er.status = 'declined' THEN 1 END) as declined,
             COUNT(CASE WHEN er.status = 'tentative' THEN 1 END) as tentative,
-            COUNT(CASE WHEN er.status = 'pending' THEN 1 END) as pending,
-            COUNT(*) as total_events,
-            ROUND(COUNT(CASE WHEN er.status = 'accepted' THEN 1 END) * 100.0 / COUNT(*), 2) as attendance_rate
+            COUNT(CASE WHEN er.status = 'pending' OR er.status IS NULL THEN 1 END) as pending,
+            COUNT(e.id) as total_events,
+            COUNT(CASE WHEN e.type = 'training' THEN 1 END) as total_training,
+            COUNT(CASE WHEN e.type = 'match' THEN 1 END) as total_match,
+            COUNT(CASE WHEN e.type = 'other' THEN 1 END) as total_other,
+            COUNT(CASE WHEN e.type = 'training' AND er.status = 'accepted' THEN 1 END) as accepted_training,
+            COUNT(CASE WHEN e.type = 'match' AND er.status = 'accepted' THEN 1 END) as accepted_match,
+            COUNT(CASE WHEN e.type = 'other' AND er.status = 'accepted' THEN 1 END) as accepted_other,
+            COALESCE(ROUND(COUNT(CASE WHEN er.status = 'accepted' THEN 1 END) * 100.0 / NULLIF(COUNT(e.id), 0), 2), 0) as attendance_rate
           FROM team_members tm
           INNER JOIN users u ON tm.user_id = u.id
-          LEFT JOIN event_responses er ON er.user_id = u.id
-          LEFT JOIN events e ON er.event_id = e.id AND e.team_id = tm.team_id
+          LEFT JOIN events e ON e.team_id = tm.team_id AND e.start_time < datetime('now')
+          LEFT JOIN event_responses er ON er.user_id = u.id AND er.event_id = e.id
           WHERE tm.team_id = ? AND tm.user_id = ?
           GROUP BY u.id, u.name
         `).all(teamId, req.user.id)
@@ -44,34 +50,50 @@ router.get('/team/:teamId', (req, res) => {
             COUNT(CASE WHEN er.status = 'accepted' THEN 1 END) as accepted,
             COUNT(CASE WHEN er.status = 'declined' THEN 1 END) as declined,
             COUNT(CASE WHEN er.status = 'tentative' THEN 1 END) as tentative,
-            COUNT(CASE WHEN er.status = 'pending' THEN 1 END) as pending,
-            COUNT(*) as total_events,
-            ROUND(COUNT(CASE WHEN er.status = 'accepted' THEN 1 END) * 100.0 / COUNT(*), 2) as attendance_rate
+            COUNT(CASE WHEN er.status = 'pending' OR er.status IS NULL THEN 1 END) as pending,
+            COUNT(e.id) as total_events,
+            COUNT(CASE WHEN e.type = 'training' THEN 1 END) as total_training,
+            COUNT(CASE WHEN e.type = 'match' THEN 1 END) as total_match,
+            COUNT(CASE WHEN e.type = 'other' THEN 1 END) as total_other,
+            COUNT(CASE WHEN e.type = 'training' AND er.status = 'accepted' THEN 1 END) as accepted_training,
+            COUNT(CASE WHEN e.type = 'match' AND er.status = 'accepted' THEN 1 END) as accepted_match,
+            COUNT(CASE WHEN e.type = 'other' AND er.status = 'accepted' THEN 1 END) as accepted_other,
+            COALESCE(ROUND(COUNT(CASE WHEN er.status = 'accepted' THEN 1 END) * 100.0 / NULLIF(COUNT(e.id), 0), 2), 0) as attendance_rate
           FROM team_members tm
           INNER JOIN users u ON tm.user_id = u.id
-          LEFT JOIN event_responses er ON er.user_id = u.id
-          LEFT JOIN events e ON er.event_id = e.id AND e.team_id = tm.team_id
+          LEFT JOIN events e ON e.team_id = tm.team_id AND e.start_time < datetime('now')
+          LEFT JOIN event_responses er ON er.user_id = u.id AND er.event_id = e.id
           WHERE tm.team_id = ?
           GROUP BY u.id, u.name
           ORDER BY attendance_rate DESC
         `).all(teamId);
-        // Get upcoming events count
-        const upcomingEvents = init_1.default.prepare(`
-      SELECT COUNT(*) as count
-      FROM events
-      WHERE team_id = ? AND start_time >= datetime('now')
-    `).get(teamId);
         // Get past events count
         const pastEvents = init_1.default.prepare(`
       SELECT COUNT(*) as count
       FROM events
       WHERE team_id = ? AND start_time < datetime('now')
     `).get(teamId);
+        const pastEventsByCategoryRows = init_1.default.prepare(`
+      SELECT type, COUNT(*) as count
+      FROM events
+      WHERE team_id = ? AND start_time < datetime('now')
+      GROUP BY type
+    `).all(teamId);
+        const pastEventsByCategory = {
+            training: 0,
+            match: 0,
+            other: 0,
+        };
+        for (const row of pastEventsByCategoryRows) {
+            if (row.type === 'training' || row.type === 'match' || row.type === 'other') {
+                pastEventsByCategory[row.type] = Number(row.count || 0);
+            }
+        }
         res.json({
             attendance: attendanceStats,
             events: {
-                upcoming: upcomingEvents.count,
-                past: pastEvents.count
+                past: pastEvents.count,
+                pastByCategory: pastEventsByCategory,
             }
         });
     }

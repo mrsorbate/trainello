@@ -1,4 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
+export interface JWTPayload {
+    id: number;
+    username: string;
+    email: string;
+    role: string;
+}
 export interface AuthRequest extends Request {
     user?: {
         id: number;

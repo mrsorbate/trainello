@@ -36,6 +36,11 @@ export default function LoginPage() {
 
   const organizationName = organization?.name || 'Dein Verein';
   const organizationLogo = organization?.logo;
+  const redirectPath = searchParams.get('redirect');
+  const safeRedirectPath =
+    redirectPath && redirectPath.startsWith('/') && !redirectPath.startsWith('//')
+      ? redirectPath
+      : '/';
 
   const loginMutation = useMutation({
     mutationFn: () => authAPI.login(username, password),
@@ -43,7 +48,7 @@ export default function LoginPage() {
       setAuth(response.data.token, response.data.user);
       // Reload page to ensure App.tsx useEffect runs and loads organization
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = safeRedirectPath;
       }, 100);
     },
     onError: (error: any) => {

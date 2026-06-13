@@ -9,8 +9,18 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const init_1 = __importDefault(require("../database/init"));
 const auth_1 = require("../middleware/auth");
+const publicUrl_1 = require("../utils/publicUrl");
 const router = (0, express_1.Router)();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const SHORT_TOKEN_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const createShortJoinToken = (length = 8) => {
+    const bytes = crypto_1.default.randomBytes(length);
+    let token = '';
+    for (let i = 0; i < length; i += 1) {
+        token += SHORT_TOKEN_CHARS[bytes[i] % SHORT_TOKEN_CHARS.length];
+    }
+    return token;
+};
 const ensureTrainerInviteSchema = () => {
     init_1.default.exec(`
     CREATE TABLE IF NOT EXISTS trainer_invites (
@@ -84,12 +94,108 @@ router.post('/teams/:teamId/invites', auth_1.authenticate, (req, res) => {
             invitee_name: normalizedInviteeName,
             expires_at: expiresAt,
             max_uses: maxUses,
-            invite_url: `${process.env.FRONTEND_URL || 'http://localhost:5174'}/invite/${token}`
+            invite_url: `${(0, publicUrl_1.getPublicFrontendBaseUrl)(req)}/invite/${token}`
         });
     }
     catch (error) {
         console.error('Create invite error:', error);
         res.status(500).json({ error: 'Failed to create invite' });
+    }
+});
+// Create or rotate a reusable team join link (trainer/admin)
+router.post('/teams/:teamId/join-link', auth_1.authenticate, (req, res) => {
+    try {
+        const teamId = parseInt(req.params.teamId, 10);
+        if (!Number.isFinite(teamId)) {
+            return res.status(400).json({ error: 'Invalid team ID' });
+        }
+        const membership = init_1.default.prepare('SELECT role FROM team_members WHERE team_id = ? AND user_id = ?').get(teamId, req.user.id);
+        if (req.user.role !== 'admin' && (!membership || membership.role !== 'trainer')) {
+            return res.status(403).json({ error: 'Only admins or trainers can create team join links' });
+        }
+        const team = init_1.default.prepare('SELECT id, name FROM teams WHERE id = ?').get(teamId);
+        if (!team) {
+            return res.status(404).json({ error: 'Team not found' });
+        }
+        let token = '';
+        const tokenExistsStmt = init_1.default.prepare('SELECT 1 FROM team_invites WHERE token = ? LIMIT 1');
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+            const candidate = createShortJoinToken(8);
+            const exists = tokenExistsStmt.get(candidate);
+            if (!exists) {
+                token = candidate;
+                break;
+            }
+        }
+        if (!token) {
+            return res.status(500).json({ error: 'Could not generate unique join link token' });
+        }
+        const stmt = init_1.default.prepare('INSERT INTO team_invites (team_id, token, role, created_by, expires_at, max_uses, player_name) VALUES (?, ?, ?, ?, ?, ?, ?)');
+        const result = stmt.run(teamId, token, 'player', req.user.id, null, 1000, null);
+        const frontendUrl = (0, publicUrl_1.getPublicFrontendBaseUrl)(req);
+        return res.status(201).json({
+            id: result.lastInsertRowid,
+            token,
+            team_id: teamId,
+            team_name: team.name,
+            role: 'player',
+            join_link_type: 'team_join',
+            join_url: `${frontendUrl}/join/${token}`,
+            max_uses: 1000,
+            used_count: 0,
+            expires_at: null,
+        });
+    }
+    catch (error) {
+        console.error('Create team join link error:', error);
+        return res.status(500).json({ error: 'Failed to create team join link' });
+    }
+});
+// Get active reusable team join link (trainer/admin)
+router.get('/teams/:teamId/join-link', auth_1.authenticate, (req, res) => {
+    try {
+        const teamId = parseInt(req.params.teamId, 10);
+        if (!Number.isFinite(teamId)) {
+            return res.status(400).json({ error: 'Invalid team ID' });
+        }
+        const membership = init_1.default.prepare('SELECT role FROM team_members WHERE team_id = ? AND user_id = ?').get(teamId, req.user.id);
+        if (req.user.role !== 'admin' && (!membership || membership.role !== 'trainer')) {
+            return res.status(403).json({ error: 'Only admins or trainers can view team join links' });
+        }
+        const invite = init_1.default.prepare(`
+      SELECT
+        ti.id,
+        ti.token,
+        ti.team_id,
+        ti.role,
+        ti.max_uses,
+        ti.used_count,
+        ti.expires_at,
+        ti.created_at,
+        t.name as team_name
+      FROM team_invites ti
+      INNER JOIN teams t ON t.id = ti.team_id
+      WHERE ti.team_id = ?
+        AND ti.player_name IS NULL
+        AND COALESCE(ti.max_uses, 0) >= 1000
+        AND (ti.expires_at IS NULL OR datetime(ti.expires_at) > datetime('now'))
+        AND COALESCE(ti.max_uses, 1000) > COALESCE(ti.used_count, 0)
+      ORDER BY datetime(ti.created_at) DESC
+      LIMIT 1
+    `).get(teamId);
+        if (!invite) {
+            return res.status(404).json({ error: 'No active team join link found' });
+        }
+        const frontendUrl = (0, publicUrl_1.getPublicFrontendBaseUrl)(req);
+        return res.json({
+            ...invite,
+            join_link_type: 'team_join',
+            join_url: `${frontendUrl}/join/${invite.token}`,
+        });
+    }
+    catch (error) {
+        console.error('Get team join link error:', error);
+        return res.status(500).json({ error: 'Failed to fetch team join link' });
     }
 });
 // Get team invites
@@ -110,6 +216,7 @@ router.get('/teams/:teamId/invites', auth_1.authenticate, (req, res) => {
       INNER JOIN users u ON ti.created_by = u.id
       INNER JOIN teams t ON ti.team_id = t.id
       WHERE ti.team_id = ?
+        AND ti.player_name IS NOT NULL
         AND (ti.expires_at IS NULL OR datetime(ti.expires_at) > datetime('now'))
         AND COALESCE(ti.max_uses, 1) > COALESCE(ti.used_count, 0)
       ORDER BY ti.created_at DESC
@@ -204,7 +311,13 @@ router.get('/invites/:token', (req, res) => {
         if (invite.used_count >= effectiveMaxUses) {
             return res.status(410).json({ error: 'Invite has reached maximum uses' });
         }
-        res.json(invite);
+        const inviteType = !invite.player_name && (invite.max_uses ?? 1) >= 1000
+            ? 'team_join_link'
+            : 'player_invite';
+        res.json({
+            ...invite,
+            invite_type: inviteType,
+        });
     }
     catch (error) {
         console.error('Get invite error:', error);
@@ -216,7 +329,7 @@ router.post('/invites/:token/accept', auth_1.authenticate, (req, res) => {
     try {
         const { token } = req.params;
         const invite = init_1.default.prepare(`
-      SELECT id, team_id, role, expires_at, max_uses, used_count
+      SELECT id, team_id, role, expires_at, max_uses, used_count, player_name
       FROM team_invites
       WHERE token = ?
     `).get(token);
@@ -248,10 +361,14 @@ router.post('/invites/:token/accept', auth_1.authenticate, (req, res) => {
         for (const event of upcomingEvents) {
             responseStmt.run(event.id, req.user.id, 'pending');
         }
+        const inviteType = !invite.player_name && (invite.max_uses ?? 1) >= 1000
+            ? 'team_join_link'
+            : 'player_invite';
         res.json({
             success: true,
             message: 'Successfully joined the team',
-            team_id: invite.team_id
+            team_id: invite.team_id,
+            invite_type: inviteType,
         });
     }
     catch (error) {
@@ -289,7 +406,7 @@ router.post('/invites/:token/register', async (req, res) => {
     try {
         ensureTrainerInviteSchema();
         const { token } = req.params;
-        const { username, email, password } = req.body;
+        const { name, username, email, password } = req.body;
         if (!username || !email || !password) {
             return res.status(400).json({ error: 'Username, email and password are required' });
         }
@@ -414,24 +531,30 @@ router.post('/invites/:token/register', async (req, res) => {
         if (invite.used_count >= effectiveMaxUses) {
             return res.status(410).json({ error: 'Invite has reached maximum uses' });
         }
-        // Check if player_name exists (indicates this is a player invite, not generic invite)
-        if (!invite.player_name) {
-            return res.status(400).json({ error: 'This invite is not for player registration. Please login and accept the invite.' });
+        const isTeamJoinLink = !invite.player_name && (invite.max_uses ?? 1) >= 1000;
+        const providedName = String(name || '').trim();
+        if (!invite.player_name && !isTeamJoinLink) {
+            return res.status(400).json({ error: 'This invite is not eligible for registration.' });
+        }
+        if (isTeamJoinLink && !providedName) {
+            return res.status(400).json({ error: 'Name is required for team join registration' });
         }
         // Check if user with this username or email already exists
         const existingUsername = init_1.default.prepare('SELECT id FROM users WHERE LOWER(username) = ?').get(normalizedUsername);
         if (existingUsername) {
             return res.status(409).json({ error: 'Username already exists' });
         }
-        const existingUser = init_1.default.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?)').get(email);
+        const normalizedEmail = String(email).trim().toLowerCase();
+        const existingUser = init_1.default.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?)').get(normalizedEmail);
         if (existingUser) {
             return res.status(409).json({ error: 'User with this email already exists' });
         }
         // Hash password
         const hashedPassword = await bcryptjs_1.default.hash(password, 10);
+        const targetName = invite.player_name || providedName;
         // Create user with data from invite
         const userStmt = init_1.default.prepare('INSERT INTO users (username, email, password, name, role, birth_date) VALUES (?, ?, ?, ?, ?, ?)');
-        const userResult = userStmt.run(normalizedUsername, email, hashedPassword, invite.player_name, invite.role, invite.player_birth_date);
+        const userResult = userStmt.run(normalizedUsername, normalizedEmail, hashedPassword, targetName, invite.role, invite.player_birth_date || null);
         // Add user to team
         const memberStmt = init_1.default.prepare('INSERT INTO team_members (team_id, user_id, role, jersey_number) VALUES (?, ?, ?, ?)');
         memberStmt.run(invite.team_id, userResult.lastInsertRowid, invite.role, invite.player_jersey_number);
@@ -444,14 +567,14 @@ router.post('/invites/:token/register', async (req, res) => {
             responseStmt.run(event.id, userResult.lastInsertRowid, 'pending');
         }
         // Generate token
-        const authToken = jsonwebtoken_1.default.sign({ id: userResult.lastInsertRowid, username: normalizedUsername, email, role: invite.role }, JWT_SECRET, { expiresIn: '7d' });
+        const authToken = jsonwebtoken_1.default.sign({ id: userResult.lastInsertRowid, username: normalizedUsername, email: normalizedEmail, role: invite.role }, JWT_SECRET, { expiresIn: '7d' });
         res.status(201).json({
             token: authToken,
             user: {
                 id: userResult.lastInsertRowid,
                 username: normalizedUsername,
-                email,
-                name: invite.player_name,
+                email: normalizedEmail,
+                name: targetName,
                 role: invite.role,
                 birth_date: invite.player_birth_date
             }

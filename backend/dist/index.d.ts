@@ -1,2 +1,2 @@
-import './database/init';
+export {};
 //# sourceMappingURL=index.d.ts.map

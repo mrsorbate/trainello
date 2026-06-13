@@ -1,0 +1,1 @@
+{"version":3,"file":"http.js","sourceRoot":"","sources":["../../../src/services/fussballDe/http.ts"],"names":[],"mappings":";;;;;;AAAA,kDAAkD;AAE3C,MAAM,gBAAgB,GAAG,CAAC,SAAS,GAAG,KAAK,EAAiB,EAAE;IACnE,OAAO,eAAK,CAAC,MAAM,CAAC;QAClB,OAAO,EAAE,SAAS;QAClB,OAAO,EAAE;YACP,YAAY,EACV,uHAAuH;SAC1H;KACF,CAAC,CAAC;AACL,CAAC,CAAC;AARW,QAAA,gBAAgB,oBAQ3B"}

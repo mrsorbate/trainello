@@ -23,7 +23,7 @@ exports.createEventSchema = zod_1.z.object({
     end_time: zod_1.z.string(),
 });
 exports.updateEventResponseSchema = zod_1.z.object({
-    status: zod_1.z.enum(['accepted', 'declined', 'tentative']),
+    status: zod_1.z.enum(['accepted', 'declined', 'tentative', 'pending']),
     comment: zod_1.z.string().optional(),
 });
 //# sourceMappingURL=validation.js.map

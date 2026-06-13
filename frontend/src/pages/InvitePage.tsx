@@ -90,6 +90,11 @@ export default function InvitePage() {
     acceptMutation.mutate();
   };
 
+  const handleExistingAccountLogin = () => {
+    if (!token) return;
+    navigate(`/login?redirect=${encodeURIComponent(`/invite/${token}`)}`);
+  };
+
   const handleRegisterAndAccept = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -228,8 +233,7 @@ export default function InvitePage() {
               {invite.invite_type !== 'trainer_setup' && (
                 <>
                   <button
-                    onClick={handleAccept}
-                    disabled={acceptMutation.isPending}
+                    onClick={handleExistingAccountLogin}
                     className="btn btn-primary w-full"
                   >
                     Mit bestehendem Account beitreten

@@ -7,14 +7,14 @@ export declare const createUserSchema: z.ZodObject<{
     role: z.ZodDefault<z.ZodEnum<["admin", "trainer", "player"]>>;
 }, "strip", z.ZodTypeAny, {
     username: string;
-    password: string;
     email: string;
     role: "admin" | "trainer" | "player";
+    password: string;
     name: string;
 }, {
     username: string;
-    password: string;
     email: string;
+    password: string;
     name: string;
     role?: "admin" | "trainer" | "player" | undefined;
 }>;
@@ -37,30 +37,30 @@ export declare const createEventSchema: z.ZodObject<{
     start_time: z.ZodString;
     end_time: z.ZodString;
 }, "strip", z.ZodTypeAny, {
+    type: "training" | "match" | "other";
     team_id: number;
     title: string;
-    type: "training" | "match" | "other";
     start_time: string;
     end_time: string;
     description?: string | undefined;
     location?: string | undefined;
 }, {
+    type: "training" | "match" | "other";
     team_id: number;
     title: string;
-    type: "training" | "match" | "other";
     start_time: string;
     end_time: string;
     description?: string | undefined;
     location?: string | undefined;
 }>;
 export declare const updateEventResponseSchema: z.ZodObject<{
-    status: z.ZodEnum<["accepted", "declined", "tentative"]>;
+    status: z.ZodEnum<["accepted", "declined", "tentative", "pending"]>;
     comment: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    status: "accepted" | "declined" | "tentative";
+    status: "accepted" | "declined" | "tentative" | "pending";
     comment?: string | undefined;
 }, {
-    status: "accepted" | "declined" | "tentative";
+    status: "accepted" | "declined" | "tentative" | "pending";
     comment?: string | undefined;
 }>;
 //# sourceMappingURL=validation.d.ts.map

@@ -12,8 +12,9 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const init_1 = __importDefault(require("../database/init"));
 const auth_1 = require("../middleware/auth");
+const config_1 = require("../config");
+const publicUrl_1 = require("../utils/publicUrl");
 const router = (0, express_1.Router)();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 // Create uploads directory if it doesn't exist
 const uploadsDir = path_1.default.join(__dirname, '../../uploads');
 if (!fs_1.default.existsSync(uploadsDir)) {
@@ -34,23 +35,21 @@ const upload = (0, multer_1.default)({
     limits: {
         fileSize: 5 * 1024 * 1024, // 5MB limit
     },
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|gif|webp/;
-        const extname = allowedTypes.test(path_1.default.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
-        if (mimetype && extname) {
+    fileFilter: (_req, file, cb) => {
+        const allowedMimes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+        const allowedExts = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+        const ext = path_1.default.extname(file.originalname).toLowerCase();
+        if (allowedMimes.has(file.mimetype) && allowedExts.has(ext)) {
             return cb(null, true);
         }
-        else {
-            cb(new Error('Only image files are allowed!'));
-        }
+        cb(new Error('Only JPEG, PNG, and WebP images are allowed'));
     }
 });
 // First-time setup endpoint (no auth required)
 // This creates the first admin user and completes organization setup
 router.post('/first-setup', async (req, res) => {
     try {
-        const { organizationName, adminUsername, adminEmail, adminPassword, timezone } = req.body;
+        const { organizationName, organizationShortName, adminUsername, adminEmail, adminPassword, timezone } = req.body;
         // Validate input
         if (!organizationName || !adminUsername || !adminEmail || !adminPassword) {
             return res.status(400).json({ error: 'Organization name, username, email and password are required' });
@@ -89,11 +88,11 @@ router.post('/first-setup', async (req, res) => {
         // Update organization
         init_1.default.prepare(`
       UPDATE organizations 
-      SET name = ?, timezone = ?, setup_completed = 1, updated_at = CURRENT_TIMESTAMP
+      SET name = ?, short_name = ?, timezone = ?, setup_completed = 1, updated_at = CURRENT_TIMESTAMP
       WHERE id = 1
-    `).run(organizationName, timezone || 'Europe/Berlin');
+    `).run(organizationName, typeof organizationShortName === 'string' && organizationShortName.trim().length > 0 ? organizationShortName.trim() : null, timezone || 'Europe/Berlin');
         // Generate token
-        const token = jsonwebtoken_1.default.sign({ id: userResult.lastInsertRowid, username: normalizedUsername, email: adminEmail, role: 'admin' }, JWT_SECRET, { expiresIn: '7d' });
+        const token = jsonwebtoken_1.default.sign({ id: userResult.lastInsertRowid, username: normalizedUsername, email: adminEmail, role: 'admin' }, config_1.JWT_SECRET, { expiresIn: '7d' });
         res.status(201).json({
             token,
             user: {
@@ -118,33 +117,6 @@ const requireAdmin = (req, res, next) => {
         return res.status(403).json({ error: 'Admin access required' });
     }
     next();
-};
-const normalizeBaseUrl = (value) => value.replace(/\/$/, '');
-const getPublicFrontendBaseUrl = (req) => {
-    const envFrontendUrl = String(process.env.FRONTEND_URL || '').trim();
-    if (envFrontendUrl) {
-        return normalizeBaseUrl(envFrontendUrl);
-    }
-    const originHeader = String(req.headers.origin || '').trim();
-    if (originHeader) {
-        return normalizeBaseUrl(originHeader);
-    }
-    const refererHeader = String(req.headers.referer || '').trim();
-    if (refererHeader) {
-        try {
-            const refererUrl = new URL(refererHeader);
-            return normalizeBaseUrl(`${refererUrl.protocol}//${refererUrl.host}`);
-        }
-        catch (_error) {
-            // ignore and continue with other fallbacks
-        }
-    }
-    const forwardedProto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
-    const forwardedHost = String(req.headers['x-forwarded-host'] || '').split(',')[0].trim();
-    if (forwardedProto && forwardedHost) {
-        return normalizeBaseUrl(`${forwardedProto}://${forwardedHost}`);
-    }
-    return normalizeBaseUrl(`${req.protocol}://${req.get('host') || 'localhost:5174'}`);
 };
 const ensureTrainerInviteSchema = () => {
     init_1.default.exec(`
@@ -265,6 +237,39 @@ router.get('/teams', (req, res) => {
     catch (error) {
         console.error('Get all teams error:', error);
         res.status(500).json({ error: 'Failed to fetch teams' });
+    }
+});
+// Update team (admin only)
+router.put('/teams/:id', (req, res) => {
+    try {
+        const teamId = parseInt(req.params.id, 10);
+        const { name, description } = req.body;
+        if (!Number.isInteger(teamId) || teamId <= 0) {
+            return res.status(400).json({ error: 'Invalid team id' });
+        }
+        const normalizedName = String(name || '').trim();
+        if (!normalizedName) {
+            return res.status(400).json({ error: 'Team name is required' });
+        }
+        const team = init_1.default.prepare('SELECT id, name, description FROM teams WHERE id = ?').get(teamId);
+        if (!team) {
+            return res.status(404).json({ error: 'Team not found' });
+        }
+        const normalizedDescription = String(description || '').trim() || null;
+        init_1.default.prepare('UPDATE teams SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(normalizedName, normalizedDescription, teamId);
+        logAdminAction(req, 'team_renamed', 'team', teamId, {
+            old_team_name: team.name,
+            new_team_name: normalizedName,
+        });
+        return res.json({
+            id: teamId,
+            name: normalizedName,
+            description: normalizedDescription,
+        });
+    }
+    catch (error) {
+        console.error('Update team error:', error);
+        return res.status(500).json({ error: 'Failed to update team' });
     }
 });
 // Get all users (admin only)
@@ -462,7 +467,7 @@ router.post('/trainer-invites', (req, res) => {
             team_names: existingTeams.map((team) => team.name),
             expires_at: expiresAt,
             registration_status: 'pending',
-            invite_url: `${getPublicFrontendBaseUrl(req)}/invite/${token}`
+            invite_url: `${(0, publicUrl_1.getPublicFrontendBaseUrl)(req)}/invite/${token}`
         });
     }
     catch (error) {
@@ -509,7 +514,7 @@ router.post('/users/:id/trainer-invite-resend', (req, res) => {
             user_id: trainer.id,
             token,
             expires_at: expiresAt,
-            invite_url: `${getPublicFrontendBaseUrl(req)}/invite/${token}`
+            invite_url: `${(0, publicUrl_1.getPublicFrontendBaseUrl)(req)}/invite/${token}`
         });
     }
     catch (error) {
@@ -763,15 +768,15 @@ router.get('/settings', (req, res) => {
 // Complete setup wizard
 router.post('/settings/setup', (req, res) => {
     try {
-        const { organizationName, timezone } = req.body;
+        const { organizationName, organizationShortName, timezone } = req.body;
         if (!organizationName) {
             return res.status(400).json({ error: 'Organization name is required' });
         }
         init_1.default.prepare(`
       UPDATE organizations 
-      SET name = ?, timezone = ?, setup_completed = 1, updated_at = CURRENT_TIMESTAMP
+      SET name = ?, short_name = ?, timezone = ?, setup_completed = 1, updated_at = CURRENT_TIMESTAMP
       WHERE id = 1
-    `).run(organizationName, timezone || 'Europe/Berlin');
+    `).run(organizationName, typeof organizationShortName === 'string' && organizationShortName.trim().length > 0 ? organizationShortName.trim() : null, timezone || 'Europe/Berlin');
         const org = init_1.default.prepare('SELECT * FROM organizations WHERE id = 1').get();
         res.json(org);
     }
@@ -793,7 +798,7 @@ router.delete('/organization', (req, res) => {
         init_1.default.prepare('DELETE FROM users').run();
         init_1.default.prepare(`
       UPDATE organizations
-      SET name = ?, logo = NULL, timezone = 'Europe/Berlin', setup_completed = 0, updated_at = CURRENT_TIMESTAMP
+      SET name = ?, short_name = NULL, logo = NULL, timezone = 'Europe/Berlin', setup_completed = 0, updated_at = CURRENT_TIMESTAMP
       WHERE id = 1
     `).run('Neuer Verein');
         if (fs_1.default.existsSync(uploadsDir)) {
