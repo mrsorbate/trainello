@@ -269,7 +269,7 @@ export default function TeamRosterPage() {
                     {player.position ? (
                       <p className="text-xs text-green-400 mt-0.5 truncate">{player.position}</p>
                     ) : (
-                      <p className="text-xs text-gray-500 mt-0.5">Spieler</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Spieler</p>
                     )}
                   </div>
                 </button>
@@ -317,7 +317,7 @@ export default function TeamRosterPage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
-                  <p className="text-xs text-gray-500 tabular-nums">
+                  <p className="text-xs text-gray-400 tabular-nums">
                     Verwendungen: {Number(joinLink.used_count || 0)} von {Number(joinLink.max_uses || 0)}
                   </p>
                   <button
@@ -415,7 +415,7 @@ export default function TeamRosterPage() {
                   <span className="text-sm text-gray-400">{selectedMember.position}</span>
                 )}
                 {selectedMember.nickname && (
-                  <span className="text-sm text-gray-500">„{selectedMember.nickname}"</span>
+                  <span className="text-sm text-gray-400">„{selectedMember.nickname}"</span>
                 )}
               </div>
             </div>
@@ -433,7 +433,7 @@ export default function TeamRosterPage() {
                 const hasAnyPlayerInfo = hasJerseyNumber || hasPosition || hasHeight || hasWeight || hasClothingSize || hasShoeSize || hasFootedness;
 
                 if (!hasAnyPlayerInfo) {
-                  return <p className="text-center text-sm text-gray-500 py-2">Keine Daten hinterlegt.</p>;
+                  return <p className="text-center text-sm text-gray-400 py-2">Keine Daten hinterlegt.</p>;
                 }
 
                 return (
@@ -453,7 +453,7 @@ export default function TeamRosterPage() {
                 const hasPhoneNumber = Boolean(selectedMember.phone_number);
                 const hasEmail = Boolean(selectedMember.email);
                 if (!hasPhoneNumber && !hasEmail) {
-                  return <p className="text-center text-sm text-gray-500 py-2">Keine Kontaktdaten hinterlegt.</p>;
+                  return <p className="text-center text-sm text-gray-400 py-2">Keine Kontaktdaten hinterlegt.</p>;
                 }
                 return (
                   <div className="grid grid-cols-1 gap-2">

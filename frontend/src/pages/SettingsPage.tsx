@@ -620,6 +620,8 @@ export default function SettingsPage() {
                     <input
                       id="settings-height-cm"
                       type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       min={100}
                       max={250}
                       value={heightCm}
@@ -634,6 +636,8 @@ export default function SettingsPage() {
                     <input
                       id="settings-weight-kg"
                       type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       min={30}
                       max={250}
                       value={weightKg}
@@ -674,6 +678,8 @@ export default function SettingsPage() {
                     <input
                       id="settings-jersey-number"
                       type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       min={0}
                       max={99}
                       value={jerseyNumber}

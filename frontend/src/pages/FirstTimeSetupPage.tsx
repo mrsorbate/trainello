@@ -196,7 +196,7 @@ export default function FirstTimeSetupPage() {
 
         <form className="mt-8 space-y-6" onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
           {error && (
-            <div className="bg-red-900/20 border border-red-800 text-red-200 px-4 py-3 rounded-lg text-sm">
+            <div role="alert" aria-live="assertive" className="bg-red-900/20 border border-red-800 text-red-200 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}

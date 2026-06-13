@@ -305,7 +305,7 @@
   }
 
   .eyebrow-label {
-    @apply text-xs font-heading font-semibold uppercase tracking-wider text-gray-400;
+    @apply text-xs font-heading font-semibold uppercase tracking-wider text-gray-300;
   }
 
   .crest-badge {
@@ -333,7 +333,7 @@
   }
 
   .event-date-label {
-    @apply text-[11px] sm:text-xs font-heading font-semibold uppercase tracking-wider text-gray-400 leading-none;
+    @apply text-[11px] sm:text-xs font-heading font-semibold uppercase tracking-wider text-gray-300 leading-none;
   }
 
   .table-shell {
@@ -362,7 +362,7 @@
   }
 
   .stat-label {
-    @apply text-sm text-gray-400 leading-tight;
+    @apply text-sm text-gray-300 leading-tight;
   }
 
   /* ── Progress bar ── */

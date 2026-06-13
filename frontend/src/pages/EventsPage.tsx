@@ -305,7 +305,7 @@ export default function EventsPage() {
                 </span>
               )}
               {meetingTimeLabel && (
-                <span className="text-[11px] text-gray-500">
+                <span className="text-[11px] text-gray-400">
                   Treffpunkt {meetingTimeLabel} Uhr
                 </span>
               )}

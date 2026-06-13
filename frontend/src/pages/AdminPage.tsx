@@ -1790,9 +1790,9 @@ export default function AdminPage() {
                     </button>
                   </div>
                   <div className="mt-2 grid grid-cols-1 gap-1 text-sm text-gray-300">
-                    <p><span className="text-gray-500">Admin:</span> {log.actor_name || log.actor_username || `#${log.actor_id}`}</p>
-                    <p><span className="text-gray-500">Ziel:</span> {log.target_type ? `${log.target_type} #${log.target_id ?? '—'}` : '—'}</p>
-                    <p><span className="text-gray-500">Details:</span> {log.details?.team_name || log.details?.target_name || log.details?.trainer_name || '—'}</p>
+                    <p><span className="text-gray-400">Admin:</span> {log.actor_name || log.actor_username || `#${log.actor_id}`}</p>
+                    <p><span className="text-gray-400">Ziel:</span> {log.target_type ? `${log.target_type} #${log.target_id ?? '—'}` : '—'}</p>
+                    <p><span className="text-gray-400">Details:</span> {log.details?.team_name || log.details?.target_name || log.details?.trainer_name || '—'}</p>
                   </div>
                   {expandedAuditLogId === log.id && (
                     <div className="mt-3 rounded-lg bg-gray-800 p-2 text-sm text-gray-200">

@@ -188,7 +188,7 @@ export default function TeamJoinPage() {
     return (
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="max-w-md w-full">
-          <div className="bg-red-900/20 border border-red-800 rounded-lg p-6">
+          <div role="alert" aria-live="assertive" className="bg-red-900/20 border border-red-800 rounded-lg p-6">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
               <div>

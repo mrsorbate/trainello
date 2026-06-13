@@ -227,6 +227,8 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
                 <input
                   id="invite-expires-days"
                   type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min="1"
                   max="365"
                   value={inviteData.expiresInDays}
@@ -263,8 +265,11 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
                 <input
                   id="invite-max-uses"
                   type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min="1"
                   placeholder="Unbegrenzt"
+                  aria-label="Maximale Verwendungen"
                   value={inviteData.maxUses || ''}
                   onChange={(e) => setInviteData({ ...inviteData, maxUses: e.target.value ? parseInt(e.target.value) : undefined })}
                   onWheel={(e) => handleInviteNumberWheel(e, 'maxUses')}

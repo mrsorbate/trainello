@@ -191,7 +191,7 @@ export default function SetupWizardPage() {
           </div>
 
           {error && (
-            <div className="bg-red-900/20 border border-red-800 text-red-300 px-4 py-3 rounded-lg mb-6">
+            <div role="alert" aria-live="assertive" className="bg-red-900/20 border border-red-800 text-red-300 px-4 py-3 rounded-lg mb-6">
               {error}
             </div>
           )}

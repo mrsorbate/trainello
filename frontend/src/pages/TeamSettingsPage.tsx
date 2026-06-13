@@ -675,7 +675,7 @@ export default function TeamSettingsPage() {
       {isLoading ? (
         <div className="text-sm text-gray-400 py-2">Lädt Einstellungen...</div>
       ) : error ? (
-        <div className="text-sm text-red-400 py-2">{(error as any)?.response?.data?.error || 'Einstellungen konnten nicht geladen werden'}</div>
+        <div role="alert" aria-live="assertive" className="text-sm text-red-400 py-2">{(error as any)?.response?.data?.error || 'Einstellungen konnten nicht geladen werden'}</div>
       ) : (
         <>
           <div className="card space-y-4">
@@ -936,6 +936,8 @@ export default function TeamSettingsPage() {
                   <input
                     id="default-rsvp-deadline-hours-training"
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     min={0}
                     max={168}
                     step={1}
@@ -970,6 +972,8 @@ export default function TeamSettingsPage() {
                   <input
                     id="default-rsvp-deadline-days-match"
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     min={0}
                     max={7}
                     step={1}
@@ -1004,6 +1008,8 @@ export default function TeamSettingsPage() {
                   <input
                     id="default-rsvp-deadline-hours-other"
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     min={0}
                     max={168}
                     step={1}
@@ -1044,6 +1050,8 @@ export default function TeamSettingsPage() {
                   <input
                     id="default-arrival-minutes-training"
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     min={0}
                     max={240}
                     step={5}
@@ -1078,6 +1086,8 @@ export default function TeamSettingsPage() {
                   <input
                     id="default-arrival-minutes-match"
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     min={0}
                     max={240}
                     step={5}
@@ -1118,6 +1128,8 @@ export default function TeamSettingsPage() {
                   <input
                     id="default-duration-minutes-training"
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     min={5}
                     max={480}
                     step={5}
@@ -1152,6 +1164,8 @@ export default function TeamSettingsPage() {
                   <input
                     id="default-duration-minutes-match"
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     min={5}
                     max={480}
                     step={5}
@@ -1186,6 +1200,8 @@ export default function TeamSettingsPage() {
                   <input
                     id="default-duration-minutes-other"
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     min={5}
                     max={480}
                     step={5}

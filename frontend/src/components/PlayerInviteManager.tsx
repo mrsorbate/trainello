@@ -246,6 +246,8 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
                   <input
                     id="player-invite-expires-days"
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     min="1"
                     max="365"
                     value={inviteData.expiresInDays}

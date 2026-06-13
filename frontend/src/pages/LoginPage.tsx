@@ -94,7 +94,7 @@ export default function LoginPage() {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {sessionExpiredNotice && (
-            <div className="bg-amber-900/30 border border-amber-800 text-amber-200 px-4 py-3 rounded-lg text-sm">
+            <div role="status" aria-live="polite" className="bg-amber-900/30 border border-amber-800 text-amber-200 px-4 py-3 rounded-lg text-sm">
               Aus Sicherheitsgründen musst du dich alle 30 Tage neu einloggen.
             </div>
           )}

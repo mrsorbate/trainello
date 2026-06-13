@@ -644,7 +644,7 @@ export default function EventDetailPage() {
               const diffMs = deadline.getTime() - now.getTime();
               if (diffMs <= 0) {
                 return (
-                  <div className="mb-3 flex items-center gap-1.5 text-xs text-gray-500">
+                  <div className="mb-3 flex items-center gap-1.5 text-xs text-gray-400">
                     <Clock className="w-3.5 h-3.5 shrink-0" />
                     Rückmeldefrist abgelaufen
                   </div>
@@ -838,7 +838,7 @@ export default function EventDetailPage() {
               )}
 
               {!canChooseTentative && !inlinePanel && (
-                <p className="text-xs text-gray-500 flex items-center gap-1.5 pt-1">
+                <p className="text-xs text-gray-400 flex items-center gap-1.5 pt-1">
                   <Clock className="w-3.5 h-3.5 shrink-0" />
                   Unsicher ist nur bis 1 Stunde vor Rückmeldefrist möglich.
                 </p>

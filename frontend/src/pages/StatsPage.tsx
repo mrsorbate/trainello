@@ -288,16 +288,16 @@ export default function StatsPage() {
                           { label: 'Sonstiges', rate: otherRate, accepted: player.accepted_other ?? 0, total: player.total_other ?? 0, textColor: 'text-gray-300' },
                         ].map((cat) => (
                           <div key={cat.label} className="bg-gray-800/60 rounded-xl p-2.5 text-center">
-                            <p className="text-[10px] uppercase tracking-wider text-gray-500 font-heading">{cat.label}</p>
+                            <p className="text-[10px] uppercase tracking-wider text-gray-400 font-heading">{cat.label}</p>
                             <p className={`text-lg font-heading font-bold tabular-nums ${cat.textColor} mt-0.5 leading-none`}>{cat.rate}%</p>
-                            <p className="text-[10px] text-gray-500 mt-1 tabular-nums">{cat.accepted}/{cat.total}</p>
+                            <p className="text-[10px] text-gray-400 mt-1 tabular-nums">{cat.accepted}/{cat.total}</p>
                           </div>
                         ))}
                       </div>
                       <div className="flex gap-4 text-xs">
                         <span className="text-green-400 font-medium tabular-nums">{player.accepted} Zusagen</span>
                         <span className="text-primary-400 font-medium tabular-nums">{player.declined} Absagen</span>
-                        <span className="text-gray-500 tabular-nums">{player.pending} offen</span>
+                        <span className="text-gray-400 tabular-nums">{player.pending} offen</span>
                       </div>
                     </div>
                   )}
@@ -311,7 +311,7 @@ export default function StatsPage() {
       {sorted.length === 0 && (
         <div className="bg-gray-800 border border-gray-700/60 rounded-2xl p-8 text-center">
           <TrendingUp className="w-10 h-10 text-gray-600 mx-auto mb-3" />
-          <p className="text-sm text-gray-500">Noch keine Statistiken vorhanden.</p>
+          <p className="text-sm text-gray-400">Noch keine Statistiken vorhanden.</p>
         </div>
       )}
     </div>
