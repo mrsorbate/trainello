@@ -4,6 +4,7 @@ import { invitesAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { Copy, Plus, Trash2, Link as LinkIcon, Check, Mail } from 'lucide-react';
 import AccessibleModal from './AccessibleModal';
+import type { CreateInviteResponse, Invite } from '../types/domain';
 
 interface InviteManagerProps {
   teamId: number;
@@ -24,7 +25,7 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
   const [createdInviteeName, setCreatedInviteeName] = useState('');
   const [inviteMessageDraft, setInviteMessageDraft] = useState('');
   const [isEditingInviteMessage, setIsEditingInviteMessage] = useState(false);
-  const [inviteToDelete, setInviteToDelete] = useState<any | null>(null);
+  const [inviteToDelete, setInviteToDelete] = useState<Invite | null>(null);
   
   const [inviteData, setInviteData] = useState({
     role: inviteRole,
@@ -58,13 +59,13 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
     queryKey: ['team-invites', teamId],
     queryFn: async () => {
       const response = await invitesAPI.getTeamInvites(teamId);
-      return response.data;
+      return response.data as Invite[];
     },
   });
 
   const createMutation = useMutation({
     mutationFn: () => invitesAPI.createInvite(teamId, inviteData),
-    onSuccess: (response: any) => {
+    onSuccess: (response: { data: CreateInviteResponse }) => {
       queryClient.invalidateQueries({ queryKey: ['team-invites', teamId] });
       setShowCreateForm(false);
       const inviteUrl = response?.data?.invite_url || `${window.location.origin}/invite/${response?.data?.token}`;
@@ -357,7 +358,7 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
               </tr>
             </thead>
             <tbody>
-              {invites.map((invite: any) => {
+              {invites.map((invite) => {
                 const isExpired = invite.expires_at && new Date(invite.expires_at) < new Date();
                 const isMaxedOut = invite.max_uses && invite.used_count >= invite.max_uses;
                 const inviteUrl = `${window.location.origin}/invite/${invite.token}`;

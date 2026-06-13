@@ -4,6 +4,7 @@ import { invitesAPI } from '../lib/api';
 import { Copy, Plus, Trash2, Users } from 'lucide-react';
 import { useToast } from '../lib/useToast';
 import AccessibleModal from './AccessibleModal';
+import type { Invite } from '../types/domain';
 
 interface PlayerInviteManagerProps {
   teamId: number;
@@ -16,9 +17,9 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [inviteToDelete, setInviteToDelete] = useState<any | null>(null);
+  const [inviteToDelete, setInviteToDelete] = useState<Invite | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [selectedInviteForShare, setSelectedInviteForShare] = useState<any | null>(null);
+  const [selectedInviteForShare, setSelectedInviteForShare] = useState<Invite | null>(null);
   const [inviteMessageDraft, setInviteMessageDraft] = useState('');
   const [isEditingInviteMessage, setIsEditingInviteMessage] = useState(false);
 
@@ -46,8 +47,9 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
     queryFn: async () => {
       const response = await invitesAPI.getTeamInvites(teamId);
       // Filter nur Spieler-Einladungen
-      return response.data.filter((inv: any) =>
-        inv.player_name && (!inv.max_uses || inv.used_count < inv.max_uses)
+      const teamInvites = response.data as Invite[];
+      return teamInvites.filter((invite) =>
+        invite.player_name && (!invite.max_uses || invite.used_count < invite.max_uses)
       );
     },
   });
@@ -128,15 +130,15 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
     setTimeout(() => setCopiedToken(null), 2000);
   };
 
-  const openShareModal = (invite: any) => {
+  const openShareModal = (invite: Invite) => {
     setSelectedInviteForShare(invite);
     const inviteUrl = `${window.location.origin}/invite/${invite.token}`;
-    setInviteMessageDraft(buildInviteMessage(invite.player_name, inviteUrl));
+    setInviteMessageDraft(buildInviteMessage(invite.player_name || 'Spieler', inviteUrl));
     setIsEditingInviteMessage(false);
     setShowShareModal(true);
   };
 
-  const copyLink = async (invite: any) => {
+  const copyLink = async (invite: Invite) => {
     openShareModal(invite);
   };
 
@@ -165,7 +167,7 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
     setIsEditingInviteMessage(false);
   };
 
-  const openDeleteModal = (invite: any) => {
+  const openDeleteModal = (invite: Invite) => {
     setInviteToDelete(invite);
     setShowDeleteModal(true);
   };
@@ -277,7 +279,7 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
       {invites && invites.length > 0 ? (
         <>
         <div className="space-y-2 md:hidden">
-          {invites.map((invite: any) => (
+          {invites.map((invite) => (
             <div key={`invite-mobile-${invite.id}`} className="rounded-lg border border-gray-700 p-3 bg-gray-900">
               <p className="font-medium text-white">{invite.player_name}</p>
               <p className="text-sm text-gray-400 mt-1">
@@ -320,7 +322,7 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
               </tr>
             </thead>
             <tbody>
-              {invites.map((invite: any) => (
+              {invites.map((invite) => (
                 <tr
                   key={`invite-${invite.id}`}
                   className="border-b border-gray-700 hover:bg-gray-800/50 transition-colors"
@@ -450,7 +452,7 @@ export default function PlayerInviteManager({ teamId }: PlayerInviteManagerProps
                 <button
                   onClick={() => {
                     const inviteUrl = `${window.location.origin}/invite/${selectedInviteForShare.token}`;
-                    copyInviteText(selectedInviteForShare.token, selectedInviteForShare.player_name, inviteUrl, inviteMessageDraft);
+                    copyInviteText(selectedInviteForShare.token, selectedInviteForShare.player_name || 'Spieler', inviteUrl, inviteMessageDraft);
                   }}
                   className="btn btn-primary flex-1"
                 >

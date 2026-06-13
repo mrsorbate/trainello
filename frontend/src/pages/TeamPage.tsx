@@ -4,6 +4,7 @@ import { teamsAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { Calendar, Users, BarChart, ArrowLeft, Settings, MessageSquare } from 'lucide-react';
 import { useSmartBack } from '../hooks/useSmartBack';
+import type { Team, TeamMember } from '../types/domain';
 
 export default function TeamPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,7 +16,7 @@ export default function TeamPage() {
     queryKey: ['team', teamId],
     queryFn: async () => {
       const response = await teamsAPI.getById(teamId);
-      return response.data;
+      return response.data as Team;
     },
   });
 
@@ -23,18 +24,18 @@ export default function TeamPage() {
     queryKey: ['team-members', teamId],
     queryFn: async () => {
       const response = await teamsAPI.getMembers(teamId);
-      return response.data;
+      return response.data as TeamMember[];
     },
   });
 
-  const isTrainer = members?.find((m: any) => m.id === user?.id)?.role === 'trainer';
+  const isTrainer = members?.find((member) => member.id === user?.id)?.role === 'trainer';
 
   if (teamLoading || membersLoading) {
     return <div className="text-center py-12">Lädt...</div>;
   }
 
-  const trainers = members?.filter((m: any) => m.role === 'trainer') || [];
-  const players = members?.filter((m: any) => m.role !== 'trainer') || [];
+  const trainers = members?.filter((member) => member.role === 'trainer') || [];
+  const players = members?.filter((member) => member.role !== 'trainer') || [];
 
   return (
     <div className="space-y-5 sm:space-y-6">
