@@ -390,7 +390,7 @@ export default function TeamPostsPage() {
                       type="button"
                       onClick={() => markSeenMutation.mutate(post.id)}
                       disabled={markSeenMutation.isPending}
-                      className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-md bg-green-600 text-white text-sm hover:bg-green-700 disabled:opacity-60"
+                      className="mt-3 btn bg-green-600 text-white hover:bg-green-700"
                     >
                       {markSeenMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                       {markSeenMutation.isPending ? 'Speichert...' : 'Als gelesen markieren'}
@@ -408,7 +408,7 @@ export default function TeamPostsPage() {
               {scope === 'open' ? 'Aktuell ist nichts offen.' : 'Noch keine Nachrichten oder Umfragen erstellt.'}
             </p>
             <div className="mt-4">
-              <Link to={`/teams/${teamId}`} className="text-primary-600 hover:underline">
+              <Link to={`/teams/${teamId}`} className="text-primary-400 hover:underline">
                 Zurück zur Teamseite
               </Link>
             </div>

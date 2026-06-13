@@ -137,7 +137,7 @@ export default function MyTablePage() {
     <div className="space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-primary-600" />
+          <BarChart3 className="w-6 h-6 text-primary-400" />
           <span>Meine Tabelle</span>
         </h1>
       </div>

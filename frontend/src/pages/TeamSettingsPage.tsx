@@ -665,7 +665,7 @@ export default function TeamSettingsPage() {
         </button>
         <div className="min-w-0">
           <h1 className="text-xl sm:text-3xl font-bold text-white break-words flex items-center gap-2">
-            <Settings className="w-6 h-6 text-primary-600 shrink-0" />
+            <Settings className="w-6 h-6 text-primary-400 shrink-0" />
             <span>Team-Einstellungen</span>
           </h1>
           <p className="text-xs sm:text-sm text-gray-300 mt-1">Standardwerte und fussball.de Verknüpfung verwalten</p>
@@ -680,7 +680,7 @@ export default function TeamSettingsPage() {
         <>
           <div className="card space-y-4">
             <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-2">
-              <Camera className="w-5 h-5 text-primary-600" />
+              <Camera className="w-5 h-5 text-primary-400" />
               Mannschaftsbild
             </h2>
 
@@ -730,7 +730,7 @@ export default function TeamSettingsPage() {
 
           <div className="card space-y-4">
             <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-2">
-              <Edit2 className="w-5 h-5 text-primary-600" />
+              <Edit2 className="w-5 h-5 text-primary-400" />
               Dein individueller Teamname
             </h2>
 
@@ -773,7 +773,7 @@ export default function TeamSettingsPage() {
 
           <div className="card space-y-4">
             <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-2">
-              <Settings className="w-5 h-5 text-primary-600" />
+              <Settings className="w-5 h-5 text-primary-400" />
               API-Einstellungen
             </h2>
             <div>
@@ -884,7 +884,7 @@ export default function TeamSettingsPage() {
 
           <div className="card space-y-4">
             <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-2">
-              <SlidersHorizontal className="w-5 h-5 text-primary-600" />
+              <SlidersHorizontal className="w-5 h-5 text-primary-400" />
               Termineinstellungen
             </h2>
             <div>

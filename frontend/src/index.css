@@ -294,7 +294,7 @@
   }
 
   .badge-pending {
-    @apply badge bg-gray-700/80 text-gray-400 border border-gray-600/50;
+    @apply badge bg-gray-700/80 text-gray-300 border border-gray-600/50;
   }
 
   /* ── Section headings ── */
@@ -305,7 +305,7 @@
   }
 
   .eyebrow-label {
-    @apply text-xs font-heading font-semibold uppercase tracking-wider text-gray-500;
+    @apply text-xs font-heading font-semibold uppercase tracking-wider text-gray-400;
   }
 
   .crest-badge {
@@ -321,11 +321,11 @@
   }
 
   .empty-state {
-    @apply card text-center py-10 text-gray-400;
+    @apply card text-center py-10 text-gray-300;
   }
 
   .empty-state-icon {
-    @apply w-12 h-12 mx-auto mb-3 text-gray-600;
+    @apply w-12 h-12 mx-auto mb-3 text-gray-400;
   }
 
   .event-card {
@@ -333,7 +333,7 @@
   }
 
   .event-date-label {
-    @apply text-[11px] sm:text-xs font-heading font-semibold uppercase tracking-wider text-gray-500 leading-none;
+    @apply text-[11px] sm:text-xs font-heading font-semibold uppercase tracking-wider text-gray-400 leading-none;
   }
 
   .table-shell {
@@ -391,7 +391,7 @@
   }
 
   .bottom-nav-item {
-    @apply flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-gray-500 cursor-pointer;
+    @apply flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-gray-400 cursor-pointer;
     min-height: 56px;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;

@@ -293,9 +293,9 @@ export default function DashboardPage() {
               
               const getStatusIcon = (status: string) => {
                 switch (status) {
-                  case 'accepted': return <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />;
-                  case 'declined': return <XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />;
-                  case 'tentative': return <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />;
+                  case 'accepted': return <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />;
+                  case 'declined': return <XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-400" />;
+                  case 'tentative': return <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />;
                   default: return <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />;
                 }
               };
@@ -654,14 +654,14 @@ export default function DashboardPage() {
                   type="button"
                   onClick={closeDeclineModal}
                   disabled={updateResponseMutation.isPending}
-                  className="px-3 py-2 text-sm rounded-md border border-gray-600 text-gray-200 hover:bg-gray-700 disabled:opacity-60"
+                  className="btn btn-secondary"
                 >
                   Abbrechen
                 </button>
                 <button
                   type="submit"
                   disabled={updateResponseMutation.isPending}
-                  className="px-3 py-2 text-sm rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                  className="btn btn-danger"
                 >
                   {updateResponseMutation.isPending ? 'Speichern...' : 'Absagen'}
                 </button>

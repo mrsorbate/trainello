@@ -200,7 +200,7 @@ export default function SetupWizardPage() {
           {step === 1 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Building2 className="w-6 h-6 text-primary-600" />
+                <Building2 className="w-6 h-6 text-primary-400" />
                 Dein Verein
               </h2>
 
@@ -272,7 +272,7 @@ export default function SetupWizardPage() {
           {step === 2 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Shield className="w-6 h-6 text-primary-600" />
+                <Shield className="w-6 h-6 text-primary-400" />
                 Admin-Daten
               </h2>
 
@@ -333,7 +333,7 @@ export default function SetupWizardPage() {
           {step === 3 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Globe className="w-6 h-6 text-primary-600" />
+                <Globe className="w-6 h-6 text-primary-400" />
                 Zeitzone
               </h2>
 
@@ -363,7 +363,7 @@ export default function SetupWizardPage() {
           {step === 4 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Globe className="w-6 h-6 text-primary-600" />
+                <Globe className="w-6 h-6 text-primary-400" />
                 Finale Zusammenfassung
               </h2>
 
@@ -405,17 +405,19 @@ export default function SetupWizardPage() {
           <div className="flex gap-4 mt-8">
             {step > 1 && (
               <button
+                type="button"
                 onClick={handlePrevious}
                 disabled={setupMutation.isPending}
-                className="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 btn btn-secondary"
               >
                 ← Zurück
               </button>
             )}
             <button
+              type="button"
               onClick={handleNext}
               disabled={setupMutation.isPending}
-              className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 btn btn-primary"
             >
               {step === 4 && setupMutation.isPending && 'Wird eingerichtet...'}
               {step === 4 && !setupMutation.isPending && 'Setup fertigstellen'}

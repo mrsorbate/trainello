@@ -885,7 +885,7 @@ export default function AdminPage() {
     <div className="space-y-6">
       <div className="flex items-center">
         <div className="flex items-center space-x-3">
-          <Shield className="w-8 h-8 text-primary-600" />
+          <Shield className="w-8 h-8 text-primary-400" />
           <div>
             <h1 className="text-3xl font-bold text-white">Admin-Panel</h1>
             <p className="text-gray-300 mt-1">Team- und Benutzerverwaltung</p>
@@ -897,7 +897,7 @@ export default function AdminPage() {
       <div className="card">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <h2 className="text-xl font-semibold flex items-center">
-            <Settings className="w-6 h-6 mr-2 text-primary-600" />
+            <Settings className="w-6 h-6 mr-2 text-primary-400" />
             Vereins-Einstellungen
           </h2>
           <button
@@ -1083,7 +1083,7 @@ export default function AdminPage() {
       <div className="card">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <h2 className="text-xl font-semibold flex items-center">
-            <Users className="w-6 h-6 mr-2 text-primary-600" />
+            <Users className="w-6 h-6 mr-2 text-primary-400" />
             Alle Teams ({teams?.length || 0})
           </h2>
           <button
@@ -1208,7 +1208,7 @@ export default function AdminPage() {
           panelClassName="card max-w-md w-full max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl"
         >
             <h3 id="assign-trainer-title" className="text-lg font-semibold mb-4 flex items-center">
-              <Shield className="w-5 h-5 mr-2 text-blue-600" />
+              <Shield className="w-5 h-5 mr-2 text-blue-400" />
               Trainer zuweisen
             </h3>
             <form onSubmit={handleAssignTrainer} className="space-y-4">
@@ -1675,7 +1675,7 @@ export default function AdminPage() {
       <div className="card">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <h2 className="text-xl font-semibold flex items-center">
-            <Shield className="w-6 h-6 mr-2 text-primary-600" />
+            <Shield className="w-6 h-6 mr-2 text-primary-400" />
             Audit-Log Admin-Aktionen
           </h2>
           <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
@@ -2174,7 +2174,7 @@ export default function AdminPage() {
                       onClick={handleCopyTrainerLink}
                       className="btn btn-secondary flex items-center justify-center space-x-2 w-full sm:w-auto"
                     >
-                      {copiedTrainerLink ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                      {copiedTrainerLink ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                       <span>{copiedTrainerLink ? 'Kopiert' : 'Einladungstext kopieren'}</span>
                     </button>
                   </div>
@@ -2320,7 +2320,7 @@ export default function AdminPage() {
                 onClick={handleCopyResendTrainerLink}
                 className="btn btn-secondary flex items-center justify-center space-x-2 w-full sm:w-auto"
               >
-                {copiedResendTrainerLink ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                {copiedResendTrainerLink ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                 <span>{copiedResendTrainerLink ? 'Kopiert' : 'Einladungstext kopieren'}</span>
               </button>
               <button
@@ -2359,7 +2359,7 @@ export default function AdminPage() {
                 onClick={handleCopyGeneratedPassword}
                 className="btn btn-secondary flex items-center justify-center space-x-2 w-full sm:w-auto"
               >
-                {copiedGeneratedPassword ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                {copiedGeneratedPassword ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                 <span>{copiedGeneratedPassword ? 'Kopiert' : 'Passwort kopieren'}</span>
               </button>
               <button

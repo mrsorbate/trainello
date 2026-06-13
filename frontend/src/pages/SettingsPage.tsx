@@ -438,7 +438,7 @@ export default function SettingsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-start sm:items-center gap-3">
-        <User className="w-8 h-8 text-primary-600" />
+        <User className="w-8 h-8 text-primary-400" />
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white">Einstellungen</h1>
           <p className="text-sm sm:text-base text-gray-300 mt-1">Verwalte dein Profil und deine Einstellungen</p>
@@ -448,7 +448,7 @@ export default function SettingsPage() {
       {/* Profile Picture Section */}
       <div className="card">
         <h2 className="text-xl font-semibold mb-4 flex items-center">
-          <Camera className="w-6 h-6 mr-2 text-primary-600" />
+          <Camera className="w-6 h-6 mr-2 text-primary-400" />
           Profilbild
         </h2>
 
@@ -511,7 +511,7 @@ export default function SettingsPage() {
       {/* Profile Information */}
       <div className="card">
         <h2 className="text-xl font-semibold mb-4 flex items-center">
-          <User className="w-6 h-6 mr-2 text-primary-600" />
+          <User className="w-6 h-6 mr-2 text-primary-400" />
           Profil-Informationen
         </h2>
 
@@ -744,7 +744,7 @@ export default function SettingsPage() {
       {authUser?.role === 'trainer' && (
         <div className="card">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
-            <Edit2 className="w-6 h-6 mr-2 text-primary-600" />
+            <Edit2 className="w-6 h-6 mr-2 text-primary-400" />
             Meine Teamnamen
           </h2>
 
@@ -776,6 +776,7 @@ export default function SettingsPage() {
                     <p className="text-sm font-medium text-gray-200">{team.name}</p>
                     {editingTeamId === team.id ? (
                       <input
+                        aria-label={`Persönlicher Teamname für ${team.name}`}
                         type="text"
                         value={customTeamNames[team.id] || ''}
                         onChange={(e) =>
@@ -799,6 +800,7 @@ export default function SettingsPage() {
                   {editingTeamId === team.id ? (
                     <div className="flex gap-2">
                       <button
+                        type="button"
                         onClick={() => {
                           updateTrainerTeamNameMutation.mutate({
                             teamId: team.id,
@@ -811,6 +813,7 @@ export default function SettingsPage() {
                         {updateTrainerTeamNameMutation.isPending ? 'Speichert...' : 'Speichern'}
                       </button>
                       <button
+                        type="button"
                         onClick={() => setEditingTeamId(null)}
                         className="btn btn-sm btn-secondary"
                       >
@@ -819,7 +822,9 @@ export default function SettingsPage() {
                     </div>
                   ) : (
                     <button
+                      type="button"
                       onClick={() => setEditingTeamId(team.id)}
+                      aria-label={`Persönlichen Namen für ${team.name} bearbeiten`}
                       className="btn btn-sm btn-secondary"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -834,7 +839,7 @@ export default function SettingsPage() {
 
       <div className="card">
         <h2 className="text-xl font-semibold mb-4 flex items-center">
-          <Bell className="w-6 h-6 mr-2 text-primary-600" />
+          <Bell className="w-6 h-6 mr-2 text-primary-400" />
           Benachrichtigungen (PWA)
         </h2>
 
@@ -927,7 +932,7 @@ export default function SettingsPage() {
       {/* Change Password Section */}
       <div className="card">
         <h2 className="text-xl font-semibold mb-4 flex items-center">
-          <Lock className="w-6 h-6 mr-2 text-primary-600" />
+          <Lock className="w-6 h-6 mr-2 text-primary-400" />
           Passwort ändern
         </h2>
 

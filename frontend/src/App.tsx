@@ -70,7 +70,7 @@ function App() {
                 type="button"
                 onClick={() => refetch()}
                 disabled={isFetching}
-                className="px-3 py-2 rounded-md bg-gray-800 border border-gray-600 text-gray-200 hover:bg-gray-700 disabled:opacity-60"
+                className="btn btn-secondary"
               >
                 Erneut versuchen
               </button>

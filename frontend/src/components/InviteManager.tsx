@@ -159,7 +159,7 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
     <div className="card">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold flex items-center text-white">
-          <LinkIcon className="w-5 h-5 mr-2 text-primary-600" />
+          <LinkIcon className="w-5 h-5 mr-2 text-primary-400" />
           {inviteHeading}
         </h2>
         {!showCreateForm && (
@@ -395,8 +395,8 @@ export default function InviteManager({ teamId, teamName }: InviteManagerProps) 
                         >
                           {copiedToken === invite.token ? (
                             <>
-                              <Check className="w-4 h-4 text-green-600" />
-                              <span className="text-green-600">Kopiert!</span>
+                              <Check className="w-4 h-4 text-green-400" />
+                              <span className="text-green-400">Kopiert!</span>
                             </>
                           ) : (
                             <>

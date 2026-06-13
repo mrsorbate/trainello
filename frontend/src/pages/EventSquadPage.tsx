@@ -488,7 +488,7 @@ export default function EventSquadPage() {
           <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
         <h1 className="text-lg sm:text-3xl font-bold text-white flex items-center gap-2">
-          <ClipboardList className="w-5 h-5 sm:w-7 sm:h-7 text-primary-600" />
+          <ClipboardList className="w-5 h-5 sm:w-7 sm:h-7 text-primary-400" />
           Kader & Aufstellung
         </h1>
       </div>

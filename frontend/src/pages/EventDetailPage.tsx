@@ -754,8 +754,7 @@ export default function EventDetailPage() {
                     <button
                       type="button"
                       onClick={() => { setInlinePanel(null); setInlineComment(''); }}
-                      className="px-4 rounded-xl text-sm text-gray-400 hover:text-gray-200 hover:bg-gray-700/60 transition-colors"
-                      style={{ minHeight: '44px' }}
+                      className="btn btn-ghost"
                     >
                       Abbrechen
                     </button>
@@ -830,8 +829,7 @@ export default function EventDetailPage() {
                     <button
                       type="button"
                       onClick={() => { setInlinePanel(null); setInlineComment(''); setResponseValidationMessage(''); }}
-                      className="px-4 rounded-xl text-sm text-gray-400 hover:text-gray-200 hover:bg-gray-700/60 transition-colors"
-                      style={{ minHeight: '44px' }}
+                      className="btn btn-ghost"
                     >
                       Abbrechen
                     </button>
@@ -931,7 +929,7 @@ export default function EventDetailPage() {
 	          panelClassName="card max-w-md w-full mx-4"
 	        >
 	            <div className="flex items-start space-x-3 mb-4">
-	              <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+	              <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
 	              <div>
 	                <h3 id="delete-series-event-title" className="text-lg font-semibold text-white">Termin löschen</h3>
                 <p className="text-sm text-gray-400 mt-1">
@@ -992,7 +990,7 @@ export default function EventDetailPage() {
 	          panelClassName="card max-w-md w-full mx-4"
 	        >
 	            <div className="flex items-start space-x-3 mb-4">
-	              <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+	              <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
 	              <div>
 	                <h3 id="delete-event-title" className="text-lg font-semibold text-white">Termin löschen</h3>
                 <p className="text-sm text-gray-400 mt-1">

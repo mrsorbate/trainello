@@ -126,7 +126,7 @@ export default function InvitePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4">
         <div className="max-w-md w-full text-center">
-          <XCircle className="mx-auto h-16 w-16 text-red-600 mb-4" />
+          <XCircle className="mx-auto h-16 w-16 text-red-400 mb-4" />
           <h2 className="text-2xl font-bold text-white mb-2">
             Einladung ungültig
           </h2>

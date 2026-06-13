@@ -557,7 +557,7 @@ export default function EventEditPage() {
       <form onSubmit={handleSubmit} className="space-y-5">
           <div className="card space-y-4">
             <h4 className="font-medium text-white flex items-center gap-2">
-              <CalendarDays className="w-4 h-4 text-primary-600" />
+              <CalendarDays className="w-4 h-4 text-primary-400" />
               Termin
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -675,7 +675,7 @@ export default function EventEditPage() {
 
           <div className="card space-y-4">
             <h4 className="font-medium text-white flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary-600" />
+              <MapPin className="w-4 h-4 text-primary-400" />
               Ort & Organisation
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -811,7 +811,7 @@ export default function EventEditPage() {
           <div className="card space-y-4">
               <div className="space-y-4">
                 <h4 className="font-medium text-white flex items-center gap-2">
-                  <Settings2 className="w-4 h-4 text-primary-600" />
+                  <Settings2 className="w-4 h-4 text-primary-400" />
                   Einstellungen
                 </h4>
 
@@ -821,7 +821,7 @@ export default function EventEditPage() {
                     type="checkbox"
                     checked={eventData.visibility_all}
                     onChange={(e) => setEventData({ ...eventData, visibility_all: e.target.checked })}
-                    className="h-4 w-4 text-primary-600"
+                    className="h-4 w-4 text-primary-400"
                   />
                   <span className="text-sm text-gray-300">Teilnehmerliste für alle sichtbar</span>
                 </label>
@@ -926,7 +926,7 @@ export default function EventEditPage() {
           {event?.series_id ? (
             <div className="card space-y-4">
               <h4 className="font-medium text-white flex items-center gap-2">
-                <Repeat className="w-4 h-4 text-primary-600" />
+                <Repeat className="w-4 h-4 text-primary-400" />
                 Serientermin
               </h4>
               <div className="space-y-4">

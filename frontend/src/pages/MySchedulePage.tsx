@@ -284,7 +284,7 @@ export default function MySchedulePage() {
     <div className="space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center gap-2">
-          <Calendar className="w-6 h-6 text-primary-600" />
+          <Calendar className="w-6 h-6 text-primary-400" />
           <span>Mein Spielplan</span>
         </h1>
         <p className="text-xs sm:text-sm text-gray-300 mt-1">
